@@ -1,5 +1,0 @@
-{
-    "cortex-debug.armToolchainPath": "D:\\Programming-Tools\\gcc-arm-none-eabi-10.3-2021.10\\bin",
-    "cortex-debug.openocdPath": "D:\\PROGRAMMING-TOOLS\\OPENOCD\\BIN\\OPENOCD.EXE",
-    "stm32-for-vscode.makePath": false
-}
