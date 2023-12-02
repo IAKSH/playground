@@ -2,31 +2,6 @@
 #include <limits.h>
 #include <string.h>
 
-/*
-void count_sort(int* arr,size_t len) {
-    int max = INT_MIN;
-    int min = INT_MAX;
-    for(int i = 0;i < len;i++) {
-        if(arr[i] > max)
-            max = arr[i];
-        if(arr[i] < min)
-            min = arr[i];
-    }
-
-    int delta = 0 - min;
-    int buffer[max - min];
-    memset(buffer,0,sizeof(int) * (max - min));
-    for(int i = 0;i < len;i++)
-        buffer[arr[i] + delta]++;
-
-    int i = 0;
-    for(int j = 0;j < max;j++) {
-        while(buffer[j]-- > 0)
-            arr[i++] = j - delta;
-    }
-}
-*/
-
 void count_sort(int* arr,size_t len) {
     int max = INT_MIN;
     int min = INT_MAX;

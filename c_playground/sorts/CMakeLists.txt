@@ -16,6 +16,7 @@ add_executable(c_select_sort select_sort.c)
 add_executable(c_search_from_bst search_from_bst.c)
 add_executable(c_count_sort count_sort.c)
 add_executable(c_std_qsort std_qsort.c)
+add_executable(c_recursion_quick_sort recursion_quick_sort.c)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
