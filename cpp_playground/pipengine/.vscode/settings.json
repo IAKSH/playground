@@ -1,0 +1,5 @@
+{
+  "cmake.configureSettings": {
+    "CMAKE_TOOLCHAIN_FILE": "D:/Programming-Tools/vcpkg-2023.04.15/scripts/buildsystems/vcpkg.cmake"
+  }
+}
