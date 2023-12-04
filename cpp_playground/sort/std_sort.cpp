@@ -6,8 +6,8 @@
 int main() noexcept {
     std::array<int,12> arr = {12,24,534,2,123,5,3,7,2,-123,0,23};
     std::cout << "before:\t{";
-    for(int i = 0;i < sizeof(arr)/sizeof(int);i++)
-        std::cout << std::format("{},",arr[i]);
+    for(const auto& item : arr)
+        std::cout << std::format("{},",item);
     std::cout << "\b}" << std::endl;
 
     // std::sort is actually using "intro sort" (which comes from quick sort but can handle all cases with O(N·log(N)) comparisons)
@@ -25,8 +25,8 @@ int main() noexcept {
     */
 
     std::cout << "after:\t{";
-    for(int i = 0;i < sizeof(arr)/sizeof(int);i++)
-        std::cout << std::format("{},",arr[i]);
+    for(const auto& item : arr)
+        std::cout << std::format("{},",item);
     std::cout << "\b}" << std::endl;
     
     return 0;

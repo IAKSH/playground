@@ -10,19 +10,10 @@ int main() noexcept {
         std::cout << std::format("{},",item);
     std::cout << "\b}" << std::endl;
 
-    std::array<int,12> res;
-    // std::partial_sort_copy is mostly the same of std::partial_sort
-    // partial_sort_copy copies sorted elems to some other (or the same?) location
-    std::partial_sort_copy(std::begin(arr),std::end(arr),std::begin(res),std::end(res));
-    // skip
+    std::ranges::partial_sort(arr,std::begin(arr) + arr.size() / 2);
 
     std::cout << "after:\t{";
     for(const auto& item : arr)
-        std::cout << std::format("{},",item);
-    std::cout << "\b}" << std::endl;
-
-    std::cout << "res:\t{";
-    for(const auto& item : res)
         std::cout << std::format("{},",item);
     std::cout << "\b}" << std::endl;
     
