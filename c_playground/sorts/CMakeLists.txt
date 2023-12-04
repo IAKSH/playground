@@ -20,6 +20,7 @@ add_executable(c_quick_sort quick_sort.c)
 add_executable(c_heap_sort heap_sort.c)
 add_executable(c_recursion_merge_sort recursion_merge_sort.c)
 add_executable(c_merge_sort merge_sort.c)
+add_executable(c_radix_sort radix_sort.c)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
