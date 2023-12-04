@@ -3,7 +3,7 @@
 #include <string.h>
 
 void radix_sort(int* arr, size_t len) {
-    if (arr == NULL || len <= 0)
+    if (len <= 0)
         return;
     // find the minimum value in the array
     int min_val = arr[0];
