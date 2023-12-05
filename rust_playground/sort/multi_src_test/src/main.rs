@@ -39,6 +39,14 @@ fn feed_duck() {
     }
 }
 
+pub fn reverse(text: &str) -> String {
+    text.chars().rev().collect()
+}
+
+pub fn println_reverse(text: &str) {
+    println!("{}",text.chars().rev().collect::<String>());
+}
+
 fn main() {
     println!("Hello, world!");
     my_funcs::say_hello_en();
@@ -51,4 +59,8 @@ fn main() {
     
     say();
     multi_src_lib_test::say_nihaoma::say();
+
+    println!("{}",reverse("我在想如果用中文会不会炸掉"));
+    println_reverse("然而并没有");
+    println!("{}","甚至可以直接在这里反向".chars().rev().collect::<String>());
 }
