@@ -23,7 +23,6 @@ void max_heapify(int arr[], int start, int end) {
 }
 
 void heap_sort(int* arr,size_t len) {
-    
     int i;
     for (i = len / 2 - 1; i >= 0; i--)                                      // 易得最后一个非叶节点的下标为 n/2-1，n为表长
         max_heapify(arr, i, len - 1);                                       // 对每个非叶节点进行一次下滤，建立大根堆
