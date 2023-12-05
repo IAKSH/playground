@@ -1,5 +1,4 @@
 import sys
-
 def inverse_num(array):
     n = len(array)
     if n <= 1:
