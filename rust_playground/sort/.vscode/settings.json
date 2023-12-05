@@ -1,0 +1,6 @@
+{
+    "rust-analyzer.linkedProjects": [
+        "./multi_src_test/Cargo.toml",
+        "./std_sort/Cargo.toml"
+    ]
+}
