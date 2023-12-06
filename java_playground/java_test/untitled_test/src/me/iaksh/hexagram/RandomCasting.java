@@ -1,4 +1,4 @@
-package me.iaksh.test;
+package me.iaksh.hexagram;
 
 public abstract class RandomCasting implements Casting {
     protected RangedRandom random;

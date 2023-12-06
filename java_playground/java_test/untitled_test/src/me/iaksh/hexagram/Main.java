@@ -1,4 +1,4 @@
-package me.iaksh.test;
+package me.iaksh.hexagram;
 
 import java.util.ArrayList;
 

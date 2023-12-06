@@ -1,4 +1,4 @@
-package me.iaksh.test;
+package me.iaksh.hexagram;
 
 public interface Casting {
     int[] yao_values = new int[6];

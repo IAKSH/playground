@@ -1,4 +1,4 @@
-package me.iaksh.test;
+package me.iaksh.hexagram;
 
 public class Coins extends RandomCasting {
     public Coins() {
