@@ -37,29 +37,26 @@ public class Stalks {
         return Hexagram.fromCode(code);
     }
 
-    private int computeProcess() {
-        int left = getRandom();
-        int left_final = left % 4;
-        int right_final = (48 - left) % 4;
-        int result = (left_final != 0 ? left_final : 4) + (right_final != 0 ? right_final : 4) + 1;
-        return result;
+    private int computeProcess(int stalks) {
+        int left = getRandom(0,stalks);
+        int leftFinal = left % 4;
+        int rightFinal = (stalks - 1 - left) % 4;
+        return (leftFinal != 0 ? leftFinal : 4) + (rightFinal != 0 ? rightFinal : 4) + 1;
     }
 
     private int computeFinal() {
-        int res = 49;
+        int stalks = 50;
         for(int i = 0;i < 3;i++) {
-            int j = computeProcess();
-            System.out.println(j);
-            res -= j;
+            stalks -= computeProcess(--stalks);
         }
-        return res / 4;
+        return stalks / 4;
     }
 
-    public int getRandom() {
+    public int getRandom(int n,int m) {
         double mean = 24.5;
         double stdDev = 14.5;
         int value = (int) Math.round(random.nextGaussian() * stdDev + mean);
-        while (value < 0 || value > 49) {
+        while (value < n || value > m) {
             value = (int) Math.round(random.nextGaussian() * stdDev + mean);
         }
         return value;
