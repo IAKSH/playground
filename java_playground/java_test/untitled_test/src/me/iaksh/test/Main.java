@@ -1,9 +1,18 @@
 package me.iaksh.test;
 
+import java.util.ArrayList;
+
 public class Main {
     public static void main(String[] args) {
-        Stalks stalks = new Stalks();
-        System.out.println(stalks.getHostHexagram().getName());
-        System.out.println(stalks.getTransHexagram().getName());
+        RangedRandom random = new RangedRandom();
+        ArrayList<Casting> castings = new ArrayList<>();
+        castings.add(new Stalks(random));
+        castings.add(new Coins(random));
+
+        for(Casting casting : castings) {
+            casting.exec();
+            System.out.println(casting.getHostHexagram().getName());
+            System.out.println(casting.getTransHexagram().getName());
+        }
     }
 }
