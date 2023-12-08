@@ -1,0 +1,7 @@
+out/
+build/
+target/
+.vs/
+.vscode/
+Debug/
+Release/
