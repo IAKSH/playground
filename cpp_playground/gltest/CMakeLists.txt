@@ -11,5 +11,5 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_compile_options(-fmodules-ts)
 
 add_subdirectory(vendor)
-add_subdirectory(gl)
+add_subdirectory(nioes)
 add_subdirectory(tests)

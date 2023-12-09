@@ -9,13 +9,13 @@ namespace nioes {
 	class Instance {
 	private:
 		GLFWwindow* window;
-		void create_glfw_context(std::string_view title,int w,int h) noexcept;
+		void create_glfw_context(std::string_view title,int w,int h) noexcept(false);
 
 	public:
-		Instance(std::string_view title,int w,int h) noexcept;
+		Instance(std::string_view title,int w,int h) noexcept(false);
 		Instance(Instance&) = delete;
 		~Instance() noexcept;
 		void flush() noexcept;
-		static void update_all() noexcept;
+		static void update_all() noexcept(false);
 	};
 }

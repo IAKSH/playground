@@ -1,9 +1,9 @@
-#include "gl/instance.hpp"
+#include "nioes/instance.hpp"
 
 static size_t instance_count{ 0 };
 static bool glfw_loaded{ false };
 
-nioes::Instance::Instance(std::string_view title,int w,int h) noexcept {
+nioes::Instance::Instance(std::string_view title,int w,int h) noexcept(false) {
     instance_count++;
     create_glfw_context(title,w,h);
 }
@@ -15,7 +15,7 @@ nioes::Instance::~Instance() noexcept {
     }
 }
 
-void nioes::Instance::create_glfw_context(std::string_view title,int w,int h) noexcept {
+void nioes::Instance::create_glfw_context(std::string_view title,int w,int h) noexcept(false) {
     // 如果没有任何一个instance存在，则GLFW以及OpenGL环境不存在
     // 尝试创建环境并增加instance计数
     bool need_create_context{ false };
@@ -42,8 +42,7 @@ void nioes::Instance::create_glfw_context(std::string_view title,int w,int h) no
     if(need_create_context) {
         int version = gladLoadGLES2(glfwGetProcAddress);
         if(!version) {
-            spdlog::critical("can't find GLES2 API address");
-            std::terminate();
+            throw std::runtime_error("can't find GLES2 API address");
         }
 
         spdlog::info("Loaded OpenGL ES {}.{}\nGL_VENDOR\t{}\nGL_RENDERER\t{}\nGL_VERSION\t{}",
@@ -64,10 +63,9 @@ void nioes::Instance::flush() noexcept {
     glfwSwapBuffers(window);
 }
 
-void nioes::Instance::update_all() noexcept {
+void nioes::Instance::update_all() noexcept(false) {
     if(!instance_count) {
-        spdlog::critical("no gl instance ot update");
-        std::terminate();
+        throw std::runtime_error("no gl instance ot update");
     }
     glfwPollEvents();
 }
