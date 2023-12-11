@@ -33,7 +33,7 @@ void nioes::Image::load_from_file(std::string_view path,bool flip) noexcept(fals
         throw std::runtime_error(std::format("failed to load image from {}",path));
 }
 
-void nioes::Image::load_from_mem(unsigned char* source,int len,bool flip) noexcept {
+void nioes::Image::load_from_mem(unsigned char* source,int len,bool flip) noexcept(false) {
     stbi_set_flip_vertically_on_load(flip);
     data = stbi_load_from_memory(source,len,&width,&height,&channel_num,0);
     if(!data)
@@ -66,7 +66,7 @@ int nioes::Image::get_channel_num() const noexcept {
     return channel_num;
 }
 
-nioes::Texture::Texture(const Image& image,GLenum inner_format,bool rtti = true) noexcept(false)
+nioes::Texture::Texture(const Image& image,GLenum inner_format,bool rtti) noexcept(false)
     : width(image.get_width()),height(image.get_height()),inner_format(inner_format),rtti(rtti) {
     create_texture(image);
 }

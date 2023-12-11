@@ -17,7 +17,7 @@ namespace nioes {
         int height;
         int channel_num;
         void load_from_file(std::string_view path,bool flip) noexcept(false);
-        void load_from_mem(unsigned char* source,int len,bool flip) noexcept;
+        void load_from_mem(unsigned char* source,int len,bool flip) noexcept(false);
         void copy_from(unsigned char* source) noexcept;
         void free_data() noexcept;
 
