@@ -1,9 +1,7 @@
 package me.iaksh.hexagram;
 
 import java.io.PrintWriter;
-import java.util.LinkedList;
-import java.util.Scanner;
-import java.util.Vector;
+import java.util.*;
 
 interface CanSmile{
     void smile();
@@ -96,6 +94,7 @@ class Son extends Base {
 
 public class Main {
     public static void main(String[] args) {
+        testSizeOrLength();
         testSomethingIDK();
         testAutoDePackage();
         testInstanceof();
@@ -106,6 +105,22 @@ public class Main {
         testDefaultString();
         testStringPlusInt();
         testCharFromHexAndBin();
+    }
+
+    private static void testSizeOrLength() {
+        // Collection.size()
+        Collection list = new ArrayList<Integer>();
+        list.add(114);
+        list.add(514);
+        System.out.println(list.size());
+
+        // T[N].length
+        // 有点胖指针的意思？
+        int[] arr = new int[10];
+        System.out.println(arr.length);
+
+        // String.length();
+        System.out.println("wdnmd".length());
     }
 
     private static void testSomethingIDK() {
