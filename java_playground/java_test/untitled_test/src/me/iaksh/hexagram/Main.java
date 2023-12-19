@@ -1,8 +1,6 @@
 package me.iaksh.hexagram;
 
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.Reader;
 import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.Vector;
@@ -98,6 +96,19 @@ class Son extends Base {
 
 public class Main {
     public static void main(String[] args) {
+        testSomethingIDK();
+        testAutoDePackage();
+        testInstanceof();
+        testOldCollections();
+        testThread();
+        whatIsPrintWriter();
+        testConstructOrder();
+        testDefaultString();
+        testStringPlusInt();
+        testCharFromHexAndBin();
+    }
+
+    private static void testSomethingIDK() {
         final int[] arr = {1,2,3,4};
         final int[] arr2 = new int[114];
         System.out.println(arr.length);
@@ -115,26 +126,66 @@ public class Main {
                 .replace('你','我')
                 .replace('吗','哦'));
         p.cnm();
+    }
 
+    private static void testAutoDePackage() {
         final Double d = 114.0;
-        final Integer i = 2;
-        System.out.println(Math.pow(d,i));
+        final Integer _i = 2;
+        System.out.println(Math.pow(d,_i));
+    }
 
-        //System.out.println(p instanceof AbstractPerson);
+    private static void testInstanceof() {
+        System.out.println(new ParticularPerson("idk") instanceof AbstractPerson);
+    }
+
+    private static void testOldCollections() {
         LinkedList llist = new LinkedList<Integer>();
         Vector v = new Vector<Integer>();
+        System.out.println(v.size());
+        System.out.println(llist.size());
+    }
+
+    private static void testThread() {
         Thread t = new Thread(new ParticularPerson("the person on a thread"));
         t.setPriority(9);
-
-        /*
         synchronized ("") {
             t.start();
         }
-         */
+    }
 
+    private static void whatIsPrintWriter() {
         PrintWriter writer = new PrintWriter(System.out);
         writer.println("caonima");
+    }
 
+    private static void testConstructOrder() {
         new Son();
+    }
+
+    private static void testDefaultString() {
+        System.out.println("begin");
+        System.out.println(new String());
+        System.out.println("end");
+    }
+
+    private static void testStringPlusInt() {
+        System.out.println("\"1+2=\" + 3 = " + ("1+2=" + 3));
+    }
+
+    private static void findRamdomEqualsToZero() {
+        while(true) {
+            double val = Math.random();
+            System.out.println(val);
+            if(val == 0) {
+                break;
+            }
+        }
+    }
+
+    private static void testCharFromHexAndBin() {
+        char hex_c = '\uabcd';
+        char bin_c = 0b1010101111001101;
+        System.out.println(hex_c);
+        System.out.println(bin_c);
     }
 }
