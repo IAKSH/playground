@@ -8,6 +8,7 @@ add_executable(c_std_ceil_floor std_ceil_floor.c)
 add_executable(c_linkedlist_remove_range linkedlist_remove_range.c)
 add_executable(c_std_strlen std_strlen.c)
 add_executable(c_strange_none_huffman strange_none_huffman.c)
+add_executable(c_implicit_float_2_int implicit_float_2_int.c)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

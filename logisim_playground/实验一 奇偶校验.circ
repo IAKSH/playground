@@ -93,83 +93,21 @@
       <a name="appearance" val="classic"/>
       <a name="labelfont" val="Dialog plain 12"/>
     </comp>
-    <comp lib="0" loc="(610,290)" name="Pin">
+    <comp lib="0" loc="(630,420)" name="Pin">
       <a name="appearance" val="classic"/>
       <a name="facing" val="west"/>
       <a name="labelfont" val="Dialog plain 12"/>
       <a name="output" val="true"/>
       <a name="tristate" val="true"/>
     </comp>
-    <comp lib="1" loc="(270,220)" name="NOT Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
-      <a name="size" val="20"/>
-    </comp>
-    <comp lib="1" loc="(270,290)" name="NOT Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
-      <a name="size" val="20"/>
-    </comp>
-    <comp lib="1" loc="(270,350)" name="NOT Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
-      <a name="size" val="20"/>
-    </comp>
-    <comp lib="1" loc="(270,410)" name="NOT Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
-      <a name="size" val="20"/>
-    </comp>
-    <comp lib="1" loc="(270,440)" name="NOT Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
-      <a name="size" val="20"/>
-    </comp>
-    <comp lib="1" loc="(270,450)" name="NOT Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
-      <a name="size" val="20"/>
-    </comp>
-    <comp lib="1" loc="(270,460)" name="NOT Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
-      <a name="size" val="20"/>
-    </comp>
-    <comp lib="1" loc="(270,470)" name="NOT Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
-      <a name="size" val="20"/>
-    </comp>
-    <comp lib="1" loc="(270,500)" name="NOT Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
-      <a name="size" val="20"/>
-    </comp>
-    <comp lib="1" loc="(270,510)" name="NOT Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
-      <a name="size" val="20"/>
-    </comp>
-    <comp lib="1" loc="(270,520)" name="NOT Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
-      <a name="size" val="20"/>
-    </comp>
-    <comp lib="1" loc="(270,540)" name="NOT Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
-      <a name="size" val="20"/>
-    </comp>
-    <comp lib="1" loc="(270,560)" name="NOT Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
-      <a name="size" val="20"/>
-    </comp>
-    <comp lib="1" loc="(270,570)" name="NOT Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
-      <a name="size" val="20"/>
-    </comp>
-    <comp lib="1" loc="(270,590)" name="NOT Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
-      <a name="size" val="20"/>
-    </comp>
-    <comp lib="1" loc="(270,600)" name="NOT Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
-      <a name="size" val="20"/>
-    </comp>
     <comp lib="1" loc="(310,230)" name="AND Gate">
       <a name="labelfont" val="Dialog plain 12"/>
+      <a name="negate0" val="true"/>
       <a name="size" val="30"/>
     </comp>
     <comp lib="1" loc="(310,280)" name="AND Gate">
       <a name="labelfont" val="Dialog plain 12"/>
+      <a name="negate1" val="true"/>
       <a name="size" val="30"/>
     </comp>
     <comp lib="1" loc="(310,330)" name="AND Gate">
@@ -182,18 +120,24 @@
     </comp>
     <comp lib="1" loc="(310,430)" name="AND Gate">
       <a name="labelfont" val="Dialog plain 12"/>
+      <a name="negate1" val="true"/>
       <a name="size" val="30"/>
     </comp>
     <comp lib="1" loc="(310,480)" name="AND Gate">
       <a name="labelfont" val="Dialog plain 12"/>
+      <a name="negate0" val="true"/>
       <a name="size" val="30"/>
     </comp>
     <comp lib="1" loc="(310,530)" name="AND Gate">
       <a name="labelfont" val="Dialog plain 12"/>
+      <a name="negate0" val="true"/>
+      <a name="negate1" val="true"/>
       <a name="size" val="30"/>
     </comp>
     <comp lib="1" loc="(310,580)" name="AND Gate">
       <a name="labelfont" val="Dialog plain 12"/>
+      <a name="negate0" val="true"/>
+      <a name="negate1" val="true"/>
       <a name="size" val="30"/>
     </comp>
     <comp lib="1" loc="(350,240)" name="AND Gate">
@@ -206,6 +150,7 @@
     </comp>
     <comp lib="1" loc="(350,340)" name="AND Gate">
       <a name="labelfont" val="Dialog plain 12"/>
+      <a name="negate1" val="true"/>
       <a name="size" val="30"/>
     </comp>
     <comp lib="1" loc="(350,390)" name="AND Gate">
@@ -214,10 +159,12 @@
     </comp>
     <comp lib="1" loc="(350,440)" name="AND Gate">
       <a name="labelfont" val="Dialog plain 12"/>
+      <a name="negate1" val="true"/>
       <a name="size" val="30"/>
     </comp>
     <comp lib="1" loc="(350,490)" name="AND Gate">
       <a name="labelfont" val="Dialog plain 12"/>
+      <a name="negate1" val="true"/>
       <a name="size" val="30"/>
     </comp>
     <comp lib="1" loc="(350,540)" name="AND Gate">
@@ -226,71 +173,36 @@
     </comp>
     <comp lib="1" loc="(350,590)" name="AND Gate">
       <a name="labelfont" val="Dialog plain 12"/>
+      <a name="negate1" val="true"/>
       <a name="size" val="30"/>
     </comp>
-    <comp lib="1" loc="(390,250)" name="AND Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
+    <comp lib="1" loc="(400,250)" name="NAND Gate">
       <a name="size" val="30"/>
     </comp>
-    <comp lib="1" loc="(390,300)" name="AND Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
+    <comp lib="1" loc="(400,300)" name="NAND Gate">
       <a name="size" val="30"/>
     </comp>
-    <comp lib="1" loc="(390,350)" name="AND Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
+    <comp lib="1" loc="(400,350)" name="NAND Gate">
       <a name="size" val="30"/>
     </comp>
-    <comp lib="1" loc="(390,400)" name="AND Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
+    <comp lib="1" loc="(400,400)" name="NAND Gate">
+      <a name="negate1" val="true"/>
       <a name="size" val="30"/>
     </comp>
-    <comp lib="1" loc="(390,450)" name="AND Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
+    <comp lib="1" loc="(400,450)" name="NAND Gate">
+      <a name="negate1" val="true"/>
       <a name="size" val="30"/>
     </comp>
-    <comp lib="1" loc="(390,500)" name="AND Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
+    <comp lib="1" loc="(400,500)" name="NAND Gate">
+      <a name="negate1" val="true"/>
       <a name="size" val="30"/>
     </comp>
-    <comp lib="1" loc="(390,550)" name="AND Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
+    <comp lib="1" loc="(400,550)" name="NAND Gate">
+      <a name="negate1" val="true"/>
       <a name="size" val="30"/>
     </comp>
-    <comp lib="1" loc="(390,600)" name="AND Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
+    <comp lib="1" loc="(400,600)" name="NAND Gate">
       <a name="size" val="30"/>
-    </comp>
-    <comp lib="1" loc="(420,250)" name="NOT Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
-      <a name="size" val="20"/>
-    </comp>
-    <comp lib="1" loc="(420,300)" name="NOT Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
-      <a name="size" val="20"/>
-    </comp>
-    <comp lib="1" loc="(420,350)" name="NOT Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
-      <a name="size" val="20"/>
-    </comp>
-    <comp lib="1" loc="(420,400)" name="NOT Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
-      <a name="size" val="20"/>
-    </comp>
-    <comp lib="1" loc="(420,450)" name="NOT Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
-      <a name="size" val="20"/>
-    </comp>
-    <comp lib="1" loc="(420,500)" name="NOT Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
-      <a name="size" val="20"/>
-    </comp>
-    <comp lib="1" loc="(420,550)" name="NOT Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
-      <a name="size" val="20"/>
-    </comp>
-    <comp lib="1" loc="(420,600)" name="NOT Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
-      <a name="size" val="20"/>
     </comp>
     <comp lib="1" loc="(480,320)" name="AND Gate">
       <a name="labelfont" val="Dialog plain 12"/>
@@ -316,13 +228,8 @@
       <a name="labelfont" val="Dialog plain 12"/>
       <a name="size" val="30"/>
     </comp>
-    <comp lib="1" loc="(600,420)" name="AND Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
+    <comp lib="1" loc="(620,420)" name="NAND Gate">
       <a name="size" val="30"/>
-    </comp>
-    <comp lib="1" loc="(620,420)" name="NOT Gate">
-      <a name="labelfont" val="Dialog plain 12"/>
-      <a name="size" val="20"/>
     </comp>
     <comp lib="7" loc="(395,115)" name="Text">
       <a name="font" val="Dialog plain 12"/>
@@ -347,46 +254,46 @@
     <wire from="(200,360)" to="(200,410)"/>
     <wire from="(200,360)" to="(360,360)"/>
     <wire from="(200,410)" to="(200,460)"/>
-    <wire from="(200,410)" to="(250,410)"/>
+    <wire from="(200,410)" to="(350,410)"/>
     <wire from="(200,460)" to="(200,510)"/>
-    <wire from="(200,460)" to="(250,460)"/>
+    <wire from="(200,460)" to="(350,460)"/>
     <wire from="(200,510)" to="(200,560)"/>
-    <wire from="(200,510)" to="(250,510)"/>
+    <wire from="(200,510)" to="(350,510)"/>
     <wire from="(200,560)" to="(200,610)"/>
-    <wire from="(200,560)" to="(250,560)"/>
+    <wire from="(200,560)" to="(350,560)"/>
     <wire from="(200,610)" to="(360,610)"/>
     <wire from="(210,250)" to="(210,300)"/>
     <wire from="(210,250)" to="(320,250)"/>
     <wire from="(210,300)" to="(210,350)"/>
     <wire from="(210,300)" to="(320,300)"/>
     <wire from="(210,350)" to="(210,400)"/>
-    <wire from="(210,350)" to="(250,350)"/>
+    <wire from="(210,350)" to="(310,350)"/>
     <wire from="(210,400)" to="(210,450)"/>
     <wire from="(210,400)" to="(320,400)"/>
     <wire from="(210,450)" to="(210,500)"/>
-    <wire from="(210,450)" to="(250,450)"/>
+    <wire from="(210,450)" to="(310,450)"/>
     <wire from="(210,500)" to="(210,550)"/>
-    <wire from="(210,500)" to="(250,500)"/>
+    <wire from="(210,500)" to="(310,500)"/>
     <wire from="(210,550)" to="(210,600)"/>
     <wire from="(210,550)" to="(320,550)"/>
-    <wire from="(210,600)" to="(250,600)"/>
+    <wire from="(210,600)" to="(310,600)"/>
     <wire from="(220,240)" to="(220,290)"/>
     <wire from="(220,240)" to="(280,240)"/>
     <wire from="(220,290)" to="(220,340)"/>
-    <wire from="(220,290)" to="(250,290)"/>
+    <wire from="(220,290)" to="(270,290)"/>
     <wire from="(220,340)" to="(220,390)"/>
     <wire from="(220,340)" to="(280,340)"/>
     <wire from="(220,390)" to="(220,440)"/>
     <wire from="(220,390)" to="(280,390)"/>
     <wire from="(220,440)" to="(220,490)"/>
-    <wire from="(220,440)" to="(250,440)"/>
+    <wire from="(220,440)" to="(270,440)"/>
     <wire from="(220,490)" to="(220,540)"/>
     <wire from="(220,490)" to="(280,490)"/>
     <wire from="(220,540)" to="(220,590)"/>
-    <wire from="(220,540)" to="(250,540)"/>
-    <wire from="(220,590)" to="(250,590)"/>
+    <wire from="(220,540)" to="(270,540)"/>
+    <wire from="(220,590)" to="(270,590)"/>
     <wire from="(230,220)" to="(230,270)"/>
-    <wire from="(230,220)" to="(250,220)"/>
+    <wire from="(230,220)" to="(270,220)"/>
     <wire from="(230,270)" to="(230,320)"/>
     <wire from="(230,270)" to="(280,270)"/>
     <wire from="(230,320)" to="(230,370)"/>
@@ -396,26 +303,10 @@
     <wire from="(230,420)" to="(230,470)"/>
     <wire from="(230,420)" to="(280,420)"/>
     <wire from="(230,470)" to="(230,520)"/>
-    <wire from="(230,470)" to="(250,470)"/>
+    <wire from="(230,470)" to="(270,470)"/>
     <wire from="(230,520)" to="(230,570)"/>
-    <wire from="(230,520)" to="(250,520)"/>
-    <wire from="(230,570)" to="(250,570)"/>
-    <wire from="(270,220)" to="(280,220)"/>
-    <wire from="(270,290)" to="(280,290)"/>
-    <wire from="(270,350)" to="(320,350)"/>
-    <wire from="(270,410)" to="(360,410)"/>
-    <wire from="(270,440)" to="(280,440)"/>
-    <wire from="(270,450)" to="(320,450)"/>
-    <wire from="(270,460)" to="(360,460)"/>
-    <wire from="(270,470)" to="(280,470)"/>
-    <wire from="(270,500)" to="(320,500)"/>
-    <wire from="(270,510)" to="(360,510)"/>
-    <wire from="(270,520)" to="(280,520)"/>
-    <wire from="(270,540)" to="(280,540)"/>
-    <wire from="(270,560)" to="(360,560)"/>
-    <wire from="(270,570)" to="(280,570)"/>
-    <wire from="(270,590)" to="(280,590)"/>
-    <wire from="(270,600)" to="(320,600)"/>
+    <wire from="(230,520)" to="(270,520)"/>
+    <wire from="(230,570)" to="(270,570)"/>
     <wire from="(310,230)" to="(320,230)"/>
     <wire from="(310,280)" to="(320,280)"/>
     <wire from="(310,330)" to="(320,330)"/>
@@ -432,22 +323,14 @@
     <wire from="(350,490)" to="(360,490)"/>
     <wire from="(350,540)" to="(360,540)"/>
     <wire from="(350,590)" to="(360,590)"/>
-    <wire from="(390,250)" to="(400,250)"/>
-    <wire from="(390,300)" to="(400,300)"/>
-    <wire from="(390,350)" to="(400,350)"/>
-    <wire from="(390,400)" to="(400,400)"/>
-    <wire from="(390,450)" to="(400,450)"/>
-    <wire from="(390,500)" to="(400,500)"/>
-    <wire from="(390,550)" to="(400,550)"/>
-    <wire from="(390,600)" to="(400,600)"/>
-    <wire from="(420,250)" to="(440,250)"/>
-    <wire from="(420,300)" to="(430,300)"/>
-    <wire from="(420,350)" to="(430,350)"/>
-    <wire from="(420,400)" to="(440,400)"/>
-    <wire from="(420,450)" to="(430,450)"/>
-    <wire from="(420,500)" to="(450,500)"/>
-    <wire from="(420,550)" to="(480,550)"/>
-    <wire from="(420,600)" to="(520,600)"/>
+    <wire from="(400,250)" to="(440,250)"/>
+    <wire from="(400,300)" to="(430,300)"/>
+    <wire from="(400,350)" to="(430,350)"/>
+    <wire from="(400,400)" to="(440,400)"/>
+    <wire from="(400,450)" to="(430,450)"/>
+    <wire from="(400,500)" to="(450,500)"/>
+    <wire from="(400,550)" to="(480,550)"/>
+    <wire from="(400,600)" to="(520,600)"/>
     <wire from="(430,300)" to="(430,330)"/>
     <wire from="(430,330)" to="(450,330)"/>
     <wire from="(430,340)" to="(430,350)"/>
@@ -469,10 +352,9 @@
     <wire from="(560,340)" to="(570,340)"/>
     <wire from="(560,510)" to="(570,510)"/>
     <wire from="(570,340)" to="(570,410)"/>
+    <wire from="(570,410)" to="(580,410)"/>
     <wire from="(570,430)" to="(570,510)"/>
-    <wire from="(610,290)" to="(610,390)"/>
-    <wire from="(610,390)" to="(630,390)"/>
+    <wire from="(570,430)" to="(580,430)"/>
     <wire from="(620,420)" to="(630,420)"/>
-    <wire from="(630,390)" to="(630,420)"/>
   </circuit>
 </project>
