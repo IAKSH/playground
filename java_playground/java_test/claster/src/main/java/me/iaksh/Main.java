@@ -6,7 +6,7 @@ public class Main {
     private SquareWave squareWave0;
     private SquareWave squareWave1;
     private TriangleWave triangleWave;
-    private NoiseWave noiseWave;
+    //private NoiseWave noiseWave;
 
     void initMixer() {
         mixer = new Mixer();
@@ -16,7 +16,7 @@ public class Main {
         squareWave0 = new SquareWave(300);
         squareWave1 = new SquareWave(300);
         triangleWave = new TriangleWave(300);
-        noiseWave = new NoiseWave(100);
+        //noiseWave = new NoiseWave(100);
     }
 
     void initChannels() {
@@ -25,7 +25,7 @@ public class Main {
         channels[0] = new Channel() {
             @Override
             public void run() {
-                claster.setGain(0.3f);
+                claster.setGain(0.1f);
                 try {
                     while(true) {
                         int[] squareWaveFreqs = {523,587,659,523,659,784};
@@ -46,7 +46,7 @@ public class Main {
         channels[1] = new Channel() {
             @Override
             public void run() {
-                claster.setGain(0.5f);
+                claster.setGain(0.2f);
                 try {
                     while(true) {
                         int[] squareWaveFreqs = {1,659,1,659,1,523};
@@ -68,7 +68,7 @@ public class Main {
         channels[2] = new Channel() {
             @Override
             public void run() {
-                claster.setGain(0.7f);
+                claster.setGain(0.3f);
                 try {
                     while(true) {
                         int[] triangleWaveFreqs = {523,587,659,523,659,784};
@@ -90,6 +90,7 @@ public class Main {
         channels[3] = new Channel() {
             @Override
             public void run() {
+                /*
                 claster.setGain(0.1f);
                 try {
                     while(true) {
@@ -107,6 +108,7 @@ public class Main {
                 catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
+                 */
             }
         };
     }

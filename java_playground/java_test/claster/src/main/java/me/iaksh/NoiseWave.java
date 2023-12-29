@@ -17,6 +17,8 @@ public class NoiseWave extends Wave{
 
     @Override
     public void generate(int sampleRate) {
+        // TODO: 严重的内存问题
+        // 会分配大量内存且无法gc
         final int duration = 1;
 
         reallocAlBuffer();
