@@ -1,56 +1,139 @@
 package me.iaksh;
 
-import java.nio.*;
-
 public class Main {
+    private Mixer mixer;
+    private Channel[] channels;
+    private SquareWave squareWave0;
+    private SquareWave squareWave1;
+    private TriangleWave triangleWave;
+    private NoiseWave noiseWave;
+
+    void initMixer() {
+        mixer = new Mixer();
+    }
+
+    void initWaves() {
+        squareWave0 = new SquareWave(100);
+        squareWave1 = new SquareWave(100);
+        triangleWave = new TriangleWave(100);
+        noiseWave = new NoiseWave(100);
+    }
+
+    void initChannels() {
+        channels = new Channel[4];
+
+        channels[0] = new Channel() {
+            @Override
+            public void run() {
+                try {
+                    while(true) {
+                        int[] squareWaveFreqs = {523,587,659,523,659,784};
+                        for(int i = 0;i < squareWaveFreqs.length;i++) {
+                            squareWave0.setFreq(squareWaveFreqs[i]);
+                            squareWave0.generate(44100);
+                            claster.bindWave(squareWave0);
+                            claster.start();
+                            Thread.sleep(squareWave0.getDurationMs());
+                        }
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+
+        channels[1] = new Channel() {
+            @Override
+            public void run() {
+                try {
+                    while(true) {
+                        int[] squareWaveFreqs = {1,659,1,659,1,523};
+                        for(int i = 0;i < squareWaveFreqs.length;i++) {
+                            squareWave1.setFreq(squareWaveFreqs[i]);
+                            squareWave1.generate(44100);
+                            claster.bindWave(squareWave1);
+                            claster.start();
+                            Thread.sleep(squareWave1.getDurationMs());
+                        }
+                    }
+                }
+                catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+
+        channels[2] = new Channel() {
+            @Override
+            public void run() {
+                try {
+                    while(true) {
+                        int[] triangleWaveFreqs = {523,587,659,523,659,784};
+                        for(int i = 0;i < triangleWaveFreqs.length;i++) {
+                            triangleWave.setFreq(triangleWaveFreqs[i]);
+                            triangleWave.generate(44100);
+                            claster.bindWave(triangleWave);
+                            claster.start();
+                            Thread.sleep(triangleWave.getDurationMs());
+                        }
+                    }
+                }
+                catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+
+        channels[3] = new Channel() {
+            @Override
+            public void run() {
+                try {
+                    while(true) {
+                        int[] noiseWaveFreq = {1,659,1,659,1,523};
+                        for(int i = 0;i < noiseWaveFreq.length;i++) {
+                            noiseWave.setFreq(noiseWaveFreq[i]);
+                            noiseWave.generate(44100);
+                            claster.bindWave(noiseWave);
+                            claster.start();
+                            Thread.sleep(10);
+                            claster.stop();
+                            Thread.sleep(100);
+                        }
+                    }
+                }
+                catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+    }
+
+    void startAllChannel() {
+        for(Channel channel : channels)
+            new Thread(channel).start();
+    }
+
+    void destroy() {
+        for(Channel channel : channels)
+            channel.destoryClaster();
+        mixer.destoryOpenAL();
+    }
+
+    void start() throws InterruptedException {
+        initMixer();
+        initWaves();
+        initChannels();
+        startAllChannel();
+        while(true)
+            Thread.sleep(1);
+    }
+
     public static void main(String[] args) {
         try {
-            Mixer mixer = new Mixer();
-            Claster[] clasters = new Claster[3];
-            for(int i = 0;i < clasters.length;i++)
-                clasters[i] = new Claster();
-
-            SquareWave[] squareWaves = new SquareWave[6];
-            int[] squareWaveFreqs = {523,587,659,523,659,784};
-            for(int i = 0;i < squareWaves.length;i++) {
-                SquareWave wave = new SquareWave(300);
-                wave.setFreq(squareWaveFreqs[i]);
-                wave.generate(44100);
-                squareWaves[i] = wave;
-            }
-
-            TriangleWave[] triangleWaves = new TriangleWave[3];
-            int[] triangleWaveFreqs = {1047,659,523};
-            for(int i = 0;i < triangleWaves.length;i++) {
-                TriangleWave wave = new TriangleWave(300);
-                wave.setFreq(triangleWaveFreqs[i]);
-                wave.generate(44100);
-                triangleWaves[i] = wave;
-            }
-
-            NoiseWave noiseWave = new NoiseWave(300);
-            noiseWave.setFreq(300);
-            noiseWave.generate(44100);
-            clasters[2].bindWave(noiseWave);
-
-            for(int i = 0;i < 6;i++) {
-                clasters[2].start();
-                clasters[0].bindWave(squareWaves[i]);
-                Thread.sleep(10 * i);
-                clasters[2].stop();
-                clasters[0].start();
-                clasters[1].bindWave(triangleWaves[i % 3]);
-                clasters[1].start();
-                Thread.sleep(500);
-            }
-            clasters[0].stop();
-            Thread.sleep(1000);
-            clasters[1].stop();
-
-            for(Claster claster : clasters)
-                claster.destroyAlSource();
-            mixer.destoryOpenAL();
-        } catch (Exception e) {
+            Main m = new Main();
+            m.start();
+            m.destroy();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
