@@ -8,7 +8,7 @@ public class Mixer {
     private long device;
     private long context;
 
-    private Claster claster;
+    private Cluster claster;
     private Channel[] channels;
     private Sheet sheet;
 
@@ -29,7 +29,7 @@ public class Mixer {
     }
 
     private void initClaster() {
-        claster = new Claster(44100);
+        claster = new Cluster(44100);
     }
 
     private void initChannels() {

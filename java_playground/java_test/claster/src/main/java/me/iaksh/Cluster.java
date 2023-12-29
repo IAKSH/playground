@@ -2,11 +2,13 @@ package me.iaksh;
 
 import org.lwjgl.openal.AL11;
 
-public class Claster {
+// 很明显，音色由Cluster决定
+// 想要多种音色，要么是Cluster提供更多API，要么就是提供更多Cluster
+public class Cluster {
 
     private final int sampleRate;
 
-    public Claster(int sampleRate) {
+    public Cluster(int sampleRate) {
         if (sampleRate <= 0)
             throw new IllegalArgumentException();
         this.sampleRate = sampleRate;
@@ -72,10 +74,8 @@ public class Claster {
         int samplesPerCycle = (int) (sampleRate / frequency);
         short[] data = new short[samplesPerCycle];
 
-        if(frequency != 0) {
-            for(int i = 0;i < data.length;i++) {
-                data[i] = (short) (Math.random() * (Short.MAX_VALUE - Short.MIN_VALUE) + Short.MIN_VALUE);
-            }
+        for (int i = 0; i < data.length; i++) {
+            data[i] = (short) (Math.random() * (Short.MAX_VALUE - Short.MIN_VALUE) + Short.MIN_VALUE);
         }
 
         AL11.alBufferData(alBuffer, AL11.AL_FORMAT_MONO16, data, sampleRate);

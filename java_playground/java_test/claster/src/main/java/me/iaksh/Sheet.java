@@ -1,5 +1,8 @@
 package me.iaksh;
 
+import org.w3c.dom.Node;
+
+import java.io.FileReader;
 import java.util.ArrayList;
 
 public class Sheet {
@@ -11,22 +14,33 @@ public class Sheet {
         frames = new ArrayList<>();
     }
 
+    private void loadFromJson(String json) {
+        // TODO
+    }
+
+    private void loadFromFile(String path) {
+        // TODO
+    }
+
     public Sheet(String path) {
         init();
-        // TODO: load from json
+        loadFromFile(path);
     }
 
     // Test only
     public Sheet() {
         init();
         bpm = 400;
-        for(int i = 0;i < 100;i++) {
-            frames.add(new Frame(
-                    new Note(500 + (i % 5) * (i % 3) * 100,0.07f),
-                    new Note(200 + (i % 3) * 30,0.1f),
-                    new Note(500 + (i % 7) * ((i % 2 == 1) ? 10 : -10),0.2f),
-                    new Note((i % 2 == 1) ? 0 : 1,0.1f)
-            ));
+        int[] a = {440, 293, 329, 392, 329, 293, 392, 329, 392, 493};
+        for(int i = 0; i < 10;i++) {
+            for(int j : a) {
+                frames.add(new Frame(
+                        new Note(j,0.05f),
+                        new Note(j * 2,0.05f),
+                        new Note(j / 2,0.05f),
+                        new Note(j % 2 == 1 ? 0 : 1,0.1f)
+                ));
+            }
         }
     }
 
