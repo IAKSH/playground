@@ -42,6 +42,16 @@ public class Claster {
         AL11.alSourcePlay(alSource);
     }
 
+    public void setGain(float gain) {
+        if(gain < 0.0f)
+            throw new IllegalArgumentException();
+        AL11.alSourcef(alSource,AL11.AL_GAIN,gain);
+    }
+
+    public float getGain() {
+        return AL11.alGetSourcef(alSource,AL11.AL_GAIN);
+    }
+
     public void destroyAlSource() {
         AL11.alDeleteSources(alSource);
     }
