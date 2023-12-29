@@ -30,7 +30,7 @@ public class Sheet {
     // Test only
     public Sheet() {
         init();
-        bpm = 400;
+        bpm = 350;
         int[] a = {440, 293, 329, 392, 329, 293, 392, 329, 392, 493};
         for(int i = 0; i < 10;i++) {
             for(int j : a) {
