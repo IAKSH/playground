@@ -7,28 +7,7 @@ public class Claster {
     private ALCapabilities alCapabilities;
     private long device;
     private long context;
-    private long source;
-    private long pcm;
-
-    private void genPCM(int freq) {
-        int sampleRate = 44100;
-        int samplesPerCycle = sampleRate / freq;
-        short[] data = new short[10 * samplesPerCycle];
-        for (int i = 0; i < data.length; i++) {
-            if (i % samplesPerCycle < samplesPerCycle / 2) {
-                data[i] = 0b00000000;
-            }
-            else {
-                data[i] = 0b11111111;
-            }
-        }
-        // this is bad, I need DMA
-        if(pcm != 0) {
-            AL11.alDeleteBuffers((int) pcm);
-            pcm = AL11.alGenBuffers();
-        }
-        AL11.alBufferData((int) pcm, AL11.AL_FORMAT_MONO8, data, sampleRate);
-    }
+    private int source;
 
     private void initOpenAL() {
         String defaultDeviceName = ALC11.alcGetString(0, ALC11.ALC_DEFAULT_DEVICE_SPECIFIER);
@@ -46,21 +25,20 @@ public class Claster {
         }
 
         source = AL11.alGenSources();
-        pcm = AL11.alGenBuffers();
     }
 
     public Claster() {
         initOpenAL();
     }
 
-    public void play(int freq,long ms) throws InterruptedException {
-        genPCM(freq);
-        AL11.alSourcei((int) source,AL11.AL_BUFFER,(int) pcm);
-        AL11.alSourcei((int) source,AL11.AL_LOOPING,1);
-        AL11.alSourcePlay((int) source);
+    public void play(Wave wave) throws InterruptedException {
+        AL11.alSourcei(source,AL11.AL_BUFFER,wave.getAlBuffer());
+        AL11.alSourcei(source,AL11.AL_LOOPING,1);
+        AL11.alSourcef(source,AL11.AL_GAIN,1.0f);
+        AL11.alSourcePlay(source);
 
-        Thread.sleep(ms);
-        AL11.alSourceStop((int) source);
+        Thread.sleep(wave.getDurationMs());
+        AL11.alSourceStop(source);
     }
 
     public void destroy() {
