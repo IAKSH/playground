@@ -1,62 +1,84 @@
 package me.iaksh;
 
-import org.lwjgl.openal.*;
+import org.lwjgl.openal.AL11;
 
 public class Claster {
-    private int alSource;
-    private boolean playing;
 
-    void initAlSource() {
-        alSource = AL11.alGenSources();
-        AL11.alSourcei(alSource,AL11.AL_LOOPING,1);
-        AL11.alSourcef(alSource,AL11.AL_GAIN,1.0f);
-    }
+    private final int sampleRate;
 
-    public Claster() {
-        playing = false;
-        initAlSource();
-    }
-
-    public void bindWave(Wave wave) {
-        stop();
-        AL11.alSourcei(alSource,AL11.AL_BUFFER,wave.getAlBuffer());
-    }
-
-    public void pause() {
-        playing = false;
-        AL11.alSourcePause(alSource);
-    }
-
-    public void resume() {
-        // TODO
-        playing = true;
-    }
-
-    public void stop() {
-        playing = false;
-        AL11.alSourceStop(alSource);
-    }
-
-    public void start() {
-        playing = true;
-        AL11.alSourcePlay(alSource);
-    }
-
-    public void setGain(float gain) {
-        if(gain < 0.0f)
+    public Claster(int sampleRate) {
+        if (sampleRate <= 0)
             throw new IllegalArgumentException();
-        AL11.alSourcef(alSource,AL11.AL_GAIN,gain);
+        this.sampleRate = sampleRate;
     }
 
-    public float getGain() {
-        return AL11.alGetSourcef(alSource,AL11.AL_GAIN);
+    public int genSquare(int frequency) {
+        return genSquare(frequency,0.5f,1.0f);
     }
 
-    public void destroyAlSource() {
-        AL11.alDeleteSources(alSource);
+    public int genSquare(int frequency, double dutyCycle, double phaseShift) {
+        int alBuffer = AL11.alGenBuffers();
+        int samplesPerCycle = (int) (sampleRate / frequency);
+        short[] data = new short[samplesPerCycle];
+
+        int halfSamples = (int) (samplesPerCycle * dutyCycle);
+        int phaseSamples = (int) (samplesPerCycle * phaseShift);
+
+        for (int i = 0; i < samplesPerCycle; i++) {
+            if ((i + phaseSamples) % samplesPerCycle < halfSamples) {
+                data[i] = Short.MAX_VALUE;
+            } else {
+                data[i] = Short.MIN_VALUE;
+            }
+        }
+
+        AL11.alBufferData(alBuffer, AL11.AL_FORMAT_MONO16, data, sampleRate);
+        return alBuffer;
     }
 
-    public boolean isPlaying() {
-        return playing;
+    public int genTriangle(int frequency) {
+        return genTriangle(frequency,1.0f,1.0f);
+    }
+
+    public int genTriangle(int frequency,float amplitude, float phaseShift) {
+        int alBuffer = AL11.alGenBuffers();
+        int samplesPerCycle = (int) (sampleRate / frequency);
+        short[] data = new short[samplesPerCycle];
+
+        float maxAmplitude = Short.MAX_VALUE * amplitude;
+        float phaseIncrement = (2 * (float) Math.PI) / samplesPerCycle;
+        float currentPhase = 0;
+
+        for (int j = 0; j < data.length; j++) {
+            float value = (float) Math.sin(currentPhase);
+            data[j] = (short) (value * maxAmplitude);
+
+            currentPhase += phaseShift * phaseIncrement;
+            if (currentPhase >= 2 * Math.PI) {
+                currentPhase -= 2 * Math.PI;
+            }
+        }
+
+        AL11.alBufferData(alBuffer, AL11.AL_FORMAT_MONO16, data, sampleRate);
+        return alBuffer;
+    }
+
+    public int genWhiteNoise(float frequency) {
+        int alBuffer = AL11.alGenBuffers();
+        if(frequency == 0) {
+            return alBuffer;
+        }
+
+        int samplesPerCycle = (int) (sampleRate / frequency);
+        short[] data = new short[samplesPerCycle];
+
+        if(frequency != 0) {
+            for(int i = 0;i < data.length;i++) {
+                data[i] = (short) (Math.random() * (Short.MAX_VALUE - Short.MIN_VALUE) + Short.MIN_VALUE);
+            }
+        }
+
+        AL11.alBufferData(alBuffer, AL11.AL_FORMAT_MONO16, data, sampleRate);
+        return alBuffer;
     }
 }

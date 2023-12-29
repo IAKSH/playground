@@ -8,9 +8,9 @@ public class Mixer {
     private long device;
     private long context;
 
-    public Mixer() {
-        initOpenAL();
-    }
+    private Claster claster;
+    private Channel[] channels;
+    private Sheet sheet;
 
     private void initOpenAL() {
         String defaultDeviceName = ALC11.alcGetString(0, ALC11.ALC_DEFAULT_DEVICE_SPECIFIER);
@@ -28,8 +28,67 @@ public class Mixer {
         }
     }
 
-    public void destoryOpenAL() {
+    private void initClaster() {
+        claster = new Claster(44100);
+    }
+
+    private void initChannels() {
+        channels = new Channel[4];
+        for(int i = 0;i < channels.length;i++) {
+            channels[i] = new Channel();
+        }
+    }
+
+    private void initSheet() {
+        sheet = new Sheet();
+    }
+
+    private void destroyChannels() {
+        for(Channel channel : channels)
+            channel.destroyAlSource();
+    }
+
+    private void destroyOpenAL() {
         ALC11.alcDestroyContext(context);
         ALC11.alcCloseDevice(device);
+    }
+
+    public Mixer() {
+        initOpenAL();
+        initClaster();
+        initChannels();
+        initSheet();
+    }
+
+    public void play() {
+        try {
+            sheet.rewind();
+            while(!sheet.eof()) {
+                Frame frame = sheet.nextFrame();
+                channels[0].setGain(frame.getSq0().getGain());
+                channels[0].bindBuffer(claster.genSquare(frame.getSq0().getFrequency()));
+                channels[1].setGain(frame.getSq1().getGain());
+                channels[1].bindBuffer(claster.genSquare(frame.getSq1().getFrequency()));
+                channels[2].setGain(frame.getTri().getGain());
+                channels[2].bindBuffer(claster.genTriangle(frame.getTri().getFrequency()));
+                channels[3].setGain(frame.getNoise().getGain());
+                channels[3].bindBuffer(claster.genWhiteNoise(frame.getNoise().getFrequency()));
+
+                for(Channel channel : channels)
+                    channel.play();
+
+                Thread.sleep((long) (60000.0f / sheet.getBpm()));
+
+                for(Channel channel : channels)
+                    channel.stop();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void destroy() {
+        destroyChannels();
+        destroyOpenAL();
     }
 }
