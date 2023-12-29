@@ -8,7 +8,7 @@ public class Mixer {
     private long device;
     private long context;
 
-    private Cluster claster;
+    private Cluster cluster;
     private Channel[] channels;
     private Sheet sheet;
 
@@ -29,7 +29,7 @@ public class Mixer {
     }
 
     private void initClaster() {
-        claster = new Cluster(44100);
+        cluster = new Cluster(44100);
     }
 
     private void initChannels() {
@@ -66,13 +66,13 @@ public class Mixer {
             while(!sheet.eof()) {
                 Frame frame = sheet.nextFrame();
                 channels[0].setGain(frame.getSq0().getGain());
-                channels[0].bindBuffer(claster.genSquare(frame.getSq0().getFrequency()));
+                channels[0].bindBuffer(cluster.genSquare(frame.getSq0().getFrequency()));
                 channels[1].setGain(frame.getSq1().getGain());
-                channels[1].bindBuffer(claster.genSquare(frame.getSq1().getFrequency()));
+                channels[1].bindBuffer(cluster.genSquare(frame.getSq1().getFrequency()));
                 channels[2].setGain(frame.getTri().getGain());
-                channels[2].bindBuffer(claster.genTriangle(frame.getTri().getFrequency()));
+                channels[2].bindBuffer(cluster.genTriangle(frame.getTri().getFrequency()));
                 channels[3].setGain(frame.getNoise().getGain());
-                channels[3].bindBuffer(claster.genWhiteNoise(frame.getNoise().getFrequency()));
+                channels[3].bindBuffer(cluster.genWhiteNoise(frame.getNoise().getFrequency()));
 
                 for(Channel channel : channels)
                     channel.play();

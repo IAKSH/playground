@@ -1,8 +1,5 @@
 package me.iaksh;
 
-import org.w3c.dom.Node;
-
-import java.io.FileReader;
 import java.util.ArrayList;
 
 public class Sheet {
@@ -30,15 +27,16 @@ public class Sheet {
     // Test only
     public Sheet() {
         init();
-        bpm = 350;
-        int[] a = {440, 293, 329, 392, 329, 293, 392, 329, 392, 493};
+        bpm = 240;
+        //int[] a = {440, 293, 329, 392, 329, 293, 392, 329, 392, 493};
+        int[] a = {440, 0, 293, 0, 329, 0, 392, 0, 329, 0, 293, 0, 392, 0, 329, 0, 392, 0, 493, 493};
         for(int i = 0; i < 10;i++) {
             for(int j : a) {
                 frames.add(new Frame(
                         new Note(j,0.05f),
                         new Note(j * 2,0.05f),
                         new Note(j / 2,0.05f),
-                        new Note(j % 2 == 1 ? 0 : 1,0.1f)
+                        new Note(j % 2 == 1 ? 0 : 1,0.01f)
                 ));
             }
         }

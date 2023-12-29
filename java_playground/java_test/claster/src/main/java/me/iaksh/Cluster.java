@@ -20,6 +20,10 @@ public class Cluster {
 
     public int genSquare(int frequency, double dutyCycle, double phaseShift) {
         int alBuffer = AL11.alGenBuffers();
+        if(frequency == 0) {
+            return alBuffer;
+        }
+
         int samplesPerCycle = (int) (sampleRate / frequency);
         short[] data = new short[samplesPerCycle];
 
@@ -44,6 +48,10 @@ public class Cluster {
 
     public int genTriangle(int frequency,float amplitude, float phaseShift) {
         int alBuffer = AL11.alGenBuffers();
+        if(frequency == 0) {
+            return alBuffer;
+        }
+
         int samplesPerCycle = (int) (sampleRate / frequency);
         short[] data = new short[samplesPerCycle];
 
