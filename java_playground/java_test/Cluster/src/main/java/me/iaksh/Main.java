@@ -17,100 +17,86 @@ public class Main {
 
         {
             Section section = new Section(4,4);
-            section.getNotes().add(new Note(0,0,0,0.25f,false));
-            section.getNotes().add(new Note(0,0,0,0.25f,false));
-            section.getNotes().add(new Note(0,0,0,0.125f,false));
-            section.getNotes().add(new Note(3,1,0,0.125f,false));
-            section.getNotes().add(new Note(3,1,0,0.125f,false));
-            section.getNotes().add(new Note(5,1,0,0.125f,false));
-            sections.add(section);
-        }
-        {
-            Section section = new Section(4,4);
-            section.getNotes().add(new Note(6,1,0,0.25f,true));
-            section.getNotes().add(new Note(5,1,0,0.0625f,false));
-            section.getNotes().add(new Note(6,1,0,0.0625f,false));
-            section.getNotes().add(new Note(5,1,0,0.125f,false));
-            section.getNotes().add(new Note(3,1,0,0.125f,false));
-            section.getNotes().add(new Note(2,1,0,0.125f,false));
-            section.getNotes().add(new Note(5,1,0,0.125f,false));
-            sections.add(section);
-        }
-        {
-            Section section = new Section(4,4);
-            section.getNotes().add(new Note(3,1,0,0.25f,true));
-            section.getNotes().add(new Note(3,1,0,0.25f,false));
-            section.getNotes().add(new Note(0,0,0,0.125f,false));
-            section.getNotes().add(new Note(3,1,0,0.125f,false));
-            section.getNotes().add(new Note(3,1,0,0.125f,false));
-            section.getNotes().add(new Note(5,1,0,0.125f,false));
-            sections.add(section);
-        }
-        {
-            Section section = new Section(4,4);
-            section.getNotes().add(new Note(6,1,0,0.25f,true));
-            section.getNotes().add(new Note(5,1,0,0.0625f,false));
-            section.getNotes().add(new Note(6,1,0,0.0625f,false));
-            section.getNotes().add(new Note(1,2,0,0.125f,false));
-            section.getNotes().add(new Note(7,1,0,0.125f,false));
-            section.getNotes().add(new Note(6,1,0,0.125f,false));
-            section.getNotes().add(new Note(5,1,0,0.125f,false));
-            sections.add(section);
-        }
-        {
-            Section section = new Section(4,4);
-            section.getNotes().add(new Note(6,1,0,0.25f,false));
-            section.getNotes().add(new Note(6,1,0,0.25f,false));
-            section.getNotes().add(new Note(0,0,0,0.125f,false));
-            section.getNotes().add(new Note(5,1,0,0.0625f,false));
-            section.getNotes().add(new Note(6,1,0,0.0625f,false));
-            section.getNotes().add(new Note(5,1,0,0.125f,false));
-            section.getNotes().add(new Note(3,1,0,0.125f,false));
-            sections.add(section);
-        }
-        {
-            Section section = new Section(4,4);
-            section.getNotes().add(new Note(2,1,0,0.25f,false));
-            section.getNotes().add(new Note(2,1,0,0.25f,false));
-            section.getNotes().add(new Note(0,0,0,0.125f,false));
-            section.getNotes().add(new Note(5,1,0,0.0625f,false));
-            section.getNotes().add(new Note(6,1,0,0.0625f,false));
-            section.getNotes().add(new Note(5,1,0,0.125f,false));
-            section.getNotes().add(new Note(2,1,0,0.125f,false));
-            sections.add(section);
-        }
-        {
-            Section section = new Section(4,4);
-            section.getNotes().add(new Note(1,1,0,0.25f,false));
-            section.getNotes().add(new Note(1,1,0,0.25f,false));
-            section.getNotes().add(new Note(0,0,0,0.125f,false));
+            section.getNotes().add(new Note(6,-1,0,0.125f,false));
+            section.getNotes().add(new Note(7,-1,0,0.125f,false));
+            section.getNotes().add(new Note(1,0,0,0.125f,false));
+            section.getNotes().add(new Note(2,0,0,0.125f,false));
+            section.getNotes().add(new Note(3,0,0,0.25f,false));
             section.getNotes().add(new Note(6,0,0,0.125f,false));
+            section.getNotes().add(new Note(5,0,0,0.125f,false));
+            sections.add(section);
+        }
+        {
+            Section section = new Section(4,4);
+            section.getNotes().add(new Note(3,0,0,0.25f,false));
+            section.getNotes().add(new Note(6,-1,0,0.25f,false));
+            section.getNotes().add(new Note(3,0,0,0.125f,false));
+            section.getNotes().add(new Note(2,0,0,0.125f,false));
+            section.getNotes().add(new Note(1,0,0,0.125f,false));
+            section.getNotes().add(new Note(7,-1,0,0.125f,false));
+            sections.add(section);
+        }
+        {
+            Section section = new Section(4,4);
+            section.getNotes().add(new Note(6,-1,0,0.125f,false));
+            section.getNotes().add(new Note(7,-1,0,0.125f,false));
+            section.getNotes().add(new Note(1,0,0,0.125f,false));
+            section.getNotes().add(new Note(2,0,0,0.125f,false));
+            section.getNotes().add(new Note(3,0,0,0.25f,false));
+            section.getNotes().add(new Note(2,0,0,0.125f,false));
+            section.getNotes().add(new Note(1,0,0,0.125f,false));
+            sections.add(section);
+        }
+        {
+            Section section = new Section(4,4);
+            section.getNotes().add(new Note(7,-1,0,0.125f,false));
+            section.getNotes().add(new Note(6,-1,0,0.125f,false));
+            section.getNotes().add(new Note(7,-1,0,0.125f,false));
+            section.getNotes().add(new Note(1,0,0,0.125f,false));
+            section.getNotes().add(new Note(7,-1,0,0.125f,false));
+            section.getNotes().add(new Note(6,-1,0,0.125f,false));
+            section.getNotes().add(new Note(5,-1,-1,0.125f,false));
+            section.getNotes().add(new Note(7,-1,0,0.125f,false));
+            sections.add(section);
+        }
+        {
+            Section section = new Section(4,4);
+            section.getNotes().add(new Note(6,-1,0,0.125f,false));
+            section.getNotes().add(new Note(7,-1,0,0.125f,false));
+            section.getNotes().add(new Note(1,0,0,0.125f,false));
+            section.getNotes().add(new Note(2,0,0,0.125f,false));
+            section.getNotes().add(new Note(3,0,0,0.25f,false));
             section.getNotes().add(new Note(6,0,0,0.125f,false));
-            section.getNotes().add(new Note(7,0,0,0.125f,false));
+            section.getNotes().add(new Note(5,0,0,0.125f,false));
             sections.add(section);
         }
         {
             Section section = new Section(4,4);
-            section.getNotes().add(new Note(1,1,0,0.25f,true));
-            section.getNotes().add(new Note(2,1,0,0.125f,false));
-            section.getNotes().add(new Note(7,0,0,0.25f,true));
-            section.getNotes().add(new Note(6,0,0,0.125f,false));
+            section.getNotes().add(new Note(3,0,0,0.25f,false));
+            section.getNotes().add(new Note(6,-1,0,0.25f,false));
+            section.getNotes().add(new Note(3,0,0,0.125f,false));
+            section.getNotes().add(new Note(2,0,0,0.125f,false));
+            section.getNotes().add(new Note(1,0,0,0.125f,false));
+            section.getNotes().add(new Note(7,-1,0,0.125f,false));
             sections.add(section);
         }
         {
             Section section = new Section(4,4);
-            section.getNotes().add(new Note(6,0,0,0.25f,false));
-            section.getNotes().add(new Note(6,0,0,0.25f,false));
-            section.getNotes().add(new Note(6,0,0,0.25f,false));
-            section.getNotes().add(new Note(6,0,0,0.25f,false));
+            section.getNotes().add(new Note(6,-1,0,0.125f,false));
+            section.getNotes().add(new Note(7,-1,0,0.125f,false));
+            section.getNotes().add(new Note(1,0,0,0.125f,false));
+            section.getNotes().add(new Note(2,0,0,0.125f,false));
+            section.getNotes().add(new Note(3,0,0,0.25f,false));
+            section.getNotes().add(new Note(2,0,0,0.125f,false));
+            section.getNotes().add(new Note(1,0,0,0.125f,false));
             sections.add(section);
         }
         {
             Section section = new Section(4,4);
-            section.getNotes().add(new Note(6,0,0,0.25f,false));
-            section.getNotes().add(new Note(6,0,0,0.25f,false));
-            section.getNotes().add(new Note(0,0,0,0.25f,false));
-            section.getNotes().add(new Note(0,0,0,0.25f,false));
+            section.getNotes().add(new Note(7,-1,0,0.25f,false));
+            section.getNotes().add(new Note(1,0,0,0.25f,false));
+            section.getNotes().add(new Note(2,0,0,0.25f,false));
+            section.getNotes().add(new Note(3,0,0,0.25f,false));
             sections.add(section);
         }
 
@@ -122,100 +108,86 @@ public class Main {
 
         {
             Section section = new Section(4,4);
-            section.getNotes().add(new Note(0,1,0,0.25f,false));
-            section.getNotes().add(new Note(0,1,0,0.25f,false));
-            section.getNotes().add(new Note(0,1,0,0.125f,false));
-            section.getNotes().add(new Note(3,2,0,0.125f,false));
-            section.getNotes().add(new Note(3,2,0,0.125f,false));
-            section.getNotes().add(new Note(5,2,0,0.125f,false));
-            sections.add(section);
-        }
-        {
-            Section section = new Section(4,4);
-            section.getNotes().add(new Note(6,2,0,0.25f,true));
-            section.getNotes().add(new Note(5,2,0,0.0625f,false));
-            section.getNotes().add(new Note(6,2,0,0.0625f,false));
-            section.getNotes().add(new Note(5,2,0,0.125f,false));
-            section.getNotes().add(new Note(3,2,0,0.125f,false));
-            section.getNotes().add(new Note(2,2,0,0.125f,false));
-            section.getNotes().add(new Note(5,2,0,0.125f,false));
-            sections.add(section);
-        }
-        {
-            Section section = new Section(4,4);
-            section.getNotes().add(new Note(3,2,0,0.25f,true));
-            section.getNotes().add(new Note(3,2,0,0.25f,false));
-            section.getNotes().add(new Note(0,1,0,0.125f,false));
-            section.getNotes().add(new Note(3,2,0,0.125f,false));
-            section.getNotes().add(new Note(3,2,0,0.125f,false));
-            section.getNotes().add(new Note(5,2,0,0.125f,false));
-            sections.add(section);
-        }
-        {
-            Section section = new Section(4,4);
-            section.getNotes().add(new Note(6,2,0,0.25f,true));
-            section.getNotes().add(new Note(5,2,0,0.0625f,false));
-            section.getNotes().add(new Note(6,2,0,0.0625f,false));
-            section.getNotes().add(new Note(1,3,0,0.125f,false));
-            section.getNotes().add(new Note(7,2,0,0.125f,false));
-            section.getNotes().add(new Note(6,2,0,0.125f,false));
-            section.getNotes().add(new Note(5,2,0,0.125f,false));
-            sections.add(section);
-        }
-        {
-            Section section = new Section(4, 4);
-            section.getNotes().add(new Note(6, 2, 0, 0.25f, false));
-            section.getNotes().add(new Note(6, 2, 0, 0.25f, false));
-            section.getNotes().add(new Note(0, 1, 0, 0.125f, false));
-            section.getNotes().add(new Note(5, 2, 0, 0.0625f, false));
-            section.getNotes().add(new Note(6, 2, 0, 0.0625f, false));
-            section.getNotes().add(new Note(5, 2, 0, 0.125f, false));
-            section.getNotes().add(new Note(3, 2, 0, 0.125f, false));
-            sections.add(section);
-        }
-        {
-            Section section = new Section(4,4);
-            section.getNotes().add(new Note(2,2,0,0.25f,false));
-            section.getNotes().add(new Note(2,2,0,0.25f,false));
-            section.getNotes().add(new Note(0,1,0,0.125f,false));
-            section.getNotes().add(new Note(5,2,0,0.0625f,false));
-            section.getNotes().add(new Note(6,2,0,0.0625f,false));
-            section.getNotes().add(new Note(5,2,0,0.125f,false));
-            section.getNotes().add(new Note(2,2,0,0.125f,false));
-            sections.add(section);
-        }
-        {
-            Section section = new Section(4,4);
-            section.getNotes().add(new Note(1,2,0,0.25f,false));
-            section.getNotes().add(new Note(1,2,0,0.25f,false));
-            section.getNotes().add(new Note(0,1,0,0.125f,false));
+            section.getNotes().add(new Note(6,0,0,0.125f,false));
+            section.getNotes().add(new Note(7,0,0,0.125f,false));
+            section.getNotes().add(new Note(1,1,0,0.125f,false));
+            section.getNotes().add(new Note(2,1,0,0.125f,false));
+            section.getNotes().add(new Note(3,1,0,0.25f,false));
             section.getNotes().add(new Note(6,1,0,0.125f,false));
+            section.getNotes().add(new Note(5,1,0,0.125f,false));
+            sections.add(section);
+        }
+        {
+            Section section = new Section(4,4);
+            section.getNotes().add(new Note(3,1,0,0.25f,false));
+            section.getNotes().add(new Note(6,0,0,0.25f,false));
+            section.getNotes().add(new Note(3,1,0,0.125f,false));
+            section.getNotes().add(new Note(2,1,0,0.125f,false));
+            section.getNotes().add(new Note(1,1,0,0.125f,false));
+            section.getNotes().add(new Note(7,0,0,0.125f,false));
+            sections.add(section);
+        }
+        {
+            Section section = new Section(4,4);
+            section.getNotes().add(new Note(6,0,0,0.125f,false));
+            section.getNotes().add(new Note(7,0,0,0.125f,false));
+            section.getNotes().add(new Note(1,1,0,0.125f,false));
+            section.getNotes().add(new Note(2,1,0,0.125f,false));
+            section.getNotes().add(new Note(3,1,0,0.25f,false));
+            section.getNotes().add(new Note(2,1,0,0.125f,false));
+            section.getNotes().add(new Note(1,1,0,0.125f,false));
+            sections.add(section);
+        }
+        {
+            Section section = new Section(4,4);
+            section.getNotes().add(new Note(7,0,0,0.125f,false));
+            section.getNotes().add(new Note(6,0,0,0.125f,false));
+            section.getNotes().add(new Note(7,0,0,0.125f,false));
+            section.getNotes().add(new Note(1,1,0,0.125f,false));
+            section.getNotes().add(new Note(7,0,0,0.125f,false));
+            section.getNotes().add(new Note(6,0,0,0.125f,false));
+            section.getNotes().add(new Note(5,0,-1,0.125f,false));
+            section.getNotes().add(new Note(7,0,0,0.125f,false));
+            sections.add(section);
+        }
+        {
+            Section section = new Section(4,4);
+            section.getNotes().add(new Note(6,0,0,0.125f,false));
+            section.getNotes().add(new Note(7,0,0,0.125f,false));
+            section.getNotes().add(new Note(1,1,0,0.125f,false));
+            section.getNotes().add(new Note(2,1,0,0.125f,false));
+            section.getNotes().add(new Note(3,1,0,0.25f,false));
             section.getNotes().add(new Note(6,1,0,0.125f,false));
-            section.getNotes().add(new Note(7,1,0,0.125f,false));
+            section.getNotes().add(new Note(5,1,0,0.125f,false));
             sections.add(section);
         }
         {
             Section section = new Section(4,4);
-            section.getNotes().add(new Note(1,2,0,0.25f,true));
-            section.getNotes().add(new Note(2,2,0,0.125f,false));
-            section.getNotes().add(new Note(7,1,0,0.25f,true));
-            section.getNotes().add(new Note(6,1,0,0.125f,false));
+            section.getNotes().add(new Note(3,1,0,0.25f,false));
+            section.getNotes().add(new Note(6,0,0,0.25f,false));
+            section.getNotes().add(new Note(3,1,0,0.125f,false));
+            section.getNotes().add(new Note(2,1,0,0.125f,false));
+            section.getNotes().add(new Note(1,1,0,0.125f,false));
+            section.getNotes().add(new Note(7,0,0,0.125f,false));
             sections.add(section);
         }
         {
             Section section = new Section(4,4);
-            section.getNotes().add(new Note(6,1,0,0.25f,false));
-            section.getNotes().add(new Note(6,1,0,0.25f,false));
-            section.getNotes().add(new Note(6,1,0,0.25f,false));
-            section.getNotes().add(new Note(6,1,0,0.25f,false));
+            section.getNotes().add(new Note(6,0,0,0.125f,false));
+            section.getNotes().add(new Note(7,0,0,0.125f,false));
+            section.getNotes().add(new Note(1,1,0,0.125f,false));
+            section.getNotes().add(new Note(2,1,0,0.125f,false));
+            section.getNotes().add(new Note(3,1,0,0.25f,false));
+            section.getNotes().add(new Note(2,1,0,0.125f,false));
+            section.getNotes().add(new Note(1,1,0,0.125f,false));
             sections.add(section);
         }
         {
             Section section = new Section(4,4);
-            section.getNotes().add(new Note(6,1,0,0.25f,false));
-            section.getNotes().add(new Note(6,1,0,0.25f,false));
-            section.getNotes().add(new Note(0,1,0,0.25f,false));
-            section.getNotes().add(new Note(0,1,0,0.25f,false));
+            section.getNotes().add(new Note(7,0,0,0.25f,false));
+            section.getNotes().add(new Note(1,1,0,0.25f,false));
+            section.getNotes().add(new Note(2,1,0,0.25f,false));
+            section.getNotes().add(new Note(3,1,0,0.25f,false));
             sections.add(section);
         }
 
@@ -227,100 +199,86 @@ public class Main {
 
         {
             Section section = new Section(4,4);
-            section.getNotes().add(new Note(0,0,0,0.25f,false));
-            section.getNotes().add(new Note(0,0,0,0.25f,false));
-            section.getNotes().add(new Note(0,0,0,0.125f,false));
-            section.getNotes().add(new Note(3,-1,0,0.125f,false));
-            section.getNotes().add(new Note(3,-1,0,0.125f,false));
-            section.getNotes().add(new Note(5,-1,0,0.125f,false));
-            sections.add(section);
-        }
-        {
-            Section section = new Section(4,4);
-            section.getNotes().add(new Note(6,-1,0,0.25f,true));
-            section.getNotes().add(new Note(5,-1,0,0.0625f,false));
-            section.getNotes().add(new Note(6,-1,0,0.0625f,false));
-            section.getNotes().add(new Note(5,-1,0,0.125f,false));
-            section.getNotes().add(new Note(3,-1,0,0.125f,false));
+            section.getNotes().add(new Note(6,-2,0,0.125f,false));
+            section.getNotes().add(new Note(7,-2,0,0.125f,false));
+            section.getNotes().add(new Note(1,-1,0,0.125f,false));
             section.getNotes().add(new Note(2,-1,0,0.125f,false));
-            section.getNotes().add(new Note(5,-1,0,0.125f,false));
-            sections.add(section);
-        }
-        {
-            Section section = new Section(4,4);
-            section.getNotes().add(new Note(3,-1,0,0.25f,true));
             section.getNotes().add(new Note(3,-1,0,0.25f,false));
-            section.getNotes().add(new Note(0,0,0,0.125f,false));
-            section.getNotes().add(new Note(3,-1,0,0.125f,false));
-            section.getNotes().add(new Note(3,-1,0,0.125f,false));
-            section.getNotes().add(new Note(5,-1,0,0.125f,false));
-            sections.add(section);
-        }
-        {
-            Section section = new Section(4,4);
-            section.getNotes().add(new Note(6,-1,0,0.25f,true));
-            section.getNotes().add(new Note(5,-1,0,0.0625f,false));
-            section.getNotes().add(new Note(6,-1,0,0.0625f,false));
-            section.getNotes().add(new Note(1,-2,0,0.125f,false));
-            section.getNotes().add(new Note(7,-1,0,0.125f,false));
             section.getNotes().add(new Note(6,-1,0,0.125f,false));
             section.getNotes().add(new Note(5,-1,0,0.125f,false));
             sections.add(section);
         }
         {
             Section section = new Section(4,4);
-            section.getNotes().add(new Note(6,-1,0,0.25f,false));
-            section.getNotes().add(new Note(6,-1,0,0.25f,false));
-            section.getNotes().add(new Note(0,0,0,0.125f,false));
-            section.getNotes().add(new Note(5,-1,0,0.0625f,false));
-            section.getNotes().add(new Note(6,-1,0,0.0625f,false));
-            section.getNotes().add(new Note(5,-1,0,0.125f,false));
+            section.getNotes().add(new Note(3,-1,0,0.25f,false));
+            section.getNotes().add(new Note(6,-2,0,0.25f,false));
             section.getNotes().add(new Note(3,-1,0,0.125f,false));
-            sections.add(section);
-        }
-        {
-            Section section = new Section(4,4);
-            section.getNotes().add(new Note(2,-1,0,0.25f,false));
-            section.getNotes().add(new Note(2,-1,0,0.25f,false));
-            section.getNotes().add(new Note(0,-1,0,0.125f,false));
-            section.getNotes().add(new Note(5,-1,0,0.0625f,false));
-            section.getNotes().add(new Note(6,-1,0,0.0625f,false));
-            section.getNotes().add(new Note(5,-1,0,0.125f,false));
             section.getNotes().add(new Note(2,-1,0,0.125f,false));
+            section.getNotes().add(new Note(1,-1,0,0.125f,false));
+            section.getNotes().add(new Note(7,-2,0,0.125f,false));
             sections.add(section);
         }
         {
             Section section = new Section(4,4);
-            section.getNotes().add(new Note(1,-1,0,0.25f,false));
-            section.getNotes().add(new Note(1,-1,0,0.25f,false));
-            section.getNotes().add(new Note(0,-1,0,0.125f,false));
-            section.getNotes().add(new Note(6,-1,0,0.125f,false));
-            section.getNotes().add(new Note(6,-1,0,0.125f,false));
-            section.getNotes().add(new Note(7,-1,0,0.125f,false));
-            sections.add(section);
-        }
-        {
-            Section section = new Section(4,4);
-            section.getNotes().add(new Note(1,-1,0,0.25f,true));
+            section.getNotes().add(new Note(6,-2,0,0.125f,false));
+            section.getNotes().add(new Note(7,-2,0,0.125f,false));
+            section.getNotes().add(new Note(1,-1,0,0.125f,false));
             section.getNotes().add(new Note(2,-1,0,0.125f,false));
-            section.getNotes().add(new Note(7,-1,0,0.25f,true));
+            section.getNotes().add(new Note(3,-1,0,0.25f,false));
+            section.getNotes().add(new Note(2,-1,0,0.125f,false));
+            section.getNotes().add(new Note(1,-1,0,0.125f,false));
+            sections.add(section);
+        }
+        {
+            Section section = new Section(4,4);
+            section.getNotes().add(new Note(7,-2,0,0.125f,false));
+            section.getNotes().add(new Note(6,-2,0,0.125f,false));
+            section.getNotes().add(new Note(7,-2,0,0.125f,false));
+            section.getNotes().add(new Note(1,-1,0,0.125f,false));
+            section.getNotes().add(new Note(7,-2,0,0.125f,false));
+            section.getNotes().add(new Note(6,-2,0,0.125f,false));
+            section.getNotes().add(new Note(5,-2,-1,0.125f,false));
+            section.getNotes().add(new Note(7,-2,0,0.125f,false));
+            sections.add(section);
+        }
+        {
+            Section section = new Section(4,4);
+            section.getNotes().add(new Note(6,-2,0,0.125f,false));
+            section.getNotes().add(new Note(7,-2,0,0.125f,false));
+            section.getNotes().add(new Note(1,-1,0,0.125f,false));
+            section.getNotes().add(new Note(2,-1,0,0.125f,false));
+            section.getNotes().add(new Note(3,-1,0,0.25f,false));
             section.getNotes().add(new Note(6,-1,0,0.125f,false));
+            section.getNotes().add(new Note(5,-1,0,0.125f,false));
             sections.add(section);
         }
         {
             Section section = new Section(4,4);
-            section.getNotes().add(new Note(6,-1,0,0.25f,false));
-            section.getNotes().add(new Note(6,-1,0,0.25f,false));
-            section.getNotes().add(new Note(6,-1,0,0.25f,false));
-            section.getNotes().add(new Note(6,-1,0,0.25f,false));
+            section.getNotes().add(new Note(3,-1,0,0.25f,false));
+            section.getNotes().add(new Note(6,-2,0,0.25f,false));
+            section.getNotes().add(new Note(3,-1,0,0.125f,false));
+            section.getNotes().add(new Note(2,-1,0,0.125f,false));
+            section.getNotes().add(new Note(1,-1,0,0.125f,false));
+            section.getNotes().add(new Note(7,-2,0,0.125f,false));
             sections.add(section);
         }
         {
             Section section = new Section(4,4);
-            section.getNotes().add(new Note(6,-1,0,0.25f,false));
-            section.getNotes().add(new Note(6,-1,0,0.25f,false));
-            section.getNotes().add(new Note(0,-1,0,0.25f,false));
-            section.getNotes().add(new Note(0,-1,0,0.25f,false));
+            section.getNotes().add(new Note(6,-2,0,0.125f,false));
+            section.getNotes().add(new Note(7,-2,0,0.125f,false));
+            section.getNotes().add(new Note(1,-1,0,0.125f,false));
+            section.getNotes().add(new Note(2,-1,0,0.125f,false));
+            section.getNotes().add(new Note(3,-1,0,0.25f,false));
+            section.getNotes().add(new Note(2,-1,0,0.125f,false));
+            section.getNotes().add(new Note(1,-1,0,0.125f,false));
+            sections.add(section);
+        }
+        {
+            Section section = new Section(4,4);
+            section.getNotes().add(new Note(7,-2,0,0.25f,false));
+            section.getNotes().add(new Note(1,-1,0,0.25f,false));
+            section.getNotes().add(new Note(2,-1,0,0.25f,false));
+            section.getNotes().add(new Note(3,-1,0,0.25f,false));
             sections.add(section);
         }
 
@@ -332,100 +290,86 @@ public class Main {
 
         {
             Section section = new Section(4,4);
-            section.getNotes().add(new Note(0,0,0,0.25f,false));
-            section.getNotes().add(new Note(0,0,0,0.25f,false));
-            section.getNotes().add(new Note(0,0,0,0.125f,false));
-            section.getNotes().add(new Note(3,1,0,0.125f,false));
-            section.getNotes().add(new Note(3,1,0,0.125f,false));
-            section.getNotes().add(new Note(5,1,0,0.125f,false));
-            sections.add(section);
-        }
-        {
-            Section section = new Section(4,4);
-            section.getNotes().add(new Note(6,1,0,0.25f,true));
-            section.getNotes().add(new Note(5,1,0,0.0625f,false));
-            section.getNotes().add(new Note(6,1,0,0.0625f,false));
-            section.getNotes().add(new Note(5,1,0,0.125f,false));
-            section.getNotes().add(new Note(3,1,0,0.125f,false));
-            section.getNotes().add(new Note(2,1,0,0.125f,false));
-            section.getNotes().add(new Note(5,1,0,0.125f,false));
-            sections.add(section);
-        }
-        {
-            Section section = new Section(4,4);
-            section.getNotes().add(new Note(3,1,0,0.25f,true));
-            section.getNotes().add(new Note(3,1,0,0.25f,false));
-            section.getNotes().add(new Note(0,0,0,0.125f,false));
-            section.getNotes().add(new Note(3,1,0,0.125f,false));
-            section.getNotes().add(new Note(3,1,0,0.125f,false));
-            section.getNotes().add(new Note(5,1,0,0.125f,false));
-            sections.add(section);
-        }
-        {
-            Section section = new Section(4,4);
-            section.getNotes().add(new Note(6,1,0,0.25f,true));
-            section.getNotes().add(new Note(5,1,0,0.0625f,false));
-            section.getNotes().add(new Note(6,1,0,0.0625f,false));
-            section.getNotes().add(new Note(1,2,0,0.125f,false));
-            section.getNotes().add(new Note(7,1,0,0.125f,false));
-            section.getNotes().add(new Note(6,1,0,0.125f,false));
-            section.getNotes().add(new Note(5,1,0,0.125f,false));
-            sections.add(section);
-        }
-        {
-            Section section = new Section(4,4);
-            section.getNotes().add(new Note(6,1,0,0.25f,false));
-            section.getNotes().add(new Note(6,1,0,0.25f,false));
-            section.getNotes().add(new Note(0,0,0,0.125f,false));
-            section.getNotes().add(new Note(5,1,0,0.0625f,false));
-            section.getNotes().add(new Note(6,1,0,0.0625f,false));
-            section.getNotes().add(new Note(5,1,0,0.125f,false));
-            section.getNotes().add(new Note(3,1,0,0.125f,false));
-            sections.add(section);
-        }
-        {
-            Section section = new Section(4,4);
-            section.getNotes().add(new Note(2,1,0,0.25f,false));
-            section.getNotes().add(new Note(2,1,0,0.25f,false));
-            section.getNotes().add(new Note(0,0,0,0.125f,false));
-            section.getNotes().add(new Note(5,1,0,0.0625f,false));
-            section.getNotes().add(new Note(6,1,0,0.0625f,false));
-            section.getNotes().add(new Note(5,1,0,0.125f,false));
-            section.getNotes().add(new Note(2,1,0,0.125f,false));
-            sections.add(section);
-        }
-        {
-            Section section = new Section(4,4);
-            section.getNotes().add(new Note(1,1,0,0.25f,false));
-            section.getNotes().add(new Note(1,1,0,0.25f,false));
-            section.getNotes().add(new Note(0,0,0,0.125f,false));
+            section.getNotes().add(new Note(6,-1,0,0.125f,false));
+            section.getNotes().add(new Note(7,-1,0,0.125f,false));
+            section.getNotes().add(new Note(1,0,0,0.125f,false));
+            section.getNotes().add(new Note(2,0,0,0.125f,false));
+            section.getNotes().add(new Note(3,0,0,0.25f,false));
             section.getNotes().add(new Note(6,0,0,0.125f,false));
+            section.getNotes().add(new Note(5,0,0,0.125f,false));
+            sections.add(section);
+        }
+        {
+            Section section = new Section(4,4);
+            section.getNotes().add(new Note(3,0,0,0.25f,false));
+            section.getNotes().add(new Note(6,-1,0,0.25f,false));
+            section.getNotes().add(new Note(3,0,0,0.125f,false));
+            section.getNotes().add(new Note(2,0,0,0.125f,false));
+            section.getNotes().add(new Note(1,0,0,0.125f,false));
+            section.getNotes().add(new Note(7,-1,0,0.125f,false));
+            sections.add(section);
+        }
+        {
+            Section section = new Section(4,4);
+            section.getNotes().add(new Note(6,-1,0,0.125f,false));
+            section.getNotes().add(new Note(7,-1,0,0.125f,false));
+            section.getNotes().add(new Note(1,0,0,0.125f,false));
+            section.getNotes().add(new Note(2,0,0,0.125f,false));
+            section.getNotes().add(new Note(3,0,0,0.25f,false));
+            section.getNotes().add(new Note(2,0,0,0.125f,false));
+            section.getNotes().add(new Note(1,0,0,0.125f,false));
+            sections.add(section);
+        }
+        {
+            Section section = new Section(4,4);
+            section.getNotes().add(new Note(7,-1,0,0.125f,false));
+            section.getNotes().add(new Note(6,-1,0,0.125f,false));
+            section.getNotes().add(new Note(7,-1,0,0.125f,false));
+            section.getNotes().add(new Note(1,0,0,0.125f,false));
+            section.getNotes().add(new Note(7,-1,0,0.125f,false));
+            section.getNotes().add(new Note(6,-1,0,0.125f,false));
+            section.getNotes().add(new Note(5,-1,-1,0.125f,false));
+            section.getNotes().add(new Note(7,-1,0,0.125f,false));
+            sections.add(section);
+        }
+        {
+            Section section = new Section(4,4);
+            section.getNotes().add(new Note(6,-1,0,0.125f,false));
+            section.getNotes().add(new Note(7,-1,0,0.125f,false));
+            section.getNotes().add(new Note(1,0,0,0.125f,false));
+            section.getNotes().add(new Note(2,0,0,0.125f,false));
+            section.getNotes().add(new Note(3,0,0,0.25f,false));
             section.getNotes().add(new Note(6,0,0,0.125f,false));
-            section.getNotes().add(new Note(7,0,0,0.125f,false));
+            section.getNotes().add(new Note(5,0,0,0.125f,false));
             sections.add(section);
         }
         {
             Section section = new Section(4,4);
-            section.getNotes().add(new Note(1,1,0,0.25f,true));
-            section.getNotes().add(new Note(2,1,0,0.125f,false));
-            section.getNotes().add(new Note(7,0,0,0.25f,true));
-            section.getNotes().add(new Note(6,0,0,0.125f,false));
+            section.getNotes().add(new Note(3,0,0,0.25f,false));
+            section.getNotes().add(new Note(6,-1,0,0.25f,false));
+            section.getNotes().add(new Note(3,0,0,0.125f,false));
+            section.getNotes().add(new Note(2,0,0,0.125f,false));
+            section.getNotes().add(new Note(1,0,0,0.125f,false));
+            section.getNotes().add(new Note(7,-1,0,0.125f,false));
             sections.add(section);
         }
         {
             Section section = new Section(4,4);
-            section.getNotes().add(new Note(6,0,0,0.25f,false));
-            section.getNotes().add(new Note(6,0,0,0.25f,false));
-            section.getNotes().add(new Note(6,0,0,0.25f,false));
-            section.getNotes().add(new Note(6,0,0,0.25f,false));
+            section.getNotes().add(new Note(6,-1,0,0.125f,false));
+            section.getNotes().add(new Note(7,-1,0,0.125f,false));
+            section.getNotes().add(new Note(1,0,0,0.125f,false));
+            section.getNotes().add(new Note(2,0,0,0.125f,false));
+            section.getNotes().add(new Note(3,0,0,0.25f,false));
+            section.getNotes().add(new Note(2,0,0,0.125f,false));
+            section.getNotes().add(new Note(1,0,0,0.125f,false));
             sections.add(section);
         }
         {
             Section section = new Section(4,4);
-            section.getNotes().add(new Note(6,0,0,0.25f,false));
-            section.getNotes().add(new Note(6,0,0,0.25f,false));
-            section.getNotes().add(new Note(0,0,0,0.25f,false));
-            section.getNotes().add(new Note(0,0,0,0.25f,false));
+            section.getNotes().add(new Note(7,-1,0,0.25f,false));
+            section.getNotes().add(new Note(1,0,0,0.25f,false));
+            section.getNotes().add(new Note(2,0,0,0.25f,false));
+            section.getNotes().add(new Note(3,0,0,0.25f,false));
             sections.add(section);
         }
 
@@ -443,7 +387,7 @@ public class Main {
 
     public static void main(String[] args) {
         OpenALLoader loader = new OpenALLoader();
-        Player player = new NESLikePlayer(120);
+        Player player = new NESLikePlayer(140);
         player.play(genTestSection());
     }
 }
