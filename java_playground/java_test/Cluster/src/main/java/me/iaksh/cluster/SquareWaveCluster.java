@@ -11,6 +11,11 @@ public class SquareWaveCluster extends OpenALCluster {
 
     @Override
     public void play(int simpleScore, int octaveShift, int semitoneShift) {
+        if(simpleScore == 0) {
+            source.stop();
+            return;
+        }
+
         int samplesPerCycle = (int) (sampleRate / EqualTemp.toFreq(simpleScore,octaveShift,semitoneShift));
         short[] data = new short[samplesPerCycle];
 
