@@ -2,6 +2,9 @@ package me.iaksh;
 
 import org.lwjgl.openal.*;
 
+import java.util.concurrent.Callable;
+import java.util.function.Function;
+
 public class Mixer {
     private ALCCapabilities alcCapabilities;
     private ALCapabilities alCapabilities;
@@ -10,7 +13,7 @@ public class Mixer {
 
     private Cluster cluster;
     private Channel[] channels;
-    private Sheet sheet;
+    private int bpm;
 
     private void initOpenAL() {
         String defaultDeviceName = ALC11.alcGetString(0, ALC11.ALC_DEFAULT_DEVICE_SPECIFIER);
@@ -39,10 +42,6 @@ public class Mixer {
         }
     }
 
-    private void initSheet() {
-        sheet = new Sheet();
-    }
-
     private void destroyChannels() {
         for(Channel channel : channels)
             channel.destroyAlSource();
@@ -53,37 +52,100 @@ public class Mixer {
         ALC11.alcCloseDevice(device);
     }
 
-    public Mixer() {
+    private int convertFreq(Note note) {
+        double[] equalTemperaments = {0,261.63,293.66,329.63,349.23,392.00,440.00,493.88};
+        double baseFreq = equalTemperaments[note.getSimpleScore()];
+        double freq = baseFreq *
+                Math.pow(2, note.getOctaveShift()) *
+                Math.pow(2, note.getSemitoneShift() / 12.0);
+        return (int) freq;
+    }
+
+    private int convertDurationMs(Sheet sheet) {
+        Section section = sheet.currentSection();
+        return (int) (section.currentNote().getNoteFraction() * section.getStandardNote() * 60000.0f / bpm);
+    }
+
+    private void prepareChannelSquare(Channel channel,Sheet sheet) {
+        Section section = sheet.currentSection();
+        Note note = section.currentNote();
+        channel.setGain(note.getGain());
+        channel.bindBuffer(cluster.genSquare(convertFreq(note)));
+        channel.setDurationMs(convertDurationMs(sheet));
+    }
+
+    private void prepareChannelTriangle(Channel channel,Sheet sheet) {
+        Section section = sheet.currentSection();
+        Note note = section.currentNote();
+        channel.setGain(note.getGain());
+        channel.bindBuffer(cluster.genTriangle(convertFreq(note)));
+        channel.setDurationMs(convertDurationMs(sheet));
+    }
+
+    private void prepareChannelNoise(Channel channel,Sheet sheet) {
+        Section section = sheet.currentSection();
+        Note note = section.currentNote();
+        channel.setGain(note.getGain());
+        channel.bindBuffer(cluster.genWhiteNoise(convertFreq(note)));
+        channel.setDurationMs(convertDurationMs(sheet));
+    }
+
+    private void playAllChannel() {
+        long startTimestamp = System.currentTimeMillis();
+        for(Channel channel : channels)
+                channel.play();
+
+        while(System.currentTimeMillis() - startTimestamp < (long)(60000.0f / bpm)) {
+            for(Channel channel : channels)
+                    channel.tryStop();
+        }
+
+        for(Channel channel : channels)
+                channel.stop();
+    }
+
+    private boolean allSheetTerminated(Sheet[] sheets) {
+        for(Sheet sheet : sheets) {
+            if(sheet.eof())
+                return true;
+        }
+        return false;
+    }
+
+    private boolean currentSectionsTerminated(Sheet[] sheets) {
+        for(Sheet sheet : sheets) {
+            if(sheet.currentSection().eof())
+                return true;
+        }
+        return false;
+    }
+
+    public Mixer(int bpm) {
+        if(bpm < 0)
+            throw new IllegalArgumentException();
+        this.bpm = bpm;
+
         initOpenAL();
         initClaster();
         initChannels();
-        initSheet();
     }
 
-    public void play() {
-        try {
-            sheet.rewind();
-            while(!sheet.eof()) {
-                Frame frame = sheet.nextFrame();
-                channels[0].setGain(frame.getSq0().getGain());
-                channels[0].bindBuffer(cluster.genSquare(frame.getSq0().getFrequency()));
-                channels[1].setGain(frame.getSq1().getGain());
-                channels[1].bindBuffer(cluster.genSquare(frame.getSq1().getFrequency()));
-                channels[2].setGain(frame.getTri().getGain());
-                channels[2].bindBuffer(cluster.genTriangle(frame.getTri().getFrequency()));
-                channels[3].setGain(frame.getNoise().getGain());
-                channels[3].bindBuffer(cluster.genWhiteNoise(frame.getNoise().getFrequency()));
-
-                for(Channel channel : channels)
-                    channel.play();
-
-                Thread.sleep((long) (60000.0f / sheet.getBpm()));
-
-                for(Channel channel : channels)
-                    channel.stop();
+    public void play(Sheet[] sheets) {
+        if(sheets.length != 4)
+            throw new IllegalArgumentException(String.format("need 4 sheets but given %d",sheets.length));
+        while(!allSheetTerminated(sheets)) {
+            while(!currentSectionsTerminated(sheets)) {
+                prepareChannelSquare(channels[0],sheets[0]);
+                prepareChannelSquare(channels[1],sheets[1]);
+                prepareChannelTriangle(channels[2],sheets[2]);
+                prepareChannelNoise(channels[3],sheets[3]);
+                for(Sheet sheet : sheets)
+                    if(!sheet.currentSection().eof())
+                        sheet.currentSection().nextNote();
+                playAllChannel();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+            for(Sheet sheet : sheets)
+                sheet.nextSection();
         }
     }
 
