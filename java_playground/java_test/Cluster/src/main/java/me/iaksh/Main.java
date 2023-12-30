@@ -97,6 +97,22 @@ public class Main {
             section.getNotes().add(new Note(6,0,0,0.125f,false));
             sections.add(section);
         }
+        {
+            Section section = new Section(4,4);
+            section.getNotes().add(new Note(6,0,0,0.25f,false));
+            section.getNotes().add(new Note(6,0,0,0.25f,false));
+            section.getNotes().add(new Note(6,0,0,0.25f,false));
+            section.getNotes().add(new Note(6,0,0,0.25f,false));
+            sections.add(section);
+        }
+        {
+            Section section = new Section(4,4);
+            section.getNotes().add(new Note(6,0,0,0.25f,false));
+            section.getNotes().add(new Note(6,0,0,0.25f,false));
+            section.getNotes().add(new Note(0,0,0,0.25f,false));
+            section.getNotes().add(new Note(0,0,0,0.25f,false));
+            sections.add(section);
+        }
 
         return sections;
     }
@@ -184,6 +200,22 @@ public class Main {
             section.getNotes().add(new Note(2,2,0,0.125f,false));
             section.getNotes().add(new Note(7,1,0,0.25f,true));
             section.getNotes().add(new Note(6,1,0,0.125f,false));
+            sections.add(section);
+        }
+        {
+            Section section = new Section(4,4);
+            section.getNotes().add(new Note(6,1,0,0.25f,false));
+            section.getNotes().add(new Note(6,1,0,0.25f,false));
+            section.getNotes().add(new Note(6,1,0,0.25f,false));
+            section.getNotes().add(new Note(6,1,0,0.25f,false));
+            sections.add(section);
+        }
+        {
+            Section section = new Section(4,4);
+            section.getNotes().add(new Note(6,1,0,0.25f,false));
+            section.getNotes().add(new Note(6,1,0,0.25f,false));
+            section.getNotes().add(new Note(0,1,0,0.25f,false));
+            section.getNotes().add(new Note(0,1,0,0.25f,false));
             sections.add(section);
         }
 
@@ -275,6 +307,22 @@ public class Main {
             section.getNotes().add(new Note(6,-1,0,0.125f,false));
             sections.add(section);
         }
+        {
+            Section section = new Section(4,4);
+            section.getNotes().add(new Note(6,-1,0,0.25f,false));
+            section.getNotes().add(new Note(6,-1,0,0.25f,false));
+            section.getNotes().add(new Note(6,-1,0,0.25f,false));
+            section.getNotes().add(new Note(6,-1,0,0.25f,false));
+            sections.add(section);
+        }
+        {
+            Section section = new Section(4,4);
+            section.getNotes().add(new Note(6,-1,0,0.25f,false));
+            section.getNotes().add(new Note(6,-1,0,0.25f,false));
+            section.getNotes().add(new Note(0,-1,0,0.25f,false));
+            section.getNotes().add(new Note(0,-1,0,0.25f,false));
+            sections.add(section);
+        }
 
         return sections;
     }
@@ -364,6 +412,22 @@ public class Main {
             section.getNotes().add(new Note(6,0,0,0.125f,false));
             sections.add(section);
         }
+        {
+            Section section = new Section(4,4);
+            section.getNotes().add(new Note(6,0,0,0.25f,false));
+            section.getNotes().add(new Note(6,0,0,0.25f,false));
+            section.getNotes().add(new Note(6,0,0,0.25f,false));
+            section.getNotes().add(new Note(6,0,0,0.25f,false));
+            sections.add(section);
+        }
+        {
+            Section section = new Section(4,4);
+            section.getNotes().add(new Note(6,0,0,0.25f,false));
+            section.getNotes().add(new Note(6,0,0,0.25f,false));
+            section.getNotes().add(new Note(0,0,0,0.25f,false));
+            section.getNotes().add(new Note(0,0,0,0.25f,false));
+            sections.add(section);
+        }
 
         return sections;
     }
@@ -379,7 +443,7 @@ public class Main {
 
     public static void main(String[] args) {
         OpenALLoader loader = new OpenALLoader();
-        Player player = new NESLikePlayer(180);
+        Player player = new NESLikePlayer(120);
         player.play(genTestSection());
     }
 }
