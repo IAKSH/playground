@@ -1,4 +1,4 @@
-package me.iaksh.mixer;
+package me.iaksh.player;
 
 import org.lwjgl.openal.*;
 

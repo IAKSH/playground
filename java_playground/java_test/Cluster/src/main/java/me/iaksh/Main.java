@@ -1,11 +1,10 @@
 package me.iaksh;
 
 import me.iaksh.mixer.Exporter;
-import me.iaksh.mixer.MusicPlayer;
 import me.iaksh.mixer.NESLikeSynthesizer;
-import me.iaksh.mixer.OpenALLoader;
 import me.iaksh.notation.Note;
 import me.iaksh.notation.Section;
+import me.iaksh.player.Player;
 
 import java.util.ArrayList;
 
@@ -397,11 +396,8 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        //OpenALLoader loader = new OpenALLoader();
-        //MusicPlayer player = new NESLikeSynthesizer(120);
-        //player.play(0.025f,genTestSection());
-        Exporter exporter = new NESLikeSynthesizer(120);
-        exporter.saveToWav("./out.wav",genTestSection());
-        //loader.closeOpenAL();
+        //new NESLikeSynthesizer(120).saveToWav("./out.wav",genTestSection());
+        new Player().play(0.05f,new NESLikeSynthesizer(120).genWavform(genTestSection()));
+        Player.closeOpenAL();
     }
 }

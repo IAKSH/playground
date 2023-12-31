@@ -17,7 +17,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 
-public class NESLikeSynthesizer extends Synthesizer implements MusicPlayer,Exporter{
+public class NESLikeSynthesizer extends Synthesizer implements Exporter {
 
     public NESLikeSynthesizer(int bpm) {
         for(int i = 0;i < 4;i++)
@@ -25,39 +25,8 @@ public class NESLikeSynthesizer extends Synthesizer implements MusicPlayer,Expor
     }
 
     @Override
-    public void play(ArrayList<ArrayList<Section>> sections) {
-        if(sections.size() != 4)
-            throw new IllegalArgumentException();
-
-        tracks.get(0).genWaveform(new SquareOscillator(),sections.get(0));
-        tracks.get(1).genWaveform(new SquareOscillator(),sections.get(1));
-        tracks.get(2).genWaveform(new TriangleOscillator(),sections.get(2));
-        tracks.get(3).genWaveform(new NoiseOscillator(),sections.get(3));
-        System.out.println("genWaveform() finished!");
-        for(Track track : tracks)
-            track.play();
-
-        waitAllTrackToBeFinished();
-        System.out.println("All track finished!");
-        destroyTracks();
-    }
-
-    @Override
-    public void play(float gain,ArrayList<ArrayList<Section>> sections) {
-        for(Track track : tracks)
-            track.setGain(gain);
-        play(sections);
-    }
-
-    @Override
     public void saveToWav(String path,ArrayList<ArrayList<Section>> sections) {
-        ArrayList<ArrayList<Short>> channels = new ArrayList<>();
-        channels.add(tracks.get(0).genWaveform(new SquareOscillator(),sections.get(0)));
-        channels.add(tracks.get(1).genWaveform(new SquareOscillator(),sections.get(1)));
-        channels.add(tracks.get(2).genWaveform(new TriangleOscillator(),sections.get(2)));
-        channels.add(tracks.get(3).genWaveform(new NoiseOscillator(),sections.get(3)));
-        short[] waveform = Mixer.mix(channels);
-
+        short[] waveform = genWavform(sections);
         byte[] byteBuffer = new byte[waveform.length * 2];
         ByteBuffer.wrap(byteBuffer).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().put(waveform);
 
@@ -72,5 +41,15 @@ public class NESLikeSynthesizer extends Synthesizer implements MusicPlayer,Expor
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public short[] genWavform(ArrayList<ArrayList<Section>> sections) {
+        ArrayList<ArrayList<Short>> channels = new ArrayList<>();
+        channels.add(tracks.get(0).genWaveform(new SquareOscillator(),sections.get(0)));
+        channels.add(tracks.get(1).genWaveform(new SquareOscillator(),sections.get(1)));
+        channels.add(tracks.get(2).genWaveform(new TriangleOscillator(),sections.get(2)));
+        channels.add(tracks.get(3).genWaveform(new NoiseOscillator(),sections.get(3)));
+        return Mixer.mix(channels);
     }
 }

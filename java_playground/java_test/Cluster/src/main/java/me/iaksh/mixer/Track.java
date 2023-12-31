@@ -3,13 +3,10 @@ package me.iaksh.mixer;
 import me.iaksh.oscillator.Oscillator;
 import me.iaksh.notation.Note;
 import me.iaksh.notation.Section;
-import org.lwjgl.openal.AL11;
 
 import java.util.ArrayList;
 
 public class Track {
-    private final int alSource;
-    private final int alBuffer;
     private final ArrayList<Short> waveform;
     private final int bpm;
 
@@ -17,19 +14,11 @@ public class Track {
         short[] buffer = new short[waveform.size()];
         for(int i = 0;i < buffer.length;i++)
             buffer[i] = waveform.get(i);
-        AL11.alBufferData(alBuffer,AL11.AL_FORMAT_MONO16,buffer,sampleRate);
     }
 
     public Track(int bpm) {
-        alSource = AL11.alGenSources();
-        alBuffer = AL11.alGenBuffers();
         waveform = new ArrayList<>();
         this.bpm = bpm;
-    }
-
-    public void destroy() {
-        AL11.alDeleteSources(alSource);
-        AL11.alDeleteBuffers(alBuffer);
     }
 
     public ArrayList<Short> genWaveform(Oscillator cluster, ArrayList<Section> sections) {
@@ -45,31 +34,5 @@ public class Track {
         }
         loadAlBuffer(cluster.getSampleRate());
         return waveform;
-    }
-
-    public void play() {
-        AL11.alSourceStop(alSource);
-        AL11.alSourcei(alSource,AL11.AL_BUFFER,alBuffer);
-        AL11.alSourcePlay(alSource);
-    }
-
-    public void stop() {
-        AL11.alSourceStop(alSource);
-    }
-
-    public void enableLoop() {
-        AL11.alSourcei(alSource,AL11.AL_LOOPING,1);
-    }
-
-    public void disableLoop() {
-        AL11.alSourcei(alSource,AL11.AL_LOOPING,0);
-    }
-
-    public void setGain(float gian) {
-        AL11.alSourcef(alSource,AL11.AL_GAIN,gian);
-    }
-
-    public boolean isFinished() {
-        return AL11.alGetSourcei(alSource,AL11.AL_SOURCE_STATE) == AL11.AL_STOPPED;
     }
 }
