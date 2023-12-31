@@ -1,4 +1,4 @@
-package me.iaksh.cluster;
+package me.iaksh.mixer;
 
 import org.lwjgl.openal.*;
 

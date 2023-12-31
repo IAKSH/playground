@@ -1,24 +1,11 @@
 package me.iaksh.cluster;
 
-public class SquareWaveCluster extends OpenALCluster {
-    private final int sampleRate;
+public class SquareWaveCluster implements Cluster {
     private final float dutyCycle = 0.5f;
     private final float phaseShift = 1.0f;
 
-    public SquareWaveCluster(int sampleRate) {
-        this.sampleRate = sampleRate;
-    }
-
-    @Override
-    public void play(int simpleScore, int octaveShift, int semitoneShift) {
-        if(simpleScore == 0) {
-            source.stop();
-            return;
-        }
-
-        int samplesPerCycle = (int) (sampleRate / EqualTemp.toFreq(simpleScore,octaveShift,semitoneShift));
+    private short[] genBasicWaveform(int samplesPerCycle) {
         short[] data = new short[samplesPerCycle];
-
         int halfSamples = (int) (samplesPerCycle * dutyCycle);
         int phaseSamples = (int) (samplesPerCycle * phaseShift);
 
@@ -29,8 +16,27 @@ public class SquareWaveCluster extends OpenALCluster {
                 data[i] = Short.MIN_VALUE;
             }
         }
+        return data;
+    }
 
-        buffer.write(data,sampleRate);
-        source.play(buffer);
+    @Override
+    public short[] genWaveform(int ms,int simpleScore, int octaveShift, int semitoneShift) {
+        short[] croppedData = new short[ms * sampleRate / 1000];
+        if(simpleScore == 0) {
+            return croppedData;
+        }
+
+        int samplesPerCycle = sampleRate / EqualTemp.toFreq(simpleScore,octaveShift,semitoneShift);
+        short[] data = genBasicWaveform(samplesPerCycle);
+
+        if(croppedData.length > samplesPerCycle) {
+            for(int i = 0;i < croppedData.length;i++) {
+                croppedData[i] = data[i % data.length];
+            }
+        } else {
+            System.arraycopy(data, 0, croppedData, 0, croppedData.length);
+        }
+
+        return croppedData;
     }
 }

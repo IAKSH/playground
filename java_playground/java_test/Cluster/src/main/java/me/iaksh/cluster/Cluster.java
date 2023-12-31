@@ -2,6 +2,11 @@ package me.iaksh.cluster;
 
 // Cluster只负责声音的听感
 public interface Cluster {
-    void play(int simpleScore,int octaveShift,int semitoneShift);
-    void stop();
+    int sampleRate = 44100;
+
+    short[] genWaveform(int ms,int simpleScore, int octaveShift, int semitoneShift);
+
+    default int getSampleRate() {
+        return sampleRate;
+    }
 }
