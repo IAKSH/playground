@@ -1,6 +1,6 @@
 package me.iaksh.mixer;
 
-import me.iaksh.cluster.Cluster;
+import me.iaksh.oscillator.Oscillator;
 import me.iaksh.notation.Note;
 import me.iaksh.notation.Section;
 import org.lwjgl.openal.AL11;
@@ -25,9 +25,6 @@ public class Track {
         alBuffer = AL11.alGenBuffers();
         waveform = new ArrayList<>();
         this.bpm = bpm;
-
-        // temp
-        AL11.alSourcef(alSource,AL11.AL_GAIN,0.05f);
     }
 
     public void destroy() {
@@ -35,7 +32,7 @@ public class Track {
         AL11.alDeleteBuffers(alBuffer);
     }
 
-    public ArrayList<Short> genWaveform(Cluster cluster, ArrayList<Section> sections) {
+    public ArrayList<Short> genWaveform(Oscillator cluster, ArrayList<Section> sections) {
         waveform.clear();
         for(Section section : sections) {
             for(Note note : section.getNotes()) {
@@ -66,6 +63,10 @@ public class Track {
 
     public void disableLoop() {
         AL11.alSourcei(alSource,AL11.AL_LOOPING,0);
+    }
+
+    public void setGain(float gian) {
+        AL11.alSourcef(alSource,AL11.AL_GAIN,gian);
     }
 
     public boolean isFinished() {

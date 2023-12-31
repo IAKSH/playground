@@ -1,6 +1,6 @@
-package me.iaksh.cluster;
+package me.iaksh.oscillator;
 
-public class WhiteNoiseCluster implements Cluster {
+public class NoiseOscillator extends Oscillator {
 
     private short[] genBasicWaveform(int samplesPerCycle) {
         short[] data = new short[samplesPerCycle];
@@ -13,12 +13,12 @@ public class WhiteNoiseCluster implements Cluster {
 
     @Override
     public short[] genWaveform(int ms,int simpleScore, int octaveShift, int semitoneShift) {
-        short[] croppedData = new short[ms * sampleRate / 1000];
+        short[] croppedData = new short[ms * getSampleRate() / 1000];
         if(simpleScore == 0) {
             return croppedData;
         }
 
-        int samplesPerCycle = sampleRate / EqualTemp.toFreq(simpleScore,octaveShift,semitoneShift);
+        int samplesPerCycle = getSampleRate() / EqualTemp.toFreq(simpleScore,octaveShift,semitoneShift);
         short[] data = genBasicWaveform(samplesPerCycle);
 
         if(croppedData.length > samplesPerCycle) {

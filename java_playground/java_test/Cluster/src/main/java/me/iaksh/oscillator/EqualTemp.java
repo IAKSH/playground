@@ -1,4 +1,4 @@
-package me.iaksh.cluster;
+package me.iaksh.oscillator;
 
 public class EqualTemp {
     public static int toFreq(int simpleScore,int octaveShift,int semitoneShift) {

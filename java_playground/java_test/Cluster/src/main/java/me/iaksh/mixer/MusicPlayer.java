@@ -4,7 +4,7 @@ import me.iaksh.notation.Section;
 
 import java.util.ArrayList;
 
-// Mixer负责组织整首曲目
-public interface Player {
+public interface MusicPlayer {
     void play(ArrayList<ArrayList<Section>> sections);
+    void play(float gain,ArrayList<ArrayList<Section>> sections);
 }

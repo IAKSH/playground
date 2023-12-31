@@ -1,23 +1,19 @@
-package me.iaksh.cluster;
+package me.iaksh.oscillator;
 
-public class TriangleWaveCluster implements Cluster {
-    private final float amplitude = 1.0f;
+public class SquareOscillator extends Oscillator {
+    private final float dutyCycle = 0.5f;
     private final float phaseShift = 1.0f;
 
     private short[] genBasicWaveform(int samplesPerCycle) {
         short[] data = new short[samplesPerCycle];
+        int halfSamples = (int) (samplesPerCycle * dutyCycle);
+        int phaseSamples = (int) (samplesPerCycle * phaseShift);
 
-        float maxAmplitude = Short.MAX_VALUE * amplitude;
-        float phaseIncrement = (2 * (float) Math.PI) / samplesPerCycle;
-        float currentPhase = 0;
-
-        for (int j = 0; j < data.length; j++) {
-            float value = (float) Math.sin(currentPhase);
-            data[j] = (short) (value * maxAmplitude);
-
-            currentPhase += phaseShift * phaseIncrement;
-            if (currentPhase >= 2 * Math.PI) {
-                currentPhase -= 2 * Math.PI;
+        for (int i = 0; i < samplesPerCycle; i++) {
+            if ((i + phaseSamples) % samplesPerCycle < halfSamples) {
+                data[i] = Short.MAX_VALUE;
+            } else {
+                data[i] = Short.MIN_VALUE;
             }
         }
         return data;
@@ -25,12 +21,12 @@ public class TriangleWaveCluster implements Cluster {
 
     @Override
     public short[] genWaveform(int ms,int simpleScore, int octaveShift, int semitoneShift) {
-        short[] croppedData = new short[ms * sampleRate / 1000];
+        short[] croppedData = new short[ms * getSampleRate() / 1000];
         if(simpleScore == 0) {
             return croppedData;
         }
 
-        int samplesPerCycle = sampleRate / EqualTemp.toFreq(simpleScore,octaveShift,semitoneShift);
+        int samplesPerCycle = getSampleRate() / EqualTemp.toFreq(simpleScore,octaveShift,semitoneShift);
         short[] data = genBasicWaveform(samplesPerCycle);
 
         if(croppedData.length > samplesPerCycle) {
