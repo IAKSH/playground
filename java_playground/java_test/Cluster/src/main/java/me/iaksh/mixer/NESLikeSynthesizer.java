@@ -21,7 +21,7 @@ public class NESLikeSynthesizer extends Synthesizer implements Exporter {
 
     public NESLikeSynthesizer(int bpm) {
         for(int i = 0;i < 4;i++)
-            tracks.add(new Track(bpm));
+            tracks.add(new EqualTempTrack(bpm));
     }
 
     @Override

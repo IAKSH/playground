@@ -1,5 +1,7 @@
 package me.iaksh.oscillator;
 
+import me.iaksh.mixer.EqualTemp;
+
 public class TriangleOscillator extends Oscillator {
     private final float amplitude = 1.0f;
     private final float phaseShift = 1.0f;
@@ -24,13 +26,13 @@ public class TriangleOscillator extends Oscillator {
     }
 
     @Override
-    public short[] genWaveform(int ms,int simpleScore, int octaveShift, int semitoneShift) {
+    public short[] genWaveform(int ms,int freq) {
         short[] croppedData = new short[ms * getSampleRate() / 1000];
-        if(simpleScore == 0) {
+        if(freq == 0) {
             return croppedData;
         }
 
-        int samplesPerCycle = getSampleRate() / EqualTemp.toFreq(simpleScore,octaveShift,semitoneShift);
+        int samplesPerCycle = getSampleRate() / freq;
         short[] data = genBasicWaveform(samplesPerCycle);
 
         if(croppedData.length > samplesPerCycle) {

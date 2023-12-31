@@ -19,13 +19,13 @@ public class NoiseOscillator extends Oscillator {
     }
 
     @Override
-    public short[] genWaveform(int ms,int simpleScore, int octaveShift, int semitoneShift) {
+    public short[] genWaveform(int ms,int freq) {
         short[] croppedData = new short[ms * getSampleRate() / 1000];
-        if(simpleScore == 0) {
+        if(freq == 0) {
             return croppedData;
         }
 
-        int samplesPerCycle = getSampleRate() / EqualTemp.toFreq(simpleScore,octaveShift,semitoneShift) * 200;
+        int samplesPerCycle = getSampleRate() / freq * 200;
         short[] data = genBasicWaveform(samplesPerCycle);
 
         if(croppedData.length > samplesPerCycle) {
