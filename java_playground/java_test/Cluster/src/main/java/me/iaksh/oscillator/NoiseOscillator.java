@@ -25,7 +25,7 @@ public class NoiseOscillator extends Oscillator {
             return croppedData;
         }
 
-        int samplesPerCycle = getSampleRate() / freq * 200;
+        int samplesPerCycle = getSampleRate() / freq;
         short[] data = genBasicWaveform(samplesPerCycle);
 
         if(croppedData.length > samplesPerCycle) {

@@ -1,7 +1,21 @@
 package me.iaksh.notation;
 
-public interface Note {
-    int getFreq();
-    float getNoteFraction();
-    boolean isDotted();
+public abstract class Note {
+    protected float noteFraction;
+    protected boolean dotted;
+
+    public Note(float noteFraction,boolean dotted) {
+        this.noteFraction = noteFraction;
+        this.dotted = dotted;
+    }
+
+    public float getNoteFraction() {
+        return noteFraction;
+    }
+
+    public boolean isDotted() {
+        return dotted;
+    }
+
+    public abstract int getFreq();
 }
