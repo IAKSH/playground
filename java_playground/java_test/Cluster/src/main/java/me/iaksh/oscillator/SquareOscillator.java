@@ -1,7 +1,5 @@
 package me.iaksh.oscillator;
 
-import me.iaksh.mixer.EqualTemp;
-
 public class SquareOscillator extends Oscillator {
     private final float dutyCycle = 0.5f;
     private final float phaseShift = 1.0f;

@@ -1,4 +1,4 @@
-package me.iaksh.mixer;
+package me.iaksh.notation;
 
 public class EqualTemp {
     public static int toFreq(int simpleScore,int octaveShift,int semitoneShift) {

@@ -1,7 +1,5 @@
 package me.iaksh.oscillator;
 
-import me.iaksh.mixer.EqualTemp;
-
 public class TriangleOscillator extends Oscillator {
     private final float amplitude = 1.0f;
     private final float phaseShift = 1.0f;
