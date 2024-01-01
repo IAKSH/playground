@@ -1,22 +1,26 @@
 package me.iaksh.oscillator;
 
-import java.util.Random;
-
-public class NoiseOscillator extends Oscillator {
-    private final Random random;
+public class SinOscillator extends Oscillator {
     private float amplitude = 0.5f;
+    private float phaseShift = 1.0f;
 
     private short[] genBasicWaveform(int samplesPerCycle) {
         short[] data = new short[samplesPerCycle];
 
-        for (int i = 0; i < data.length; i++) {
-            data[i] = (short) (random.nextGaussian() % amplitude * Short.MAX_VALUE);
+        float maxAmplitude = Short.MAX_VALUE * amplitude;
+        float phaseIncrement = (2 * (float) Math.PI) / samplesPerCycle;
+        float currentPhase = 0;
+
+        for (int j = 0; j < data.length; j++) {
+            float value = (float) Math.sin(currentPhase);
+            data[j] = (short) (value * maxAmplitude);
+
+            currentPhase += phaseShift * phaseIncrement;
+            if (currentPhase >= 2 * Math.PI) {
+                currentPhase -= 2 * Math.PI;
+            }
         }
         return data;
-    }
-
-    public NoiseOscillator() {
-        random = new Random();
     }
 
     @Override
@@ -36,6 +40,7 @@ public class NoiseOscillator extends Oscillator {
         } else {
             System.arraycopy(data, 0, croppedData, 0, croppedData.length);
         }
+
         return croppedData;
     }
 
@@ -43,7 +48,15 @@ public class NoiseOscillator extends Oscillator {
         return amplitude;
     }
 
+    public float getPhaseShift() {
+        return phaseShift;
+    }
+
     public void setAmplitude(float amplitude) {
         this.amplitude = amplitude;
+    }
+
+    public void setPhaseShift(float phaseShift) {
+        this.phaseShift = phaseShift;
     }
 }

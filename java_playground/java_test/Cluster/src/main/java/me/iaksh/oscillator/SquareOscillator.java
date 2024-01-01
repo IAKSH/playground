@@ -1,8 +1,9 @@
 package me.iaksh.oscillator;
 
 public class SquareOscillator extends Oscillator {
-    private final float dutyCycle = 0.5f;
-    private final float phaseShift = 1.0f;
+    private float dutyCycle = 0.5f;
+    private float phaseShift = 1.0f;
+    private float amplitude = 0.5f;
 
     private short[] genBasicWaveform(int samplesPerCycle) {
         short[] data = new short[samplesPerCycle];
@@ -11,9 +12,9 @@ public class SquareOscillator extends Oscillator {
 
         for (int i = 0; i < samplesPerCycle; i++) {
             if ((i + phaseSamples) % samplesPerCycle < halfSamples) {
-                data[i] = Short.MAX_VALUE;
+                data[i] = (short) (Short.MAX_VALUE * amplitude);
             } else {
-                data[i] = Short.MIN_VALUE;
+                data[i] = (short) (Short.MIN_VALUE * amplitude);
             }
         }
         return data;
@@ -38,5 +39,29 @@ public class SquareOscillator extends Oscillator {
         }
 
         return croppedData;
+    }
+
+    public float getAmplitude() {
+        return amplitude;
+    }
+
+    public float getDutyCycle() {
+        return dutyCycle;
+    }
+
+    public float getPhaseShift() {
+        return phaseShift;
+    }
+
+    public void setAmplitude(float amplitude) {
+        this.amplitude = amplitude;
+    }
+
+    public void setDutyCycle(float dutyCycle) {
+        this.dutyCycle = dutyCycle;
+    }
+
+    public void setPhaseShift(float phaseShift) {
+        this.phaseShift = phaseShift;
     }
 }

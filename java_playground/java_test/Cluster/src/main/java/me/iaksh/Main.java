@@ -1,5 +1,6 @@
 package me.iaksh;
 
+import me.iaksh.mixer.ASynthesizer;
 import me.iaksh.mixer.NESLikeSynthesizer;
 import me.iaksh.notation.EqualTempNote;
 import me.iaksh.notation.FreqNote;
@@ -321,8 +322,9 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        //new NESLikeSynthesizer(120).saveToWav("./out.wav",genTestSection());
-        new Player().play(0.05f,new NESLikeSynthesizer(120).genWavform(genTestSection()));
+        int bpm = 120;
+        //new ASynthesizer(bpm).saveToWav("./out.wav",genTestSection());
+        new Player().play(0.25f,new ASynthesizer(bpm).genWavform(genTestSection()));
         Player.closeOpenAL();
     }
 }

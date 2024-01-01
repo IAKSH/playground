@@ -1,8 +1,8 @@
 package me.iaksh.oscillator;
 
 public class TriangleOscillator extends Oscillator {
-    private final float amplitude = 1.0f;
-    private final float phaseShift = 1.0f;
+    private float amplitude = 0.5f;
+    private float phaseShift = 1.0f;
 
     private short[] genBasicWaveform(int samplesPerCycle) {
         short[] data = new short[samplesPerCycle];
@@ -12,7 +12,7 @@ public class TriangleOscillator extends Oscillator {
         float currentPhase = 0;
 
         for (int j = 0; j < data.length; j++) {
-            float value = (float) Math.sin(currentPhase);
+            float value = (float) Math.asin(Math.sin(currentPhase));
             data[j] = (short) (value * maxAmplitude);
 
             currentPhase += phaseShift * phaseIncrement;
@@ -42,5 +42,21 @@ public class TriangleOscillator extends Oscillator {
         }
 
         return croppedData;
+    }
+
+    public float getAmplitude() {
+        return amplitude;
+    }
+
+    public float getPhaseShift() {
+        return phaseShift;
+    }
+
+    public void setAmplitude(float amplitude) {
+        this.amplitude = amplitude;
+    }
+
+    public void setPhaseShift(float phaseShift) {
+        this.phaseShift = phaseShift;
     }
 }
