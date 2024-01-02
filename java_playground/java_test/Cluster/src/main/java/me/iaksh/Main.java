@@ -323,8 +323,8 @@ public class Main {
 
     public static void main(String[] args) {
         int bpm = 120;
-        //new ASynthesizer(bpm).saveToWav("./out.wav",genTestSection());
-        new Player().play(0.25f,new ASynthesizer(bpm).genWavform(genTestSection()));
+        //new NESLikeSynthesizer(bpm).saveToWav("./out.wav",genTestSection());
+        new Player().play(0.25f,new NESLikeSynthesizer(bpm).genWavform(genTestSection()));
         Player.closeOpenAL();
     }
 }

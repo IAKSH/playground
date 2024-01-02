@@ -45,7 +45,7 @@ public class NESLikeSynthesizer extends Synthesizer implements Exporter {
         ArrayList<ArrayList<Short>> channels = new ArrayList<>();
         channels.add(tracks.get(0).genWaveform(new SquareOscillator(),sections.get(0)));
         channels.add(tracks.get(1).genWaveform(new SquareOscillator(),sections.get(1)));
-        channels.add(tracks.get(2).genWaveform(new TriangleOscillator(),sections.get(2)));
+        channels.add(tracks.get(2).genWaveform(new SteppedTriangleOscillator(),sections.get(2)));
         channels.add(tracks.get(3).genWaveform(new NoiseOscillator(),sections.get(3)));
         return Mixer.mix(channels);
     }

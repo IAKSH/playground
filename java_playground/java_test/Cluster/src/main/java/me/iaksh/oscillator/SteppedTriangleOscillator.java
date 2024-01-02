@@ -1,8 +1,16 @@
 package me.iaksh.oscillator;
 
-public class TriangleOscillator extends CroppingOscillator {
-    protected float amplitude = 0.5f;
-    protected float phaseShift = 1.0f;
+public class SteppedTriangleOscillator extends TriangleOscillator {
+
+    private int ladderNum;
+
+    public SteppedTriangleOscillator() {
+        ladderNum = 16;
+    }
+
+    public SteppedTriangleOscillator(int ladderNum) {
+        this.ladderNum = ladderNum;
+    }
 
     @Override
     protected short[] genBasicWaveform(int samplesPerCycle) {
@@ -14,7 +22,8 @@ public class TriangleOscillator extends CroppingOscillator {
 
         for (int j = 0; j < data.length; j++) {
             float value = (float) (Math.asin(Math.sin(currentPhase)) * 2 / Math.PI);
-            data[j] = (short) (value * maxAmplitude);
+            int halfLadder = ladderNum / 2;
+            data[j] = (short) ((float) Math.floor(halfLadder * value) / halfLadder * maxAmplitude);
 
             currentPhase += phaseShift * phaseIncrement;
             if (currentPhase >= 2 * Math.PI) {
@@ -24,19 +33,11 @@ public class TriangleOscillator extends CroppingOscillator {
         return data;
     }
 
-    public float getAmplitude() {
-        return amplitude;
+    public int getLadderNum() {
+        return ladderNum;
     }
 
-    public float getPhaseShift() {
-        return phaseShift;
-    }
-
-    public void setAmplitude(float amplitude) {
-        this.amplitude = amplitude;
-    }
-
-    public void setPhaseShift(float phaseShift) {
-        this.phaseShift = phaseShift;
+    public void setLadderNum(int ladderNum) {
+        this.ladderNum = ladderNum;
     }
 }
