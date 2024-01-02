@@ -1,0 +1,42 @@
+plugins {
+    id 'java'
+}
+
+allprojects {
+    repositories {
+        maven { url 'https://mirrors.cloud.tencent.com/nexus/repository/maven-public/' }
+        mavenCentral()
+        mavenLocal()
+    }
+}
+
+group = 'me.iaksh'
+version = '0.0.2-SNAPSHOT'
+
+project.ext.lwjglVersion = "3.3.3"
+project.ext.lwjglNatives = "natives-windows"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
+    implementation "org.lwjgl:lwjgl"
+    implementation "org.lwjgl:lwjgl-openal"
+    runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-openal::$lwjglNatives"
+}
+
+jar {
+    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+    manifest {
+        attributes 'Main-Class': 'me.iaksh.Main'
+    } from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+}
+test {
+    useJUnitPlatform()
+}
