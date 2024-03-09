@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 int compare(const void* n,const void* m) {
-    return *((const int*)n) > *((const int*)m);
+    return *((const int*)n) - *((const int*)m);
 }
 
 int main(void) {
