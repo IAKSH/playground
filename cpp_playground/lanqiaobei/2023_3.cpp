@@ -1,40 +1,34 @@
 // https://www.dotcpp.com/oj/problem3152.html
 
-/**
- * failed
- * https://www.dotcpp.com/oj/submit_status.php?sid=15728673
-*/
-
 #include <bits/stdc++.h>
 
 using namespace std;
 
-bool check(int n,int m) noexcept {
-    while(m >= 10) {
-        m /= 10;
-    }
-    return m == n % 10;
-}
+/**
+ * https://www.dotcpp.com/oj/submit_status.php?sid=15731705
+ * 运行时间: 56ms    消耗内存: 2088KB
+*/
 
 int main() noexcept {
     int n;
     scanf("%d",&n);
-    vector<int> v(n);
-    for(int i = 0;i < n;i++) {
-        int input;
-        scanf("%d",&input);
-        v[i] = input;
-    }
 
-    vector<int> dp(n + 1);
+    array<int,10> dp{0};
+
+    int maxn = INT_MIN;
     for(int i = 1;i <= n;i++) {
-        auto minn_it = min_element(dp.begin(),dp.begin() + i);
-        dp[i] = i - (minn_it - dp.begin()) + *minn_it;
-        if(check(v[i - 1],v[i])) {
-            ++dp[i];
-        }
+        string cur;
+        cin >> cur;
+
+        int cur_head = cur[0] - '0';
+        int cur_tail = cur.back() - '0';
+
+        //                           discard current   or not
+        // dp[i][cur_tail] = max( dp[i - 1][cur_tail], dp[i - 1][cur_head] + 1 )
+        dp[cur_tail] = max(dp[cur_tail],dp[cur_head] + 1);
+        maxn = max(maxn,dp[cur_tail]);
     }
 
-    cout << n - dp[n] + 1 << '\n';
+    cout << n - maxn << endl;
     return 0;
 }
