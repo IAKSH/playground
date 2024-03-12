@@ -16,6 +16,11 @@ NO
 
 // 有点反直觉的是，降落过程中不计算油耗，或者说降落过程中燃油耗尽并不影响降落
 
+/**
+ * https://www.dotcpp.com/oj/submit_status.php?sid=15728653
+ * 运行时间: 6ms    消耗内存: 1272KB
+*/
+
 struct Plane{
     int t,d,l;
     Plane(int t,int d,int l)

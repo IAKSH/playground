@@ -1,7 +1,9 @@
 // https://www.dotcpp.com/oj/problem3152.html
 
-// 疑似 O(N^2) 非线性DP
-// 未验证
+/**
+ * failed
+ * https://www.dotcpp.com/oj/submit_status.php?sid=15728673
+*/
 
 #include <bits/stdc++.h>
 

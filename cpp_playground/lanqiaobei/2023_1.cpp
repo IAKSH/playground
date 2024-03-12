@@ -8,6 +8,11 @@
 #include <climits>
 #include <cmath>
 
+/**
+ * https://www.dotcpp.com/oj/submit_status.php?sid=15728622
+ * 运行时间: 16ms    消耗内存: 2084KB
+*/
+
 int main()
 {
     int n;
