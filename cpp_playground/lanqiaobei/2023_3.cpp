@@ -1,29 +1,38 @@
 // https://www.dotcpp.com/oj/problem3152.html
 
-// 疑似 O(N^2)遍历 * 线性DP
+// 疑似 O(N^2) 非线性DP
+// 未验证
 
-#include <algorithm>
-#include <vector>
-#include <cstdio>
+#include <bits/stdc++.h>
 
-using Ite = std::vector<int>::iterator;
+using namespace std;
 
-int dp(Ite&& begin,Ite&& end) noexcept {
-    
+bool check(int n,int m) noexcept {
+    while(m >= 10) {
+        m /= 10;
+    }
+    return m == n % 10;
 }
 
 int main() noexcept {
     int n;
-    std::vector<int> v(n);
+    scanf("%d",&n);
+    vector<int> v(n);
     for(int i = 0;i < n;i++) {
         int input;
-        std::scanf("%d",&input);
+        scanf("%d",&input);
         v[i] = input;
     }
 
-    std::vector<int> res;
-    for(int i = 0;i < n;i++) {
-        res.emplace_back(dp(std::begin(v) + i,std::end(v)));
+    vector<int> dp(n + 1);
+    for(int i = 1;i <= n;i++) {
+        auto minn_it = min_element(dp.begin(),dp.begin() + i);
+        dp[i] = i - (minn_it - dp.begin()) + *minn_it;
+        if(check(v[i - 1],v[i])) {
+            ++dp[i];
+        }
     }
-    printf("%d\n",std::min(std::begin(res),std::end(res)));
+
+    cout << n - dp[n] + 1 << '\n';
+    return 0;
 }
