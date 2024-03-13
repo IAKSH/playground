@@ -5,10 +5,10 @@
 using namespace std;
 
 /**
- * 超时
+ * 部分通过
  * 
- * https://www.dotcpp.com/oj/submit_status.php?sid=15743322
- * 运行时间: 1561ms    消耗内存: 3608KB
+ * https://www.dotcpp.com/oj/submit_status.php?sid=15743570
+ * 运行时间: 348ms    消耗内存: 5180KB
 */
 
 int main() noexcept {
@@ -20,12 +20,14 @@ int main() noexcept {
     int len = s.size();
     int cnt = 0;
 
+    vector<int> heads;
     for(int i = 0;i < len;i++) {
         if(s[i] == c1) {
-            for(int j = i;j < len;j++) {
-                if(s[j] == c2 && j - i + 1 >= k) {
-                    ++cnt;
-                }
+            heads.emplace_back(i);
+        }
+        else if(s[i] == c2) {
+            for(const auto& j : heads) {
+                cnt += i - j + 1 >= k;
             }
         }
     }
