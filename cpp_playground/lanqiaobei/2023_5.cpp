@@ -5,10 +5,8 @@
 using namespace std;
 
 /**
- * 部分通过
- * 
- * https://www.dotcpp.com/oj/submit_status.php?sid=15743570
- * 运行时间: 348ms    消耗内存: 5180KB
+ * https://www.dotcpp.com/oj/submit_status.php?sid=15744503
+ * 运行时间: 45ms    消耗内存: 3608KB
 */
 
 int main() noexcept {
@@ -18,17 +16,13 @@ int main() noexcept {
     cin >> k >> s >> c1 >> c2;
 
     int len = s.size();
-    int cnt = 0;
+    int c1_cnt = 0;
+    long long cnt = 0;
 
-    vector<int> heads;
-    for(int i = 0;i < len;i++) {
-        if(s[i] == c1) {
-            heads.emplace_back(i);
-        }
-        else if(s[i] == c2) {
-            for(const auto& j : heads) {
-                cnt += i - j + 1 >= k;
-            }
+    for(int i = k - 1;i < len;i++) {
+        c1_cnt += s[i - k + 1] == c1;
+        if(s[i] == c2) {
+            cnt += c1_cnt;
         }
     }
 
