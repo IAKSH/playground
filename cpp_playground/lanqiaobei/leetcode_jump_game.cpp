@@ -4,21 +4,16 @@
 
 using namespace std;
 
-/**
- * DFS（用于回退） + 一点点贪心
- * 超时了
-*/
-
 class Solution {
 public:
-    bool canJump(vector<int>& nums,int index = 0) {
-        if(index >= nums.size() - 1)
-            return true;
-        for(int i = nums[index];i > 0;i--) {
-            if(canJump(nums,index + i))
-                return true;
+    bool canJump(vector<int>& nums) {
+        int len = nums.size();
+        int maxn = 0;
+        for(int i = 0;i < len - 1;i++) {
+            if(i <= maxn && i + nums[i] > maxn)
+                maxn = i + nums[i];
         }
-        return false;
+        return maxn + 1 >= len;
     }
 };
 
