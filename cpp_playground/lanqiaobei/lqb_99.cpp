@@ -23,7 +23,7 @@ int main() noexcept {
     for(lsq = maxn;lsq > 0;lsq--) {
         int _k = 0;
         for(const auto& cho : chocolates)
-            _k += min(cho.first,cho.second) / lsq * max(cho.first,cho.second) / lsq;
+            _k += cho.first / lsq * cho.second / lsq;
         if(_k >= k)
             break;
     }
