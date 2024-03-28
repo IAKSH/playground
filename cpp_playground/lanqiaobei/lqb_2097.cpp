@@ -5,6 +5,7 @@
  * 求y_min
 */
 
+#ifdef OLD_VER
 #include <bits/stdc++.h>
 
 using namespace std;
@@ -40,3 +41,50 @@ int main() noexcept {
 
     return 1;
 }
+#else
+#include <bits/stdc++.h>
+
+using namespace std;
+
+static int n,x;
+static vector<int> v,prefix;
+
+bool check(int y) noexcept {
+    int sum = 0;
+    for(int i = 0;i < n - y;i++) {
+        //sum = accumulate(v.begin() + i,v.begin() + i + y,0);
+        // 使用预先计算的前缀和，减少重复的遍历求和
+        sum = prefix[i + y - 1] - (i > 0 ? prefix[i - 1] : 0); 
+        if(sum < 2 * x) {
+            return false;
+        }
+    }
+    return true;
+}
+
+int main() noexcept {
+    cin >> n >> x;
+    v.resize(n - 1);
+    prefix.resize(n - 1);
+    for(int i = 0; i < n - 1; i++) {
+        cin >> v[i];
+        // 输入的同时计算前缀和
+        prefix[i] = v[i] + (i > 0 ? prefix[i - 1] : 0);
+    }
+
+    // 在1到n-1之间做二分查找
+    int l = 0;
+    int r = n;
+    int mid;
+    while(l != r) {
+        mid = (r + l) / 2;
+        if(check(mid))
+            r = mid;
+        else
+            l = mid + 1;
+    }
+    cout << r << '\n';
+
+    return 0;
+}
+#endif
