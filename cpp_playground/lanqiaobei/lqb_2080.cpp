@@ -1,7 +1,6 @@
 /**
  * https://www.lanqiao.cn/problems/2080/learning/?page=1&first_category_id=1&second_category_id=3&tags=2022
- * 没有任何优化的无脑暴力
- * 四例超时
+ * 使用乘法分配律配合前缀和减少计算次数
 */
 
 #include <bits/stdc++.h>
@@ -12,14 +11,15 @@ int main() noexcept {
     int n;
     cin >> n;
     vector<int> v(n);
-    for(auto& i : v)
-        cin >> i;
+    vector<long long> prefix(n);
+    for(int i = 0;i < n;i++) {
+        cin >> v[i];
+        prefix[i] = v[i] + (i > 0 ? prefix[i - 1] : 0);
+    }
 
     long long sum = 0;
     for(int i = 0;i < n;i++) {
-        for(int j = i + 1;j < n;j++) {
-            sum += v[i] * v[j];
-        }
+        sum += v[i] * (prefix[n - 1] - prefix[i]);
     }
 
     cout << sum << '\n';
