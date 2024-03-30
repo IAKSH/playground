@@ -73,6 +73,7 @@ int main() noexcept {
     }
 
     // 在1到n-1之间做二分查找
+    // n可能会非常大，不太适合使用std::lower_bound，因为需要为其构建一个长度为n的range
     int l = 0;
     int r = n;
     int mid;
@@ -84,7 +85,7 @@ int main() noexcept {
             l = mid + 1;
     }
     cout << r << '\n';
-
+    
     return 0;
 }
 #endif
