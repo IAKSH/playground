@@ -51,8 +51,7 @@ static vector<bool> memory,tmp_memory;
 int getCircleLength(int i) noexcept {
     int cnt = 1;
     int mv_i = v[v[i] - 1];
-    for(int j = 0;j < n;j++)
-        tmp_memory[j] = false;
+    fill(tmp_memory.begin(),tmp_memory.end(),false);
     while(mv_i != v[i]) {
         if(tmp_memory[mv_i] || memory[mv_i])
             return 0;
