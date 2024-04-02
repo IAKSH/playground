@@ -26,9 +26,17 @@
                     "description": "将反汇编风格设置为 Intel",
                     "text": "-gdb-set disassembly-flavor intel",
                     "ignoreFailures": true
+                },
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Fix pretty-printing for gdb",
+                    "text": "set charset UTF-8"
                 }
             ]
         }
-
     ]
 }
