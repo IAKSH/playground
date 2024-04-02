@@ -18,3 +18,56 @@ int main() noexcept {
     cout << sum;
     return 0;
 }
+
+/*
+#define USING_STRING_ACCUMULATE
+
+string strAccumulate(string a,string b) noexcept {
+    reverse(a.begin(),a.end());
+    reverse(b.begin(),b.end());
+    string result_str;
+    string& shorter = (a.size() < b.size() ? a : b);
+    string& longger = (shorter == a ? b : a);
+
+    bool carry = false;
+    int shorter_len = shorter.size();
+    int i = 0;
+    for(;i < shorter_len;i++) {
+        int res = shorter[i] - '0' + longger[i] - '0' + carry;
+        if(res >= 10) {
+            carry = true;
+            res -= 10;
+        }
+        else
+            carry = false;
+        result_str.push_back(static_cast<char>(res + '0'));
+    };
+    int longger_len = longger.size();
+    for(;i < longger_len;i++) {
+        int tmp = longger[i] + carry;
+        if(tmp > 10)
+            tmp -= 10;
+        else
+            carry = false;
+        result_str.push_back(static_cast<char>(tmp));
+    }
+    if(carry)
+        result_str.push_back('1');
+    reverse(result_str.begin(),result_str.end());
+    return result_str;
+}
+
+int main() noexcept {
+#ifndef USING_STRING_ACCUMULATE
+    long long sum = 0;
+    sum = (1 + 20230408LL) * 20230408LL / 2;
+    cout << sum;
+#else
+    string res = "0";
+    for(int i = 1;i <= 20230408;i++)
+        res = strAccumulate(res,to_string(i));
+    cout << res << '\n';
+#endif
+    return 0;
+}
+*/
