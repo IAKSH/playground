@@ -13,10 +13,10 @@ int main() noexcept {
     string s;cin >> s;
     int cnt = 0;
     int len = s.size();
-    array<char,2> sub;
     for(int i = 0;i < len - 1;i++) {
-        copy(s.begin() + i,s.begin() + i + 2,sub.begin()); 
-        bool b = ((find(sub.begin(),sub.begin() + 2,'?') != sub.end()) || (sub[0] == sub[1]));
+        const auto& it_l = s.begin() + i;
+        const auto& it_r = s.begin() + i + 2;
+        bool b = ((find(it_l,it_r,'?') != it_r) || (*it_l == *(it_l + 1)));
         cnt += b;
         i += b;
     }
