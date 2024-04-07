@@ -1,37 +1,51 @@
 // https://www.lanqiao.cn/problems/3544/learning/?page=1&first_category_id=1&second_category_id=3&tags=2023,%E4%BA%8C%E5%88%86&difficulty=30
-// 未经测试
-// 模拟，等下再写个区间合并+二分查找
-// 不出意外的超时了，5过5超时
+// 等下弄二分查找
+// 60% 3超时1错
 
 #include <bits/stdc++.h>
 
 using namespace std;
 
+int n,len;
+vector<bool> pipe;
+vector<pair<int,int>> v;
+vector<bool> check_v;
+
+bool check(int t) noexcept {
+    fill(check_v.begin(),check_v.end(),false);
+    for(const auto& p : v) {
+        int range = t - p.second;
+        if(range >= 0) {
+            // 左闭右开
+            int cur_l = max( p.first - range - 1,0);
+            int cur_r = min(p.first + range,len);
+            fill(check_v.begin() + cur_l,check_v.begin() + cur_r,true);
+        }
+    }
+    for(const auto& b : check_v) {
+        if(!b) return false;
+    }
+    return true;
+}
+
 int main() noexcept {
-    int n,len;cin >> n >> len;
-    vector<bool> pipe(len,false);
-    vector<pair<int,int>> v(n);
+    cin >> n >> len;
+    pipe.resize(len,false);
+    v.resize(n);
+    check_v.resize(len);
     for(auto& p : v)
         cin >> p.first >> p.second;
-    
-    int cur_t = 1;
-    while(true) {
-        bool flag = true;
-        for(const auto& b : pipe)
-            if(!b) flag = false;
-        if(flag) {
-            cout << cur_t - 1 << '\n';
-            break;
-        }
-        for(const auto& p : v) {
-            if(p.second <= cur_t) {
-                for(int i = p.first - (cur_t - p.second);i <= p.first + (cur_t - p.second);i++) {
-                    if(i > 0 && i <= len)
-                        pipe[i - 1] = true;
-                }
-            }
-        }
-        ++cur_t;
-    }
+
+    int i;
+    for(i = 0;i < len && !check(i);i++);
+    cout << i << '\n';
+
     return 0;
 }
+
+/*
+3 10
+1 1
+6 5
+10 2
+*/
