@@ -12,13 +12,23 @@
 
 using namespace std;
 
+#ifdef USE_ARITHMETIC_SEQUENCE
 int main() noexcept {
     long long sum = 0;
     sum = (1 + 20230408LL) * 20230408LL / 2;
     cout << sum;
     return 0;
 }
-
+#else
+int main() noexcept {
+	long long res = 0;
+	for(int i = 1;i <= 20230408;i++) {
+		res += i;
+	}
+	cout << res << '\n';
+	return 0;
+} 
+#endif
 /*
 #define USING_STRING_ACCUMULATE
 
