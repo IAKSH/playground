@@ -3,6 +3,8 @@
 // 笑死，结果是float精度不够，除法的时候精度丢失了
 // 换double就好了
 // 得出结论，不要在比赛里用float，数大一点就会有明显的精度丢失
+// 还有一点，minmax_element没有下面这种自己写的O(n)的方法快，尽管前者理论上也是O(n)
+// 我认为可能是minmax_element进行了多余的迭代器检查
 
 #include <bits/stdc++.h>
 
