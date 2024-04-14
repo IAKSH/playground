@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(spdlog_test CXX)
+project(lz4_test CXX)
 
 find_package(lz4 REQUIRED)
 
