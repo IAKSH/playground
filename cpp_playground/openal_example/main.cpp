@@ -53,6 +53,18 @@ int main() {
         spdlog::critical("error getting format from \"{}\"", MP3_FILE_PATH);
         return -1;
     }
+    int bits;
+    switch (encoding) {
+    case MPG123_ENC_SIGNED_16:
+        bits = 16; break;
+    case MPG123_ENC_SIGNED_24:
+        bits = 24; break;
+    case MPG123_ENC_SIGNED_32:
+        bits = 32; break;
+    default:
+        bits = -1;
+    }
+    spdlog::info("loaded \"{}\" rate={}hz channels={} bits={}", MP3_FILE_PATH, rate, channels, bits);
 
     // 如果是立体声，转换为单声道，可能造成音质损失
     // 因为OpenAL不能对立体声进行任何混音，只支持对单通道16位/8位的合成
