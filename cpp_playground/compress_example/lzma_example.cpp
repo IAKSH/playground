@@ -2,29 +2,47 @@
 #include <vector>
 #include <iostream>
 #include <format>
-#include <lz4.h>
-
-// 将string改为C-Style char* 或者C++ iterator以提高泛用性
+#include <lzma.h>
 
 // 压缩string到内存
 std::vector<char> compressData(const std::string& data) {
-    int max_compressed_size = LZ4_compressBound(data.size());
-    std::vector<char> compressed_data(max_compressed_size + sizeof(int));
-    
-    // 为了方便解压时确定原始数据长度，这里偏移了一个sizeof(int)再写入的压缩内容，并且在这个int里存了原始数据长度
-    int compressed_size = LZ4_compress_default(data.c_str(), compressed_data.data() + sizeof(int), data.size(), max_compressed_size);
-    *(int*)compressed_data.data() = data.size();
+    lzma_stream strm = LZMA_STREAM_INIT;
+    lzma_ret ret = lzma_easy_encoder(&strm, LZMA_PRESET_DEFAULT, LZMA_CHECK_CRC64);
 
-    compressed_data.resize(compressed_size + sizeof(int));
+    std::vector<char> compressed_data(data.size() + LZMA_BLOCK_HEADER_SIZE_MAX);
+    strm.next_in = (const uint8_t*)data.data();
+    strm.avail_in = data.size();
+    strm.next_out = (uint8_t*)compressed_data.data();
+    strm.avail_out = compressed_data.size();
+
+    while (strm.avail_in != 0) {
+        ret = lzma_code(&strm, LZMA_RUN);
+    }
+
+    ret = lzma_code(&strm, LZMA_FINISH);
+
+    compressed_data.resize(strm.total_out);
+    lzma_end(&strm);
     return compressed_data;
 }
 
 // 解压缩到string
 std::string decompressData(const std::vector<char>& compressed_data) {
-    // 取出之前塞在开头的表示原始数据长度的int
-    int ori_size = *(int*)compressed_data.data();
-    std::string decompressed_data(ori_size, ' ');
-    LZ4_decompress_safe(compressed_data.data() + sizeof(int), &decompressed_data[0], compressed_data.size() - sizeof(int), ori_size);
+    lzma_stream strm = LZMA_STREAM_INIT;
+    lzma_ret ret = lzma_stream_decoder(&strm, UINT64_MAX, LZMA_CONCATENATED);
+
+    std::string decompressed_data(compressed_data.size(), ' ');
+    strm.next_in = (const uint8_t*)compressed_data.data();
+    strm.avail_in = compressed_data.size();
+    strm.next_out = (uint8_t*)decompressed_data.data();
+    strm.avail_out = decompressed_data.size();
+
+    while (strm.avail_in != 0) {
+        ret = lzma_code(&strm, LZMA_RUN);
+    }
+
+    decompressed_data.resize(decompressed_data.size() - strm.avail_out);
+    lzma_end(&strm);
     return decompressed_data;
 }
 
@@ -70,12 +88,12 @@ int main() noexcept {
     std::cout << std::format("before:\t{} Byte\n",ori.size() * sizeof(char));
     std::cout << std::format("after:\t{} Byte\n",compressed.size() * sizeof(char));
 
-    std::cout << "input your string and it will be compress to ./output.lz4\n";
+    std::cout << "input your string and it will be compress to ./output.lzma\n";
     std::string input;
     std::cin >> input;
-    compressDataToFile("output.lz4",input);
+    compressDataToFile("output.lzma",input);
 
-    std::cout << "input your lz4 file path to read\n";
+    std::cout << "input your lzma file path to read\n";
     std::string reading_path;
     std::cin >> reading_path;
     std::cout << decompressDataFromFile(reading_path);

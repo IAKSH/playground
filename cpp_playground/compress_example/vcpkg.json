@@ -1,5 +1,6 @@
 {
     "dependencies": [
-      "lz4"
+      "lz4",
+      "liblzma"
     ]
 }
