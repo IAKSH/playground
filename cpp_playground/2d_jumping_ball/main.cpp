@@ -4,6 +4,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <AL/al.h>
+#include <AL/alc.h>
+#include <mpg123.h>
 
 static GLFWwindow* window;
 
@@ -202,6 +205,111 @@ void initGraphics() noexcept {
 		});
 }
 
+void closeGraphics() noexcept {
+	glfwTerminate();
+}
+
+static ALCdevice* al_device;
+static ALCcontext* al_context;
+
+static ALuint al_source;
+static ALuint al_buffer;
+
+void initAudio() noexcept {
+	mpg123_handle* mh;
+	unsigned char* buffer;
+	size_t buffer_size;
+	size_t done;
+	int err;
+	int channels,encoding;
+	long rate;
+	int bits;
+	bool stereo2mono = false;
+
+	mpg123_init();
+	mh = mpg123_new(nullptr,&err);
+	buffer_size = mpg123_outblock(mh);
+	buffer = new unsigned char[buffer_size];
+
+	if(mpg123_open(mh,"hit.mp3") != MPG123_OK) {
+		spdlog::critical("can't open \"hit.mp3\"");
+		std::terminate();
+	}
+
+	if(mpg123_getformat(mh,&rate,&channels,&encoding) != MPG123_OK) {
+		spdlog::critical("error getting format from \"hit.mp3\"");
+		std::terminate();
+	}
+
+	switch (encoding)
+	{
+	case MPG123_ENC_SIGNED_16:
+		bits = 16;
+		break;
+	case MPG123_ENC_SIGNED_24:
+		bits = 24;
+		break;
+	case MPG123_ENC_SIGNED_32:
+		bits = 32;
+		break;
+	default:
+		bits = -1;
+		break;
+	}
+
+	if(channels != MPG123_MONO || encoding != MPG123_ENC_SIGNED_16) {
+		spdlog::warn("force to mono, may cause some problem");
+		mpg123_format_none(mh);
+		mpg123_format(mh,rate,MPG123_MONO,MPG123_ENC_SIGNED_16);
+		stereo2mono = true;
+	}
+
+	al_device = alcOpenDevice(nullptr);
+	al_context = alcCreateContext(al_device,nullptr);
+	alcMakeContextCurrent(al_context);
+
+	alGenSources(1,&al_source);
+	alGenBuffers(1,&al_buffer);
+
+	ALfloat listener_pos[]{0.0f,0.0f,0.0f};
+	alListenerfv(AL_POSITION,listener_pos);
+
+	ALfloat listener_vec[]{0.0f,0.0f,0.0f};
+	alListenerfv(AL_VELOCITY,listener_vec);
+
+	ALfloat listener_dir[]{0.0f,0.0f,-1.0f,0.0f,1.0f,0.0f};
+	alListenerfv(AL_ORIENTATION,listener_dir);
+
+	alDistanceModel(AL_INVERSE_DISTANCE_CLAMPED);
+	alSourcef(al_source,AL_ROLLOFF_FACTOR,1.0f);
+
+	std::vector<ALshort> pcm;
+	while(mpg123_read(mh,buffer,buffer_size,&done) == MPG123_OK) {
+		for(int i = 0;i < done / 2;i++) {
+			pcm.emplace_back(reinterpret_cast<ALshort*>(buffer)[i]);
+		}
+	}
+
+	alBufferData(al_buffer,AL_FORMAT_MONO16,pcm.data(),pcm.size() * sizeof(ALshort),stereo2mono ? rate * 2 : rate);
+	alSourcei(al_source,AL_BUFFER,al_buffer);
+	alSourcei(al_source,AL_LOOPING,0);
+	alSourcei(al_source,AL_GAIN,200.0f);
+	alSourcei(al_source,AL_PITCH,1.0f);
+
+	delete[] buffer;
+	mpg123_close(mh);
+	mpg123_delete(mh);
+	mpg123_exit();
+}
+
+void closeAudio() noexcept {
+	alDeleteSources(1,&al_source);
+	alDeleteBuffers(1,&al_buffer);
+	alcMakeContextCurrent(nullptr);
+	alcDestroyContext(al_context);
+	alcCloseDevice(al_device);
+}
+
 static std::unique_ptr<BallRenObject> ball_ren_obj;
 static std::unique_ptr<Ball> ball;
 
@@ -250,25 +358,32 @@ void processTick() noexcept {
 
 	// check for collision with the box boundaries
 	if (ball->position.x - ball->radius < box_start_x) {
+		alSourcePlay(al_source);
 		ball->position.x = ball->radius + box_start_x;
 		ball->velocity.x = -ball->velocity.x * (1 - friction);
 	}
 	else if (ball->position.x + ball->radius > boxWidth) {
+		alSourcePlay(al_source);
 		ball->position.x = boxWidth - ball->radius;
 		ball->velocity.x = -ball->velocity.x * (1 - friction);
 	}
 
 	if (ball->position.y - ball->radius < box_start_x) {
+		alSourcePlay(al_source);
 		ball->position.y = ball->radius + box_start_x;
 		ball->velocity.y = -ball->velocity.y * (1 - friction);
 	}
 	else if (ball->position.y + ball->radius > boxHeight) {
+		alSourcePlay(al_source);
 		ball->position.y = boxHeight - ball->radius;
 		ball->velocity.y = -ball->velocity.y * (1 - friction);
 	}
 
 	// update velocity & position
 	ball->position += ball->velocity * static_cast<float>(delta_time);
+
+	// update audio source position
+	alSource3f(al_source,AL_POSITION,ball->position.x,ball->position.y,0.0f);
 }
 
 void draw() noexcept {
@@ -295,13 +410,14 @@ void mainLoop() noexcept {
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
-
-	glfwTerminate();
 }
 
 int main() noexcept {
 	spdlog::set_level(spdlog::level::debug);
+	initAudio();
 	initGraphics();
 	mainLoop();
+	closeGraphics();
+	closeAudio();
 	return 0;
 }

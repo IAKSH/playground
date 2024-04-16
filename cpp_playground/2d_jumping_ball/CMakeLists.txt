@@ -24,3 +24,8 @@ target_link_libraries(2d_jumping_ball PRIVATE
     glad::glad
     glm::glm
 )
+
+add_custom_command(TARGET 2d_jumping_ball POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy
+                       ${CMAKE_SOURCE_DIR}/hit.mp3
+                       $<TARGET_FILE_DIR:2d_jumping_ball>/hit.mp3)
