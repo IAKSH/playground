@@ -212,8 +212,9 @@ void processInput() noexcept {
 		// 获取鼠标的位置
 		glfwGetCursorPos(window, &mouseX, &mouseY);
 
-		mouseX -= 400.0f;
-		mouseY -= 400.0f;
+		// 转换鼠标坐标
+		mouseX = mouseX - 400.0f;
+		mouseY = 400.0f - mouseY; // 注意这里取了反
 
 		// 计算鼠标和小球之间的向量
 		glm::vec2 direction = glm::vec2(mouseX, mouseY) - ball->position;
@@ -223,9 +224,7 @@ void processInput() noexcept {
 
 		spdlog::debug("{},{}", direction.x, direction.y);
 
-		ball->velocity += direction;
-		if (ball->velocity.x * ball->velocity.x + ball->velocity.y * ball->velocity.y > 1.0f)
-			ball->velocity /= 2.0f;
+		ball->velocity = direction / 20.0f;
 	}
 }
 
@@ -235,8 +234,7 @@ void processTick() noexcept {
 	//ball->velocity.y = cos(glfwGetTime()) / 10.0f;
 
 	// apply gravity
-	if (ball->velocity.y > -1.0f)
-		ball->velocity.y -= 0.0005f;
+	ball->velocity.y -= 0.75f;
 
 	constexpr float friction = 0.5f;
 	constexpr float box_start_x = -800.0f;
@@ -263,7 +261,7 @@ void processTick() noexcept {
 		ball->velocity.y = -ball->velocity.y * (1 - friction);
 	}
 
-	// update position
+	// update velocity & position
 	ball->position += ball->velocity;
 }
 
@@ -275,27 +273,38 @@ void draw() noexcept {
 }
 
 void mainLoop() noexcept {
-	ball_ren_obj = std::make_unique<BallRenObject>();
+	
 	ball = std::make_unique<Ball>();
 
 	ball->velocity.x = 0.05f;
 	ball->velocity.y = 0.3f;
 
-	glCheckError();
-	while (!glfwWindowShouldClose(window)) {
-		processInput();
+	bool should_exit = false;
+
+	std::thread ren_thread([&]() {
+		initGraphics();
+		ball_ren_obj = std::make_unique<BallRenObject>();
+		while (!glfwWindowShouldClose(window)) {
+			processInput();
+			draw();
+			glCheckError();
+			glfwSwapBuffers(window);
+			glfwPollEvents();
+		}
+		should_exit = true;
+		glfwTerminate();
+		});
+
+	while (!should_exit) {
 		processTick();
-		glCheckError();
-		draw();
-		glfwSwapBuffers(window);
-		glfwPollEvents();
+		std::this_thread::sleep_for(std::chrono::milliseconds(16));
 	}
-	glfwTerminate();
+
+	ren_thread.join();
 }
 
 int main() noexcept {
 	spdlog::set_level(spdlog::level::debug);
-	initGraphics();
 	mainLoop();
 	return 0;
 }
