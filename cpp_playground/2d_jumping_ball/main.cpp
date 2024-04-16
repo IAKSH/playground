@@ -183,6 +183,8 @@ void initGraphics() noexcept {
 	
 	glfwMakeContextCurrent(window);
 
+	glfwSwapInterval(1);
+
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 		spdlog::critical("failed to initialize GLAD");
 		std::terminate();
@@ -202,6 +204,10 @@ void initGraphics() noexcept {
 
 static std::unique_ptr<BallRenObject> ball_ren_obj;
 static std::unique_ptr<Ball> ball;
+
+static double delta_time = 0.0;
+static double current_time = 0.0;
+static double last_time = 0.0;
 
 void processInput() noexcept {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -224,7 +230,7 @@ void processInput() noexcept {
 
 		spdlog::debug("{},{}", direction.x, direction.y);
 
-		ball->velocity = direction / 20.0f;
+		ball->velocity = direction / 400.0f * static_cast<float>(delta_time);
 	}
 }
 
@@ -234,7 +240,7 @@ void processTick() noexcept {
 	//ball->velocity.y = cos(glfwGetTime()) / 10.0f;
 
 	// apply gravity
-	ball->velocity.y -= 0.75f;
+	ball->velocity.y -= 0.0075f * delta_time;
 
 	constexpr float friction = 0.5f;
 	constexpr float box_start_x = -800.0f;
@@ -262,7 +268,7 @@ void processTick() noexcept {
 	}
 
 	// update velocity & position
-	ball->position += ball->velocity;
+	ball->position += ball->velocity * static_cast<float>(delta_time);
 }
 
 void draw() noexcept {
@@ -273,38 +279,29 @@ void draw() noexcept {
 }
 
 void mainLoop() noexcept {
-	
 	ball = std::make_unique<Ball>();
+	ball_ren_obj = std::make_unique<BallRenObject>();
 
-	ball->velocity.x = 0.05f;
-	ball->velocity.y = 0.3f;
+	while (!glfwWindowShouldClose(window)) {
+		// update delta_time
+		current_time = glfwGetTime() * 1000;
+		delta_time = current_time - last_time;
+		last_time = current_time;
 
-	bool should_exit = false;
-
-	std::thread ren_thread([&]() {
-		initGraphics();
-		ball_ren_obj = std::make_unique<BallRenObject>();
-		while (!glfwWindowShouldClose(window)) {
-			processInput();
-			draw();
-			glCheckError();
-			glfwSwapBuffers(window);
-			glfwPollEvents();
-		}
-		should_exit = true;
-		glfwTerminate();
-		});
-
-	while (!should_exit) {
+		processInput();
 		processTick();
-		std::this_thread::sleep_for(std::chrono::milliseconds(16));
+		draw();
+		glCheckError();
+		glfwSwapBuffers(window);
+		glfwPollEvents();
 	}
 
-	ren_thread.join();
+	glfwTerminate();
 }
 
 int main() noexcept {
 	spdlog::set_level(spdlog::level::debug);
+	initGraphics();
 	mainLoop();
 	return 0;
 }
