@@ -48,14 +48,14 @@ out vec4 FragColor;
 
 void main()
 {
-    FragColor = vec4(1.0f, 1.0f, 1.0f, 1.0f); // 白色
+    FragColor = vec4(1.0f, 0.8f, 0.8f, 1.0f);
 }
 )";
 
 struct Ball {
-	const int radius = 10;
-	glm::ivec2 position{ 0,0 };
-	glm::ivec2 velocity{ 0,0 };
+	const float radius = 50.0f;
+	glm::vec2 position{ 0.0f,0.0f };
+	glm::vec2 velocity{ 0.0f,0.0f };
 };
 
 class BallRenObject {
@@ -88,9 +88,9 @@ public:
 	void draw(const Ball& ball) {
 		// 计算变换矩阵
 		// 暂时直接将窗口大小视为固定的800x800
-		float window_scaled_r = static_cast<float>(ball.radius) / 800;
-		float window_scaled_x = static_cast<float>(ball.position.x) / 800;
-		float window_scaled_y = static_cast<float>(ball.position.y) / 800;
+		float window_scaled_r = ball.radius / 800;
+		float window_scaled_x = ball.position.x / 800;
+		float window_scaled_y = ball.position.y / 800;
 
 		glm::mat4 transform = glm::mat4(1.0f);
 		transform = glm::translate(transform, glm::vec3(window_scaled_x, window_scaled_y, 0.0f))
@@ -203,19 +203,72 @@ void initGraphics() noexcept {
 static std::unique_ptr<BallRenObject> ball_ren_obj;
 static std::unique_ptr<Ball> ball;
 
-void processInput() noexcept
-{
+void processInput() noexcept {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
+
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+		double mouseX, mouseY;
+		// 获取鼠标的位置
+		glfwGetCursorPos(window, &mouseX, &mouseY);
+
+		mouseX -= 400.0f;
+		mouseY -= 400.0f;
+
+		// 计算鼠标和小球之间的向量
+		glm::vec2 direction = glm::vec2(mouseX, mouseY) - ball->position;
+
+		// 将向量归一化，得到单位向量
+		//glm::vec2 unitDirection = glm::normalize(direction);
+
+		spdlog::debug("{},{}", direction.x, direction.y);
+
+		ball->velocity += direction;
+		if (ball->velocity.x * ball->velocity.x + ball->velocity.y * ball->velocity.y > 1.0f)
+			ball->velocity /= 2.0f;
+	}
 }
 
 void processTick() noexcept {
-	ball->position.x = sin(glfwGetTime()) * 800;
-	ball->position.y = cos(glfwGetTime()) * 800;
+	// update velocity
+	//ball->velocity.x = sin(glfwGetTime()) / 10.0f;
+	//ball->velocity.y = cos(glfwGetTime()) / 10.0f;
+
+	// apply gravity
+	if (ball->velocity.y > -1.0f)
+		ball->velocity.y -= 0.0005f;
+
+	constexpr float friction = 0.5f;
+	constexpr float box_start_x = -800.0f;
+	constexpr float box_start_y = -800.0f;
+	constexpr float boxWidth = 800.0f;
+	constexpr float boxHeight = 800.0f;
+
+	// check for collision with the box boundaries
+	if (ball->position.x - ball->radius < box_start_x) {
+		ball->position.x = ball->radius + box_start_x;
+		ball->velocity.x = -ball->velocity.x * (1 - friction);
+	}
+	else if (ball->position.x + ball->radius > boxWidth) {
+		ball->position.x = boxWidth - ball->radius;
+		ball->velocity.x = -ball->velocity.x * (1 - friction);
+	}
+
+	if (ball->position.y - ball->radius < box_start_x) {
+		ball->position.y = ball->radius + box_start_x;
+		ball->velocity.y = -ball->velocity.y * (1 - friction);
+	}
+	else if (ball->position.y + ball->radius > boxHeight) {
+		ball->position.y = boxHeight - ball->radius;
+		ball->velocity.y = -ball->velocity.y * (1 - friction);
+	}
+
+	// update position
+	ball->position += ball->velocity;
 }
 
 void draw() noexcept {
-	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+	glClearColor(0.05f, 0.07f, 0.09f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	ball_ren_obj->draw(*ball);
@@ -224,6 +277,9 @@ void draw() noexcept {
 void mainLoop() noexcept {
 	ball_ren_obj = std::make_unique<BallRenObject>();
 	ball = std::make_unique<Ball>();
+
+	ball->velocity.x = 0.05f;
+	ball->velocity.y = 0.3f;
 
 	glCheckError();
 	while (!glfwWindowShouldClose(window)) {
