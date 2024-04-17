@@ -12,7 +12,17 @@ find_package(glm CONFIG REQUIRED)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(2d_jumping_ball main.cpp )
+add_executable(2d_jumping_ball
+    "src/main.cpp"
+    "src/graphics.cpp"
+    "src/audio.cpp"
+    "src/physics.cpp"
+)
+
+target_include_directories(2d_jumping_ball PUBLIC
+    "include/"
+)
+
 target_link_libraries(2d_jumping_ball PRIVATE
     spdlog::spdlog
     OpenAL::OpenAL
@@ -27,5 +37,5 @@ target_link_libraries(2d_jumping_ball PRIVATE
 
 add_custom_command(TARGET 2d_jumping_ball POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy
-                       ${CMAKE_SOURCE_DIR}/hit.mp3
+                       ${CMAKE_SOURCE_DIR}/resource/hit.mp3
                        $<TARGET_FILE_DIR:2d_jumping_ball>/hit.mp3)
