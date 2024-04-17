@@ -3,7 +3,6 @@
 ALCdevice* jumping_ball::audio::al_device;
 ALCcontext* jumping_ball::audio::al_context;
 
-ALuint jumping_ball::audio::al_source;
 ALuint jumping_ball::audio::al_buffer;
 
 void jumping_ball::audio::initAudio() noexcept {
@@ -59,7 +58,6 @@ void jumping_ball::audio::initAudio() noexcept {
 	al_context = alcCreateContext(al_device, nullptr);
 	alcMakeContextCurrent(al_context);
 
-	alGenSources(1, &al_source);
 	alGenBuffers(1, &al_buffer);
 
 	ALfloat listener_pos[]{ 0.0f,0.0f,0.0f };
@@ -71,9 +69,6 @@ void jumping_ball::audio::initAudio() noexcept {
 	ALfloat listener_dir[]{ 0.0f,0.0f,-1.0f,0.0f,1.0f,0.0f };
 	alListenerfv(AL_ORIENTATION, listener_dir);
 
-	alDistanceModel(AL_INVERSE_DISTANCE_CLAMPED);
-	alSourcef(al_source, AL_ROLLOFF_FACTOR, 1.0f);
-
 	std::vector<ALshort> pcm;
 	while (mpg123_read(mh, buffer, buffer_size, &done) == MPG123_OK) {
 		for (int i = 0; i < done / 2; i++) {
@@ -82,10 +77,6 @@ void jumping_ball::audio::initAudio() noexcept {
 	}
 
 	alBufferData(al_buffer, AL_FORMAT_MONO16, pcm.data(), pcm.size() * sizeof(ALshort), stereo2mono ? rate * 2 : rate);
-	alSourcei(al_source, AL_BUFFER, al_buffer);
-	alSourcei(al_source, AL_LOOPING, 0);
-	alSourcei(al_source, AL_GAIN, 200.0f);
-	alSourcei(al_source, AL_PITCH, 1.0f);
 
 	delete[] buffer;
 	mpg123_close(mh);
@@ -94,7 +85,6 @@ void jumping_ball::audio::initAudio() noexcept {
 }
 
 void jumping_ball::audio::closeAudio() noexcept {
-	alDeleteSources(1, &al_source);
 	alDeleteBuffers(1, &al_buffer);
 	alcMakeContextCurrent(nullptr);
 	alcDestroyContext(al_context);

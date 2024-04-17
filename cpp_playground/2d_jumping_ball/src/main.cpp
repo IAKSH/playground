@@ -26,8 +26,32 @@ void main()
 }
 )";
 
+struct BallWithSoundSource : public Ball {
+	ALuint sound_source;
+
+	BallWithSoundSource() noexcept {
+		alGenSources(1, &sound_source);
+		alSourcei(sound_source, AL_BUFFER, al_buffer);
+		alSourcei(sound_source, AL_LOOPING, 0);
+		alSourcei(sound_source, AL_GAIN, 200.0f);
+		alSourcei(sound_source, AL_PITCH, 1.0f);
+
+		alDistanceModel(AL_INVERSE_DISTANCE_CLAMPED);
+		alSourcef(sound_source, AL_ROLLOFF_FACTOR, 1.0f);
+	}
+
+	~BallWithSoundSource() noexcept {
+		alDeleteSources(1, &sound_source);
+	}
+
+	void updateSoundSource() noexcept {
+		alSource3f(sound_source, AL_POSITION, position.x, position.y, 0.0f);
+		alSource3f(sound_source, AL_VELOCITY, velocity.x, velocity.y, 0.0f);
+	}
+};
+
 static std::unique_ptr<BallRenObject> ball_ren_obj;
-static std::vector<Ball> balls;
+static std::vector<std::unique_ptr<BallWithSoundSource>> balls;
 
 static double delta_time = 0.0;
 static double current_time = 0.0;
@@ -48,18 +72,18 @@ void processInput() noexcept {
 
 		// 计算鼠标和小球之间的向量
 		// 暂时只有第一个小球能被拖动
-		glm::vec2 direction = glm::vec2(mouseX, mouseY) - balls[0].position;
+		glm::vec2 direction = glm::vec2(mouseX, mouseY) - balls[0]->position;
 
 		// 将向量归一化，得到单位向量
 		//glm::vec2 unitDirection = glm::normalize(direction);
 
 		spdlog::debug("{},{}", direction.x, direction.y);
 
-		balls[0].velocity = direction / 400.0f * static_cast<float>(delta_time);
+		balls[0]->velocity = direction / 400.0f * static_cast<float>(delta_time);
 	}
 }
 
-static constexpr float friction = 0.25f;
+static constexpr float friction = 0.5f;
 static constexpr float box_start_x = -800.0f;
 static constexpr float box_start_y = -800.0f;
 static constexpr float boxWidth = 800.0f;
@@ -69,26 +93,26 @@ void apply_gravity(Ball& ball) noexcept {
 	ball.velocity.y -= 0.0075f * delta_time;
 }
 
-void check_hitbox_border(Ball& ball) noexcept {
+void check_hitbox_border(BallWithSoundSource& ball) noexcept {
 	// check for collision with the box boundaries
 	if (ball.position.x - ball.radius < box_start_x) {
-		alSourcePlay(al_source);
+		alSourcePlay(ball.sound_source);
 		ball.position.x = ball.radius + box_start_x;
 		ball.velocity.x = -ball.velocity.x * (1 - friction);
 	}
 	else if (ball.position.x + ball.radius > boxWidth) {
-		alSourcePlay(al_source);
+		alSourcePlay(ball.sound_source);
 		ball.position.x = boxWidth - ball.radius;
 		ball.velocity.x = -ball.velocity.x * (1 - friction);
 	}
 
 	if (ball.position.y - ball.radius < box_start_x) {
-		alSourcePlay(al_source);
+		alSourcePlay(ball.sound_source);
 		ball.position.y = ball.radius + box_start_x;
 		ball.velocity.y = -ball.velocity.y * (1 - friction);
 	}
 	else if (ball.position.y + ball.radius > boxHeight) {
-		alSourcePlay(al_source);
+		alSourcePlay(ball.sound_source);
 		ball.position.y = boxHeight - ball.radius;
 		ball.velocity.y = -ball.velocity.y * (1 - friction);
 	}
@@ -98,11 +122,12 @@ void update_velocity_and_position(Ball& ball) noexcept {
 	ball.position += ball.velocity * static_cast<float>(delta_time);
 }
 
-void check_ball_collision(Ball& ball1, Ball& ball2) noexcept {
+void check_ball_collision(BallWithSoundSource& ball1, BallWithSoundSource& ball2) noexcept {
     glm::vec2 diff = ball1.position - ball2.position;
     float dist = glm::length(diff);
     if (dist < ball1.radius + ball2.radius) {
-        //alSourcePlay(al_source);
+        alSourcePlay(ball1.sound_source);
+		alSourcePlay(ball2.sound_source);
         glm::vec2 norm = glm::normalize(diff);
         glm::vec2 relativeVelocity = ball1.velocity - ball2.velocity;
         float speed = glm::dot(relativeVelocity, norm);
@@ -123,23 +148,19 @@ void check_ball_collision(Ball& ball1, Ball& ball2) noexcept {
 }
 
 void processTick() noexcept {
-    // apply gravity
     for(auto& ball : balls) {
-        apply_gravity(ball);
-        check_hitbox_border(ball);
-        update_velocity_and_position(ball);
+		ball->updateSoundSource();
+        apply_gravity(*ball);
+        check_hitbox_border(*ball);
+        update_velocity_and_position(*ball);
     }
 
     // check for collision between balls
     for (size_t i = 0; i < balls.size(); ++i) {
         for (size_t j = i + 1; j < balls.size(); ++j) {
-            check_ball_collision(balls[i], balls[j]);
+            check_ball_collision(*balls[i], *balls[j]);
         }
     }
-
-    // update audio source position
-    // TODO: 每个ball一个al_source
-    alSource3f(al_source,AL_POSITION,balls[0].position.x,balls[0].position.y,0.0f);
 }
 
 void draw() noexcept {
@@ -148,12 +169,12 @@ void draw() noexcept {
 
 	// draw all ball(s)
 	for(auto& ball : balls)
-		ball_ren_obj->draw(ball);
+		ball_ren_obj->draw(*ball);
 }
 
 void mainLoop() noexcept {
-	for(int i = 0;i < 10;i++)
-		balls.emplace_back(Ball());
+	for(int i = 0;i < 50;i++)
+		balls.emplace_back(std::make_unique<BallWithSoundSource>());
 	ball_ren_obj = std::make_unique<BallRenObject>(vshader_source, fshader_source);
 
 	while (!glfwWindowShouldClose(window)) {
