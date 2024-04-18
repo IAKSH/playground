@@ -89,10 +89,6 @@ static constexpr float box_start_y = -800.0f;
 static constexpr float boxWidth = 800.0f;
 static constexpr float boxHeight = 800.0f;
 
-void apply_gravity(Ball& ball) noexcept {
-	ball.velocity.y -= 0.0075f * delta_time;
-}
-
 void try_play_ball_hit_sound(BallWithSoundSource& ball) noexcept {
 	if (ball.velocity.x * ball.velocity.x + ball.velocity.y * ball.velocity.y >= 1.0f) {
 		ball.updateSoundSource();
@@ -125,10 +121,6 @@ void check_hitbox_border(BallWithSoundSource& ball) noexcept {
 	}
 }
 
-void update_velocity_and_position(Ball& ball) noexcept {
-	ball.position += ball.velocity * static_cast<float>(delta_time);
-}
-
 void check_ball_collision(BallWithSoundSource& ball1, BallWithSoundSource& ball2) noexcept {
     glm::vec2 diff = glm::vec2(ball1.position - ball2.position);
     float dist = glm::length(diff);
@@ -156,9 +148,9 @@ void check_ball_collision(BallWithSoundSource& ball1, BallWithSoundSource& ball2
 
 void processTick() noexcept {
     for(auto& ball : balls) {
-        apply_gravity(*ball);
+		ball->applyForce(glm::vec3(0.0f, -0.0025f, 0.0f), ball->position);
         check_hitbox_border(*ball);
-        update_velocity_and_position(*ball);
+		ball->update(delta_time);
     }
 
     // check for collision between balls
