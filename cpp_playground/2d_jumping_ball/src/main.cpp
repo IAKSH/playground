@@ -93,26 +93,33 @@ void apply_gravity(Ball& ball) noexcept {
 	ball.velocity.y -= 0.0075f * delta_time;
 }
 
+void try_play_ball_hit_sound(BallWithSoundSource& ball) noexcept {
+	if (ball.velocity.x * ball.velocity.x + ball.velocity.y * ball.velocity.y >= 1.0f) {
+		ball.updateSoundSource();
+		alSourcePlay(ball.sound_source);
+	}
+}
+
 void check_hitbox_border(BallWithSoundSource& ball) noexcept {
 	// check for collision with the box boundaries
 	if (ball.position.x - ball.radius < box_start_x) {
-		alSourcePlay(ball.sound_source);
+		try_play_ball_hit_sound(ball);
 		ball.position.x = ball.radius + box_start_x;
 		ball.velocity.x = -ball.velocity.x * (1 - friction);
 	}
 	else if (ball.position.x + ball.radius > boxWidth) {
-		alSourcePlay(ball.sound_source);
+		try_play_ball_hit_sound(ball);
 		ball.position.x = boxWidth - ball.radius;
 		ball.velocity.x = -ball.velocity.x * (1 - friction);
 	}
 
 	if (ball.position.y - ball.radius < box_start_x) {
-		alSourcePlay(ball.sound_source);
+		try_play_ball_hit_sound(ball);
 		ball.position.y = ball.radius + box_start_x;
 		ball.velocity.y = -ball.velocity.y * (1 - friction);
 	}
 	else if (ball.position.y + ball.radius > boxHeight) {
-		alSourcePlay(ball.sound_source);
+		try_play_ball_hit_sound(ball);
 		ball.position.y = boxHeight - ball.radius;
 		ball.velocity.y = -ball.velocity.y * (1 - friction);
 	}
@@ -126,8 +133,8 @@ void check_ball_collision(BallWithSoundSource& ball1, BallWithSoundSource& ball2
     glm::vec2 diff = ball1.position - ball2.position;
     float dist = glm::length(diff);
     if (dist < ball1.radius + ball2.radius) {
-        alSourcePlay(ball1.sound_source);
-		alSourcePlay(ball2.sound_source);
+		try_play_ball_hit_sound(ball1);
+		try_play_ball_hit_sound(ball2);
         glm::vec2 norm = glm::normalize(diff);
         glm::vec2 relativeVelocity = ball1.velocity - ball2.velocity;
         float speed = glm::dot(relativeVelocity, norm);
@@ -149,7 +156,6 @@ void check_ball_collision(BallWithSoundSource& ball1, BallWithSoundSource& ball2
 
 void processTick() noexcept {
     for(auto& ball : balls) {
-		ball->updateSoundSource();
         apply_gravity(*ball);
         check_hitbox_border(*ball);
         update_velocity_and_position(*ball);
