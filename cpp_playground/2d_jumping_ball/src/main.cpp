@@ -72,14 +72,14 @@ void processInput() noexcept {
 
 		// 计算鼠标和小球之间的向量
 		// 暂时只有第一个小球能被拖动
-		glm::vec2 direction = glm::vec2(mouseX, mouseY) - balls[0]->position;
+		glm::vec2 direction = glm::vec2(mouseX, mouseY) - glm::vec2(balls[0]->position);
 
 		// 将向量归一化，得到单位向量
 		//glm::vec2 unitDirection = glm::normalize(direction);
 
 		spdlog::debug("{},{}", direction.x, direction.y);
 
-		balls[0]->velocity = direction / 400.0f * static_cast<float>(delta_time);
+		balls[0]->velocity = glm::vec3(direction / 400.0f * static_cast<float>(delta_time), 0.0f);
 	}
 }
 
@@ -130,26 +130,26 @@ void update_velocity_and_position(Ball& ball) noexcept {
 }
 
 void check_ball_collision(BallWithSoundSource& ball1, BallWithSoundSource& ball2) noexcept {
-    glm::vec2 diff = ball1.position - ball2.position;
+    glm::vec2 diff = glm::vec2(ball1.position - ball2.position);
     float dist = glm::length(diff);
     if (dist < ball1.radius + ball2.radius) {
 		try_play_ball_hit_sound(ball1);
 		try_play_ball_hit_sound(ball2);
         glm::vec2 norm = glm::normalize(diff);
-        glm::vec2 relativeVelocity = ball1.velocity - ball2.velocity;
+        glm::vec2 relativeVelocity = glm::vec2(ball1.velocity - ball2.velocity);
         float speed = glm::dot(relativeVelocity, norm);
 
         if (speed < 0.0f) {
             float impulse = (1.0f + (1 - friction)) * speed / (1 / ball1.radius + 1 / ball2.radius);
             glm::vec2 impulseVec = impulse * norm;
 
-            ball1.velocity -= impulseVec / ball1.radius;
-            ball2.velocity += impulseVec / ball2.radius;
+			ball1.velocity -= glm::vec3(impulseVec / ball1.radius, 0.0f);
+			ball2.velocity += glm::vec3(impulseVec / ball2.radius, 0.0f);
 
 			// adjust positions to prevent overlap
 			float overlap = 0.5f * (dist - ball1.radius - ball2.radius);
-			ball1.position -= overlap * norm;
-			ball2.position += overlap * norm;
+			ball1.position -= glm::vec3(overlap * norm, 0.0f);
+			ball2.position += glm::vec3(overlap * norm, 0.0f);
         }
     }
 }
