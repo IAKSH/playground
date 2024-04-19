@@ -108,6 +108,14 @@ void jumping_ball::audio::AudioPipe::destroyAllALSources() noexcept {
 void jumping_ball::audio::AudioPipe::addSource(int source_num = 1) noexcept {
 	al_sources.resize(al_sources.size() + source_num);
 	alGenSources(source_num, al_sources.data() + sizeof(ALuint) * source_num);
+
+	for (auto it = al_sources.end() - 1; it != al_sources.end() - 1 - source_num; it--) {
+		//alSourcei(*it, AL_LOOPING, 0);
+		//alSourcei(*it, AL_GAIN, 100.0f);
+		//alSourcei(*it, AL_PITCH, 1.0f);
+		alDistanceModel(AL_INVERSE_DISTANCE_CLAMPED);
+		alSourcef(*it, AL_ROLLOFF_FACTOR, 1.0f);
+	}
 }
 
 void jumping_ball::audio::AudioPipe::setPosition(const glm::vec3& position) noexcept {
