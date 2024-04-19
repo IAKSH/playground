@@ -40,7 +40,7 @@ static std::shared_ptr<std::vector<float>> ball_vertices = std::make_shared<std:
 static std::vector<unsigned int> ball_indices;
 
 void genBallVerticesAndIndices() {
-	const int segments = 360;
+	const int segments = 36;
 	ball_vertices->resize(segments * 3);
 	ball_indices.resize(segments);
 
@@ -127,47 +127,74 @@ void check_hitbox_border(Ball& ball) noexcept {
 	}
 }
 
-void processTick() noexcept {
-    for(auto& ball : balls) {
-		ball->rigid_body->applyForce(glm::vec3(0.0f, -0.0025f, 0.0f), ball->rigid_body->position);
-		ball->update(delta_time);
-    }
+void respondToCollision(RigidBody& a, RigidBody& b) {
+	// 计算碰撞的法线
+	glm::vec3 collisionNormal = glm::normalize(a.position - b.position);
 
-    // 屎一样的碰撞检测以及响应
-    for (size_t i = 0; i < balls.size(); ++i) {
+	// 计算相对速度
+	glm::vec3 relativeVelocity = a.velocity - b.velocity;
+
+	// 计算相对速度在法线方向上的分量
+	float velocityAlongNormal = glm::dot(relativeVelocity, collisionNormal);
+
+	// 如果速度在法线方向上的分量大于0，说明两个刚体正在远离彼此，无需进行碰撞响应
+	if (velocityAlongNormal > 0) {
+		return;
+	}
+
+	// 计算碰撞的反弹系数，这里假设两个刚体的反弹系数都是1
+	float e = 1;
+
+	// 计算冲量的大小
+	float j = -(1 + e) * velocityAlongNormal / (1 / a.mass + 1 / b.mass);
+
+	// 计算冲量向量
+	glm::vec3 impulse = j * collisionNormal;
+
+	// 根据冲量改变刚体的速度
+	a.velocity += impulse / a.mass;
+	b.velocity -= impulse / b.mass;
+}
+
+void processTick() noexcept {
+	for (auto& ball : balls) {
+		// 应用重力
+		glm::vec3 gravityForce = glm::vec3(0.0f, -0.0025f * ball->rigid_body->mass, 0.0f);
+		ball->rigid_body->applyForce(gravityForce, ball->rigid_body->position);
+		ball->update(delta_time);
+	}
+
+	// 史一样的碰撞检测和响应
+	for (size_t i = 0; i < balls.size(); ++i) {
 		check_hitbox_border(*balls[i]);
-        for (size_t j = i + 1; j < balls.size(); ++j) {
-            //check_ball_collision(*balls[i], *balls[j]);
+		for (size_t j = i + 1; j < balls.size(); ++j) {
 			for (auto& volume_a : balls[i]->rigid_body->bounding_volumes) {
 				for (auto& volume_b : balls[j]->rigid_body->bounding_volumes) {
 					if (volume_a->isIntersecting(*volume_b)) {
-						glm::vec2 diff = glm::vec2(balls[i]->rigid_body->position - balls[j]->rigid_body->position);
+						glm::vec3 diff = balls[i]->rigid_body->position - balls[j]->rigid_body->position;
 						float dist = glm::length(diff);
 
 						try_play_ball_hit_sound(*balls[i]);
 						try_play_ball_hit_sound(*balls[j]);
-						glm::vec2 norm = glm::normalize(diff);
-						glm::vec2 relativeVelocity = glm::vec2(balls[i]->rigid_body->velocity - balls[j]->rigid_body->velocity);
+
+						glm::vec3 norm = glm::normalize(diff);
+						glm::vec3 relativeVelocity = balls[i]->rigid_body->velocity - balls[j]->rigid_body->velocity;
 						float speed = glm::dot(relativeVelocity, norm);
 
 						if (speed < 0.0f) {
-							float impulse = (1.0f + (1 - friction)) * speed / (1 / balls[i]->radius + 1 / balls[j]->radius);
-							glm::vec2 impulseVec = impulse * norm;
-
-							balls[i]->rigid_body->velocity -= glm::vec3(impulseVec / balls[i]->radius, 0.0f);
-							balls[j]->rigid_body->velocity += glm::vec3(impulseVec / balls[j]->radius, 0.0f);
-
-							// adjust positions to prevent overlap
+							respondToCollision(*balls[i]->rigid_body, *balls[j]->rigid_body);
+							// 调整位置以防止重叠
 							float overlap = 0.5f * (dist - balls[i]->radius - balls[j]->radius);
-							balls[i]->rigid_body->position -= glm::vec3(overlap * norm, 0.0f);
-							balls[j]->rigid_body->position += glm::vec3(overlap * norm, 0.0f);
+							balls[i]->rigid_body->position -= overlap * norm;
+							balls[j]->rigid_body->position += overlap * norm;
 						}
 					}
 				}
 			}
-        }
-    }
+		}
+	}
 }
+
 
 void draw() noexcept {
 	glClearColor(0.05f, 0.07f, 0.09f, 1.0f);
