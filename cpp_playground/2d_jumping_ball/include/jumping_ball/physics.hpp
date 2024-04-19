@@ -7,6 +7,68 @@
 #include <vector>
 
 namespace jumping_ball::physics {
+    class BoundingBox; // 前向声明
+    class BoundingSphere; // 前向声明
+
+    class BoundingVolume {
+    public:
+        virtual bool isIntersecting(const BoundingVolume& other) const = 0;
+        virtual bool isIntersecting(const BoundingBox& box) const = 0;
+        virtual bool isIntersecting(const BoundingSphere& sphere) const = 0;
+        virtual void update(const glm::vec3& position, const glm::quat& orientation) = 0;
+    };
+
+    class BoundingBox : public BoundingVolume {
+    public:
+        glm::vec3 min; // 最小点
+        glm::vec3 max; // 最大点
+
+        BoundingBox(const glm::vec3& min, const glm::vec3& max)
+            : min(min), max(max) {}
+
+        bool isIntersecting(const BoundingVolume& other) const override {
+            return other.isIntersecting(*this);
+        }
+
+        bool isIntersecting(const BoundingBox& box) const override {
+            return (min.x <= box.max.x && max.x >= box.min.x) &&
+                (min.y <= box.max.y && max.y >= box.min.y) &&
+                (min.z <= box.max.z && max.z >= box.min.z);
+        }
+
+        bool isIntersecting(const BoundingSphere& sphere) const override;
+
+        void update(const glm::vec3& position, const glm::quat& orientation) override {
+            // 更新立方体的位置和方向
+            // 这可能需要一些复杂的计算，取决于你的具体需求
+        }
+    };
+
+    class BoundingSphere : public BoundingVolume {
+    public:
+        glm::vec3 center; // 球心
+        float radius;     // 半径
+
+        BoundingSphere(const glm::vec3& center, float radius)
+            : center(center), radius(radius) {}
+
+        bool isIntersecting(const BoundingVolume& other) const override {
+            return other.isIntersecting(*this);
+        }
+
+        bool isIntersecting(const BoundingBox& box) const override;
+
+        bool isIntersecting(const BoundingSphere& sphere) const override {
+            float distance = glm::length(center - sphere.center);
+            return distance < (radius + sphere.radius);
+        }
+
+        void update(const glm::vec3& position, const glm::quat& orientation) override {
+            // 更新球体的位置
+            center = position;
+        }
+    };
+
     class RigidBody {
     public:
         glm::vec3 position;                             // 位置
@@ -20,6 +82,9 @@ namespace jumping_ball::physics {
         std::shared_ptr<std::vector<float>> vertices;   // 刚体的顶点
         glm::vec3 centerOfMass;                         // 重心
 
+        // 碰撞体积
+        std::vector<std::unique_ptr<BoundingVolume>> bounding_volumes;
+
         RigidBody() noexcept;
         RigidBody(std::shared_ptr<std::vector<float>> vertices) noexcept;
         ~RigidBody() = default;
@@ -32,9 +97,4 @@ namespace jumping_ball::physics {
     private:
         void applyDefaultValue() noexcept;
     };
-
-    //bool checkCollision(RigidBody& rb1, RigidBody& rb2) noexcept {
-    //    // TODO
-    //    return false;
-    //}
 }

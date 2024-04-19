@@ -127,42 +127,44 @@ void check_hitbox_border(Ball& ball) noexcept {
 	}
 }
 
-void check_ball_collision(Ball& ball1, Ball& ball2) noexcept {
-    glm::vec2 diff = glm::vec2(ball1.rigid_body->position - ball2.rigid_body->position);
-    float dist = glm::length(diff);
-    if (dist < ball1.radius + ball2.radius) {
-		try_play_ball_hit_sound(ball1);
-		try_play_ball_hit_sound(ball2);
-        glm::vec2 norm = glm::normalize(diff);
-        glm::vec2 relativeVelocity = glm::vec2(ball1.rigid_body->velocity - ball2.rigid_body->velocity);
-        float speed = glm::dot(relativeVelocity, norm);
-
-        if (speed < 0.0f) {
-            float impulse = (1.0f + (1 - friction)) * speed / (1 / ball1.radius + 1 / ball2.radius);
-            glm::vec2 impulseVec = impulse * norm;
-
-			ball1.rigid_body->velocity -= glm::vec3(impulseVec / ball1.radius, 0.0f);
-			ball2.rigid_body->velocity += glm::vec3(impulseVec / ball2.radius, 0.0f);
-
-			// adjust positions to prevent overlap
-			float overlap = 0.5f * (dist - ball1.radius - ball2.radius);
-			ball1.rigid_body->position -= glm::vec3(overlap * norm, 0.0f);
-			ball2.rigid_body->position += glm::vec3(overlap * norm, 0.0f);
-        }
-    }
-}
-
 void processTick() noexcept {
     for(auto& ball : balls) {
 		ball->rigid_body->applyForce(glm::vec3(0.0f, -0.0025f, 0.0f), ball->rigid_body->position);
-        check_hitbox_border(*ball);
 		ball->update(delta_time);
     }
 
-    // check for collision between balls
+    // 屎一样的碰撞检测以及响应
     for (size_t i = 0; i < balls.size(); ++i) {
+		check_hitbox_border(*balls[i]);
         for (size_t j = i + 1; j < balls.size(); ++j) {
-            check_ball_collision(*balls[i], *balls[j]);
+            //check_ball_collision(*balls[i], *balls[j]);
+			for (auto& volume_a : balls[i]->rigid_body->bounding_volumes) {
+				for (auto& volume_b : balls[j]->rigid_body->bounding_volumes) {
+					if (volume_a->isIntersecting(*volume_b)) {
+						glm::vec2 diff = glm::vec2(balls[i]->rigid_body->position - balls[j]->rigid_body->position);
+						float dist = glm::length(diff);
+
+						try_play_ball_hit_sound(*balls[i]);
+						try_play_ball_hit_sound(*balls[j]);
+						glm::vec2 norm = glm::normalize(diff);
+						glm::vec2 relativeVelocity = glm::vec2(balls[i]->rigid_body->velocity - balls[j]->rigid_body->velocity);
+						float speed = glm::dot(relativeVelocity, norm);
+
+						if (speed < 0.0f) {
+							float impulse = (1.0f + (1 - friction)) * speed / (1 / balls[i]->radius + 1 / balls[j]->radius);
+							glm::vec2 impulseVec = impulse * norm;
+
+							balls[i]->rigid_body->velocity -= glm::vec3(impulseVec / balls[i]->radius, 0.0f);
+							balls[j]->rigid_body->velocity += glm::vec3(impulseVec / balls[j]->radius, 0.0f);
+
+							// adjust positions to prevent overlap
+							float overlap = 0.5f * (dist - balls[i]->radius - balls[j]->radius);
+							balls[i]->rigid_body->position -= glm::vec3(overlap * norm, 0.0f);
+							balls[j]->rigid_body->position += glm::vec3(overlap * norm, 0.0f);
+						}
+					}
+				}
+			}
         }
     }
 }
@@ -181,10 +183,11 @@ void mainLoop() noexcept {
 	ball_ren_pipe = std::make_shared<RenPipe>(vshader_source, fshader_source, *ball_vertices, ball_indices);
 	glCheckError();
 
-	for (int i = 0; i < 50; i++)
-		balls.emplace_back(std::make_unique<Ball>(ball_ren_pipe,
-			std::make_unique<RigidBody>(ball_vertices)
-			));
+	for (int i = 0; i < 50; i++) {
+		auto ball = std::make_unique<Ball>(ball_ren_pipe, std::make_unique<RigidBody>(ball_vertices));
+		ball->rigid_body->bounding_volumes.emplace_back(std::make_unique<BoundingSphere>(glm::vec3(0.0f), 50.0f));
+		balls.emplace_back(std::move(ball));
+	}
 
 	for (auto& ball : balls)
 		for (auto& source : ball->audio_pipe.al_sources)

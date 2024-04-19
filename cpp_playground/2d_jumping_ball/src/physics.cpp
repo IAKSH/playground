@@ -44,6 +44,10 @@ void jumping_ball::physics::RigidBody::update(float deltaTime) noexcept {
     // 清除力和扭矩以备下一次迭代
     force = glm::vec3(0.0f);
     torque = glm::vec3(0.0f);
+
+    // 更新碰撞体积
+    for (auto& volume : bounding_volumes)
+        volume->update(position, orientation);
 }
 
 void jumping_ball::physics::RigidBody::applyForce(const glm::vec3& f, const glm::vec3& point) noexcept {
@@ -61,4 +65,17 @@ void jumping_ball::physics::RigidBody::applyDefaultValue() noexcept {
     torque = glm::vec3(0.0f);
     orientation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
     centerOfMass = glm::vec3(0.0f);
+}
+
+// 在BoundingBox和BoundingSphere类的定义之后，实现它们的交叉检测方法
+// 似乎是没有见过的处理类间循环依赖的方法
+
+bool jumping_ball::physics::BoundingBox::isIntersecting(const BoundingSphere& sphere) const {
+    glm::vec3 boxClosestPoint = glm::clamp(sphere.center, min, max);
+    float distance = glm::length(boxClosestPoint - sphere.center);
+    return distance < sphere.radius;
+}
+
+bool jumping_ball::physics::BoundingSphere::isIntersecting(const BoundingBox& box) const {
+    return box.isIntersecting(*this);
 }
