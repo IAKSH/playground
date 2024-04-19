@@ -17,7 +17,7 @@ namespace jumping_ball::gameobject {
         AudioPipe audio_pipe;
 
         GameObject(std::shared_ptr<RenPipe> ren_pipe,std::unique_ptr<RigidBody> rigid_body) noexcept
-            : ren_pipe(ren_pipe), rigid_body(rigid_body)
+            : ren_pipe(ren_pipe), rigid_body(std::move(rigid_body))
         {
 
         }
@@ -27,9 +27,9 @@ namespace jumping_ball::gameobject {
         }
 
         void update(float delta_time) noexcept {
-            rigid_body.update(delta_time);
-            audio_pipe.setPosition(rigid_body.position);
-            audio_pipe.setVelocity(rigid_body.velocity);
+            rigid_body->update(delta_time);
+            audio_pipe.setPosition(rigid_body->position);
+            audio_pipe.setVelocity(rigid_body->velocity);
         }
         
         // 由外部决定如何绘制

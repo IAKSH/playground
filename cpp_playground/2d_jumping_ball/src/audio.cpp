@@ -93,7 +93,7 @@ void jumping_ball::audio::closeAudio() noexcept {
 	alcCloseDevice(al_device);
 };
 
-jumping_ball::audio::AudioPipe::AudioPipe(int source_num = 1) noexcept {
+jumping_ball::audio::AudioPipe::AudioPipe(int source_num) noexcept {
 	addSource(source_num);
 }
 
@@ -105,16 +105,18 @@ void jumping_ball::audio::AudioPipe::destroyAllALSources() noexcept {
 	alDeleteSources(al_sources.size(), al_sources.data());
 }
 
-void jumping_ball::audio::AudioPipe::addSource(int source_num = 1) noexcept {
-	al_sources.resize(al_sources.size() + source_num);
-	alGenSources(source_num, al_sources.data() + sizeof(ALuint) * source_num);
+void jumping_ball::audio::AudioPipe::addSource(int source_num) noexcept {
+	size_t ori_size = al_sources.size();
+	al_sources.resize(ori_size + source_num);
+	alGenSources(source_num, al_sources.data() + sizeof(ALuint) * ori_size);
 
-	for (auto it = al_sources.end() - 1; it != al_sources.end() - 1 - source_num; it--) {
-		//alSourcei(*it, AL_LOOPING, 0);
-		//alSourcei(*it, AL_GAIN, 100.0f);
-		//alSourcei(*it, AL_PITCH, 1.0f);
+	for (int i = 0; i < source_num;i++) {
+		auto& source = al_sources[ori_size + i];
+		alSourcei(source, AL_LOOPING, 0);
+		alSourcei(source, AL_GAIN, 100.0f);
+		alSourcei(source, AL_PITCH, 1.0f);
 		alDistanceModel(AL_INVERSE_DISTANCE_CLAMPED);
-		alSourcef(*it, AL_ROLLOFF_FACTOR, 1.0f);
+		alSourcef(source, AL_ROLLOFF_FACTOR, 1.0f);
 	}
 }
 
