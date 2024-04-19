@@ -1,4 +1,6 @@
 #include <jumping_ball/audio.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <array>
 
 ALCdevice* jumping_ball::audio::al_device;
 ALCcontext* jumping_ball::audio::al_context;
@@ -90,3 +92,36 @@ void jumping_ball::audio::closeAudio() noexcept {
 	alcDestroyContext(al_context);
 	alcCloseDevice(al_device);
 };
+
+jumping_ball::audio::AudioPipe::AudioPipe(int source_num = 1) noexcept {
+	addSource(source_num);
+}
+
+jumping_ball::audio::AudioPipe::~AudioPipe() noexcept {
+	destroyAllALSources();
+}
+
+void jumping_ball::audio::AudioPipe::destroyAllALSources() noexcept {
+	alDeleteSources(al_sources.size(), al_sources.data());
+}
+
+void jumping_ball::audio::AudioPipe::addSource(int source_num = 1) noexcept {
+	al_sources.resize(al_sources.size() + source_num);
+	alGenSources(source_num, al_sources.data() + sizeof(ALuint) * source_num);
+}
+
+void jumping_ball::audio::AudioPipe::setPosition(const glm::vec3& position) noexcept {
+	for (auto& source : al_sources)
+		alSourcefv(source, AL_POSITION, glm::value_ptr(position));
+}
+
+void jumping_ball::audio::AudioPipe::setVelocity(const glm::vec3& velocity) noexcept {
+	for (auto& source : al_sources)
+		alSourcefv(source, AL_VELOCITY, glm::value_ptr(velocity));
+}
+
+void jumping_ball::audio::AudioPipe::setOrientation(const glm::vec3& at, const glm::vec3& up) noexcept {
+	std::array<ALfloat, 6> values{ at.x,at.y,at.z,up.x,up.y,up.z };
+	for (auto& source : al_sources)
+		alSourcefv(source, AL_ORIENTATION, values.data());
+}

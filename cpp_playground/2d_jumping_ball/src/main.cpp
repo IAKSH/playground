@@ -50,7 +50,7 @@ struct BallWithSoundSource : public Ball {
 	}
 };
 
-static std::unique_ptr<BallRenObject> ball_ren_obj;
+static std::shared_ptr<RenPipe> ball_ren_pipe;
 static std::vector<std::unique_ptr<BallWithSoundSource>> balls;
 
 static double delta_time = 0.0;
@@ -146,6 +146,43 @@ void check_ball_collision(BallWithSoundSource& ball1, BallWithSoundSource& ball2
     }
 }
 
+static std::vector<float> ball_vertices;
+static std::vector<unsigned int> ball_indices;
+
+void genBallVerticesAndIndices() {
+	const int segments = 360;
+	ball_vertices.resize(segments * 3);
+	ball_indices.resize(segments);
+
+	for (int i = 0; i < segments; ++i) {
+		float theta = 2.0f * 3.1415926f * float(i) / float(segments);
+		float x = cosf(theta);
+		float y = sinf(theta);
+
+		ball_vertices[i * 3] = x;
+		ball_vertices[i * 3 + 1] = y;
+		ball_vertices[i * 3 + 2] = 0.0f; // z坐标，对于2D图形，可以简单地将其设置为0
+
+		ball_indices[i] = i; // 设置索引值
+	}
+
+	/*
+	glBindVertexArray(vao_id);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_id);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_id);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+	*/
+}
+
 void processTick() noexcept {
     for(auto& ball : balls) {
 		ball->applyForce(glm::vec3(0.0f, -0.0025f, 0.0f), ball->position);
@@ -167,13 +204,15 @@ void draw() noexcept {
 
 	// draw all ball(s)
 	for(auto& ball : balls)
-		ball_ren_obj->draw(*ball);
+		ball_ren_pipe->draw(ball->position,ball->radius);
 }
 
 void mainLoop() noexcept {
-	for(int i = 0;i < 50;i++)
+	genBallVerticesAndIndices();
+	ball_ren_pipe = std::make_shared<RenPipe>(vshader_source, fshader_source, ball_vertices, ball_indices);
+
+	for (int i = 0; i < 50; i++)
 		balls.emplace_back(std::make_unique<BallWithSoundSource>());
-	ball_ren_obj = std::make_unique<BallRenObject>(vshader_source, fshader_source);
 
 	while (!glfwWindowShouldClose(window)) {
 		// update delta_time
@@ -191,7 +230,7 @@ void mainLoop() noexcept {
 }
 
 int main() noexcept {
-	spdlog::set_level(spdlog::level::debug);
+	//spdlog::set_level(spdlog::level::debug);
 	initAudio();
 	initGraphics();
 	mainLoop();

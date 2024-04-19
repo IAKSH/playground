@@ -33,18 +33,22 @@ namespace jumping_ball::graphics {
 	void initGraphics() noexcept;
 	void closeGraphics() noexcept;
 
-	class BallRenObject {
-	private:
-		void initShader(const std::string& vshader_source, const std::string& fshader_source);
-		void loadCircleVertices();
-
+	class RenPipe {
 	public:
 		GLuint vao_id, vbo_id, ebo_id;
 		GLuint shader_id;
 
-		BallRenObject(const std::string& vertex_shader, const std::string& fragment_shader);
-		~BallRenObject() noexcept;
+		RenPipe(const std::string_view& vshader_source, const std::string_view& fshader_source,
+			const std::vector<float>& vertices, const std::vector<unsigned int>& indices) noexcept;
+		~RenPipe() noexcept;
 
-		void draw(const physics::Ball& ball);
+		void updateVertices(const std::vector<float>& vertices, const std::vector<unsigned int>& indices) noexcept;
+		// TODO: 这个函数可能需要很多参数
+		// TODO: 临时保留为绘制圆的函数
+		virtual void draw(const glm::vec3& position,float r) noexcept;
+
+	private:
+		void initialize(const std::string_view& vshader_source, const std::string_view& fshader_source) noexcept;
+		void uninitiaze() noexcept;
 	};
 }
