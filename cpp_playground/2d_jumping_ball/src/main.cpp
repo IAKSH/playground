@@ -127,7 +127,7 @@ void check_hitbox_border(Ball& ball) noexcept {
 	}
 }
 
-void respondToCollision(RigidBody& a, RigidBody& b) {
+void respondToCollision(RigidBody& a, RigidBody& b, float friction, float restitution) {
 	// 计算碰撞的法线
 	glm::vec3 collisionNormal = glm::normalize(a.position - b.position);
 
@@ -142,11 +142,8 @@ void respondToCollision(RigidBody& a, RigidBody& b) {
 		return;
 	}
 
-	// 计算碰撞的反弹系数，这里假设两个刚体的反弹系数都是1
-	float e = 1;
-
 	// 计算冲量的大小
-	float j = -(1 + e) * velocityAlongNormal / (1 / a.mass + 1 / b.mass);
+	float j = -(1 + restitution) * velocityAlongNormal / (1 / a.mass + 1 / b.mass);
 
 	// 计算冲量向量
 	glm::vec3 impulse = j * collisionNormal;
@@ -154,12 +151,22 @@ void respondToCollision(RigidBody& a, RigidBody& b) {
 	// 根据冲量改变刚体的速度
 	a.velocity += impulse / a.mass;
 	b.velocity -= impulse / b.mass;
+
+	// 计算摩擦力
+	glm::vec3 tangent = relativeVelocity - velocityAlongNormal * collisionNormal;
+	if (glm::length(tangent) > 0) {
+		tangent = glm::normalize(tangent);
+		glm::vec3 frictionImpulse = -friction * j * tangent;
+		a.velocity += frictionImpulse / a.mass;
+		b.velocity -= frictionImpulse / b.mass;
+	}
 }
+
 
 void processTick() noexcept {
 	for (auto& ball : balls) {
 		// 应用重力
-		glm::vec3 gravityForce = glm::vec3(0.0f, -0.0025f * ball->rigid_body->mass, 0.0f);
+		glm::vec3 gravityForce = glm::vec3(0.0f, -0.005f * ball->rigid_body->mass, 0.0f);
 		ball->rigid_body->applyForce(gravityForce, ball->rigid_body->position);
 		ball->update(delta_time);
 	}
@@ -182,7 +189,7 @@ void processTick() noexcept {
 						float speed = glm::dot(relativeVelocity, norm);
 
 						if (speed < 0.0f) {
-							respondToCollision(*balls[i]->rigid_body, *balls[j]->rigid_body);
+							respondToCollision(*balls[i]->rigid_body, *balls[j]->rigid_body, 0.5f, 0.8f);
 							// 调整位置以防止重叠
 							float overlap = 0.5f * (dist - balls[i]->radius - balls[j]->radius);
 							balls[i]->rigid_body->position -= overlap * norm;
