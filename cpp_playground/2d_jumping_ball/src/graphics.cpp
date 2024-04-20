@@ -50,27 +50,33 @@ jumping_ball::graphics::RenPipe::~RenPipe() noexcept {
 	uninitiaze();
 }
 
-void jumping_ball::graphics::RenPipe::draw(const glm::vec3& position,float r) noexcept {
+void jumping_ball::graphics::RenPipe::draw(const glm::vec3& position, glm::quat orientation, float r) noexcept {
 	// 计算变换矩阵
 	// 暂时直接将窗口大小视为固定的800x800
 	float window_scaled_r = r / 800;
 	float window_scaled_x = position.x / 800;
 	float window_scaled_y = position.y / 800;
 
-	glm::mat4 transform = glm::mat4(1.0f);
-	transform = glm::translate(transform, glm::vec3(window_scaled_x, window_scaled_y, 0.0f))
-		* glm::scale(glm::mat4(1.0f), glm::vec3(window_scaled_r, window_scaled_r, window_scaled_r));
-
+	glm::mat4 transform_mat = glm::translate(glm::mat4(1.0f), glm::vec3(window_scaled_x, window_scaled_y, 0.0f));
+	glm::mat4 scale_mat = glm::scale(glm::mat4(1.0f), glm::vec3(window_scaled_r, window_scaled_r, window_scaled_r));
+	glm::mat4 rotate_mat = glm::mat4_cast(orientation);
 
 	// 将变换矩阵传递给着色器
 	glUseProgram(shader_id);
-	GLint transform_loc = glGetUniformLocation(shader_id, "transform");
-	glUniformMatrix4fv(transform_loc, 1, GL_FALSE, glm::value_ptr(transform));
+	glUniformMatrix4fv(glGetUniformLocation(shader_id, "transform_mat"), 1, GL_FALSE, glm::value_ptr(transform_mat));
+	glUniformMatrix4fv(glGetUniformLocation(shader_id, "rotate_mat"), 1, GL_FALSE, glm::value_ptr(rotate_mat));
+	glUniformMatrix4fv(glGetUniformLocation(shader_id, "scale_mat"), 1, GL_FALSE, glm::value_ptr(scale_mat));
+
+	// 临时
+	glEnable(GL_CULL_FACE);
+	glFrontFace(GL_CW);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//glLineWidth(5.0f);
 
 	// 绘制圆形
 	glBindVertexArray(vao_id);
-	//glDrawElements(GL_TRIANGLES, 360, GL_UNSIGNED_INT, 0);
-	glDrawElements(GL_TRIANGLE_FAN, 360, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, indices_cnt, GL_UNSIGNED_INT, 0);
+	//glDrawElements(GL_TRIANGLE_FAN, indices_cnt, GL_UNSIGNED_INT, 0);
 }
 
 void jumping_ball::graphics::RenPipe::initialize(const std::string_view& vshader_source,
@@ -111,6 +117,8 @@ void jumping_ball::graphics::RenPipe::uninitiaze() noexcept {
 }
 
 void jumping_ball::graphics::RenPipe::updateVertices(const std::vector<float>& vertices,const std::vector<unsigned int>& indices) noexcept {
+	indices_cnt = indices.size();
+
 	glBindVertexArray(vao_id);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_id);

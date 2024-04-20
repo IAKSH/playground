@@ -37,6 +37,7 @@ namespace jumping_ball::graphics {
 	public:
 		GLuint vao_id, vbo_id, ebo_id;
 		GLuint shader_id;
+		unsigned int indices_cnt;
 
 		RenPipe(const std::string_view& vshader_source, const std::string_view& fshader_source,
 			const std::vector<float>& vertices, const std::vector<unsigned int>& indices) noexcept;
@@ -45,7 +46,7 @@ namespace jumping_ball::graphics {
 		void updateVertices(const std::vector<float>& vertices, const std::vector<unsigned int>& indices) noexcept;
 		// TODO: 这个函数可能需要很多参数
 		// TODO: 临时保留为绘制圆的函数
-		virtual void draw(const glm::vec3& position,float r) noexcept;
+		virtual void draw(const glm::vec3& position, glm::quat orientation, float r) noexcept;
 
 	private:
 		void initialize(const std::string_view& vshader_source, const std::string_view& fshader_source) noexcept;
