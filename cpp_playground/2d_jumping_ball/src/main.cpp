@@ -117,120 +117,87 @@ void applyGravityAndUpdate(Ball& ball, float delta_time) {
 
 
 void try_play_ball_hit_sound(Ball& ball) noexcept {
-	if (ball.rigid_body->velocity.x * ball.rigid_body->velocity.x + ball.rigid_body->velocity.y * ball.rigid_body->velocity.y >= 1.0f) {
+	float speed = sqrt(ball.rigid_body->velocity.x * ball.rigid_body->velocity.x
+		+ ball.rigid_body->velocity.y * ball.rigid_body->velocity.y
+		+ ball.rigid_body->velocity.z * ball.rigid_body->velocity.z);
+
+	if (speed >= 0.5f) {
+		//spdlog::debug("speed = {}", speed);
+		alSourceStop(ball.audio_pipe.al_sources[0]);
 		alSourcePlay(ball.audio_pipe.al_sources[0]);
 	}
 }
 
-void handleBoxCollision(Ball& ball, float friction, float restitution) {
-	constexpr float box_start_x = -400.0f;
-	constexpr float box_start_y = -400.0f;
-	constexpr float boxWidth = 800.0f;
-	constexpr float boxHeight = 800.0f;
+void handleBoxCollision(Ball& ball, float restitution, float friction) {
+	glm::vec3 min(-400, -400, 0);
+	glm::vec3 max(400, 400, 0);
 
-	// 计算球心与矩形框各边的距离
-	float leftDist = ball.rigid_body->position.x - ball.radius - box_start_x;
-	float rightDist = box_start_x + boxWidth - (ball.rigid_body->position.x + ball.radius);
-	float topDist = ball.rigid_body->position.y - ball.radius - box_start_y;
-	float bottomDist = box_start_y + boxHeight - (ball.rigid_body->position.y + ball.radius);
-
-	// 检查是否发生碰撞，并计算碰撞后的速度
-	if (leftDist < 0) {
-		try_play_ball_hit_sound(ball);
-		ball.rigid_body->velocity.x = restitution * abs(ball.rigid_body->velocity.x);
-		//ball.rigid_body->angular_velocity.y = friction * ball.rigid_body->velocity.x / ball.radius;
-		ball.rigid_body->angular_velocity *= 0.75f;
-		ball.rigid_body->position.x = box_start_x + ball.radius; // 将球移动到矩形框内部的一个安全位置
-	}
-	else if (rightDist < 0) {
-		try_play_ball_hit_sound(ball);
-		ball.rigid_body->velocity.x = -restitution * abs(ball.rigid_body->velocity.x);
-		//ball.rigid_body->angular_velocity.y = -friction * ball.rigid_body->velocity.x / ball.radius;
-		ball.rigid_body->angular_velocity *= 0.75f;
-		ball.rigid_body->position.x = box_start_x + boxWidth - ball.radius; // 将球移动到矩形框内部的一个安全位置
-	}
-
-	if (topDist < 0) {
-		try_play_ball_hit_sound(ball);
-		ball.rigid_body->velocity.y = restitution * abs(ball.rigid_body->velocity.y);
-		//ball.rigid_body->angular_velocity.x = -friction * ball.rigid_body->velocity.y / ball.radius;
-		ball.rigid_body->angular_velocity *= 0.75f;
-		ball.rigid_body->position.y = box_start_y + ball.radius; // 将球移动到矩形框内部的一个安全位置
-	}
-	else if (bottomDist < 0) {
-		try_play_ball_hit_sound(ball);
-		ball.rigid_body->velocity.y = -restitution * abs(ball.rigid_body->velocity.y);
-		//ball.rigid_body->angular_velocity.x = friction * ball.rigid_body->velocity.y / ball.radius;
-		ball.rigid_body->angular_velocity *= 0.75f;
-		ball.rigid_body->position.y = box_start_y + boxHeight - ball.radius; // 将球移动到矩形框内部的一个安全位置
-	}
-}
-
-void handleBallCollision(Ball& ball_a, Ball& ball_b, float friction, float restitution) {
-	// 计算两球之间的距离和速度差
-	glm::vec3 distance = ball_b.rigid_body->position - ball_a.rigid_body->position;
-	glm::vec3 velocityDifference = ball_b.rigid_body->velocity - ball_a.rigid_body->velocity;
-
-	// 计算碰撞的方向
-	glm::vec3 collisionDirection = glm::normalize(distance);
-
-	// 计算碰撞点到球心的向量
-	glm::vec3 r_a = collisionDirection * ball_a.radius;
-	glm::vec3 r_b = -collisionDirection * ball_b.radius;
-
-	// 计算碰撞点的速度
-	glm::vec3 v_a = ball_a.rigid_body->velocity + glm::cross(ball_a.rigid_body->angular_velocity, r_a);
-	glm::vec3 v_b = ball_b.rigid_body->velocity + glm::cross(ball_b.rigid_body->angular_velocity, r_b);
-
-	// 计算碰撞点的速度差
-	glm::vec3 dv = v_b - v_a;
-
-	// 计算碰撞的冲量
-	float j = (-(1 + restitution) * glm::dot(dv, collisionDirection)) /
-		(1 / ball_a.rigid_body->mass + 1 / ball_b.rigid_body->mass +
-			glm::dot(collisionDirection, glm::cross(ball_a.rigid_body->inertia_tensor * glm::cross(r_a, collisionDirection), r_a) +
-				glm::cross(ball_b.rigid_body->inertia_tensor * glm::cross(r_b, collisionDirection), r_b)));
-
-	// 计算碰撞的力
-	glm::vec3 force = j * collisionDirection;
-
-	// 更新两球的速度
-	ball_a.rigid_body->velocity -= force / ball_a.rigid_body->mass;
-	ball_b.rigid_body->velocity += force / ball_b.rigid_body->mass;
-
-	// 更新两球的旋转速度
-	//ball_a.rigid_body->angular_velocity -= ball_a.rigid_body->inertia_tensor * glm::cross(r_a, force) / (ball_a.radius * ball_a.radius);
-	//ball_b.rigid_body->angular_velocity += ball_b.rigid_body->inertia_tensor * glm::cross(r_b, force) / (ball_b.radius * ball_b.radius);
-	ball_a.rigid_body->angular_velocity -= ball_a.rigid_body->inertia_tensor * glm::cross(r_a, force) * 1000000.0f;
-	ball_b.rigid_body->angular_velocity += ball_b.rigid_body->inertia_tensor * glm::cross(r_b, force) * 1000000.0f;
-}
-
-void checkAndHandleBallCollision(Ball& ball_a, Ball& ball_b, float friction, float restitution) {
-	for (auto& volume_a : ball_a.rigid_body->bounding_volumes) {
-		for (auto& volume_b : ball_b.rigid_body->bounding_volumes) {
-			if (volume_a->isIntersecting(*volume_b)) {
-				glm::vec3 diff = ball_a.rigid_body->position - ball_b.rigid_body->position;
-				float dist = glm::length(diff);
-
-				try_play_ball_hit_sound(ball_a);
-				try_play_ball_hit_sound(ball_b);
-
-				glm::vec3 norm = glm::normalize(diff);
-				glm::vec3 relativeVelocity = ball_a.rigid_body->velocity - ball_b.rigid_body->velocity;
-				float speed = glm::dot(relativeVelocity, norm);
-
-				if (speed < 0.0f) {
-					handleBallCollision(ball_a, ball_b, friction, restitution);
-
-					// 调整位置以防止重叠
-					float overlap = 0.5f * (dist - ball_a.radius - ball_b.radius);
-					ball_a.rigid_body->position -= overlap * norm;
-					ball_b.rigid_body->position += overlap * norm;
-				}
-			}
+	// 不检查Z轴
+	for (int i = 0; i < 2; ++i) {
+		if (ball.rigid_body->position[i] - ball.radius < min[i]) {
+			glm::vec3 normal = glm::vec3(i == 0 ? 1 : 0, i == 1 ? 1 : 0, 0);
+			glm::vec3 tangent = glm::cross(normal, ball.rigid_body->angular_velocity);
+			glm::vec3 relative_velocity = ball.rigid_body->velocity - tangent;
+			float velocity_along_normal = glm::dot(relative_velocity, normal);
+			float impulse_scalar = -(1 + restitution) * velocity_along_normal / ball.rigid_body->mass;
+			glm::vec3 impulse = impulse_scalar * normal;
+			ball.rigid_body->velocity += impulse / ball.rigid_body->mass;
+			ball.rigid_body->angular_velocity += friction * impulse / ball.radius;
+			ball.rigid_body->position[i] = min[i] + ball.radius;  // 修正位置
+			try_play_ball_hit_sound(ball);  // 播放音效
+		}
+		else if (ball.rigid_body->position[i] + ball.radius > max[i]) {
+			glm::vec3 normal = glm::vec3(i == 0 ? -1 : 0, i == 1 ? -1 : 0, 0);
+			glm::vec3 tangent = glm::cross(normal, ball.rigid_body->angular_velocity);
+			glm::vec3 relative_velocity = ball.rigid_body->velocity - tangent;
+			float velocity_along_normal = glm::dot(relative_velocity, normal);
+			float impulse_scalar = -(1 + restitution) * velocity_along_normal / ball.rigid_body->mass;
+			glm::vec3 impulse = impulse_scalar * normal;
+			ball.rigid_body->velocity += impulse / ball.rigid_body->mass;
+			ball.rigid_body->angular_velocity += friction * impulse / ball.radius;
+			ball.rigid_body->position[i] = max[i] - ball.radius;  // 修正位置
+			try_play_ball_hit_sound(ball);  // 播放音效
 		}
 	}
 }
+
+void checkAndHandleBallCollision(Ball& ball1, Ball& ball2, float restitution, float friction) {
+	glm::vec3 diff = ball1.rigid_body->position - ball2.rigid_body->position;
+	float dist = glm::length(diff);
+	float radius_sum = ball1.radius + ball2.radius;
+
+	if (dist <= 0.0f)
+		return;
+
+	if (dist < radius_sum) {
+		glm::vec3 normal = glm::normalize(diff);
+		glm::vec3 tangent1 = glm::cross(normal, ball1.rigid_body->angular_velocity);
+		glm::vec3 tangent2 = glm::cross(normal, ball2.rigid_body->angular_velocity);
+		glm::vec3 relative_velocity = ball1.rigid_body->velocity - ball2.rigid_body->velocity - tangent1 + tangent2;
+		float velocity_along_normal = glm::dot(relative_velocity, normal);
+
+		if (velocity_along_normal > 0) {
+			return;
+		}
+
+		float impulse_scalar = -(1 + restitution) * velocity_along_normal;
+		impulse_scalar /= ball1.rigid_body->mass + ball2.rigid_body->mass;
+
+		glm::vec3 impulse = impulse_scalar * normal;
+
+		ball1.rigid_body->velocity += impulse / ball1.rigid_body->mass;
+		ball1.rigid_body->angular_velocity += friction * impulse / ball1.radius;
+		ball2.rigid_body->velocity -= impulse / ball2.rigid_body->mass;
+		ball2.rigid_body->angular_velocity -= friction * impulse / ball2.radius;
+
+		// 修正位置
+		float penetration = radius_sum - dist;
+		glm::vec3 correction = (penetration / (ball1.rigid_body->mass + ball2.rigid_body->mass)) * normal;
+		ball1.rigid_body->position += correction * ball1.rigid_body->mass;
+		ball2.rigid_body->position -= correction * ball2.rigid_body->mass;
+	}
+}
+
 
 void processTick() noexcept {
 	spdlog::debug("{}\t{}\t{}", balls[0]->rigid_body->angular_velocity.x, balls[0]->rigid_body->angular_velocity.y, balls[0]->rigid_body->angular_velocity.z);
@@ -241,9 +208,9 @@ void processTick() noexcept {
 
 	// 碰撞检测然后响应
 	for (size_t i = 0; i < balls.size(); ++i) {
-		handleBoxCollision(*balls[i], 0.5f, 0.8f);
+		handleBoxCollision(*balls[i], 0.8f, 0.5f);
 		for (size_t j = i + 1; j < balls.size(); ++j) {
-			checkAndHandleBallCollision(*balls[i], *balls[j], 0.5f, 0.8f);
+			checkAndHandleBallCollision(*balls[i], *balls[j], 0.8f, 0.5f);
 		}
 	}
 }
@@ -265,6 +232,8 @@ void mainLoop() noexcept {
 	for (int i = 0; i < 2; i++) {
 		auto ball = std::make_unique<Ball>(ball_ren_pipe, std::make_unique<RigidBody>(sphere_vertices));
 		ball->rigid_body->bounding_volumes.emplace_back(std::make_unique<BoundingSphere>(glm::vec3(0.0f), 50.0f));
+		ball->rigid_body->position.x = -400.0f + ball->radius * i;
+		ball->rigid_body->position.y = -400.0f + ball->radius * i;
 		balls.emplace_back(std::move(ball));
 	}
 
