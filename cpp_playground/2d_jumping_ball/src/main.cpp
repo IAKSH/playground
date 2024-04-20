@@ -15,7 +15,7 @@ uniform mat4 scale_mat;
 
 void main()
 {
-    gl_Position = transform_mat * rotate_mat * scale_mat * vec4(aPos, 1.0);
+    gl_Position =  transform_mat * scale_mat * rotate_mat * vec4(aPos, 1.0);
 }
 )";
 
@@ -29,8 +29,10 @@ void main()
 }
 )";
 
+static constexpr float BALL_RADIUS = 25.0f;
+
 struct Ball : public GameObject {
-	const float radius = 50.0f;
+	const float radius = BALL_RADIUS;
 
 	Ball(std::shared_ptr<RenPipe> ren_pipe, std::unique_ptr<RigidBody> rigid_body) noexcept
 		: GameObject(ren_pipe, std::move(rigid_body))
@@ -42,7 +44,7 @@ struct Ball : public GameObject {
 static std::shared_ptr<std::vector<float>> sphere_vertices = std::make_shared<std::vector<float>>();
 static std::vector<unsigned int> sphere_indices;
 
-void genSphereVerticesAndIndices(int segments = 6, float radius = 1.0f) {
+void genSphereVerticesAndIndices(int segments = 6, float radius = BALL_RADIUS) {
 	const float PI = 3.1415926f;
 	for (int i = 0; i <= segments; ++i) {
 		for (int j = 0; j <= segments; ++j) {
@@ -111,10 +113,10 @@ void try_play_ball_hit_sound(Ball& ball) noexcept {
 }
 
 void handleBoxCollision(Ball& ball, float friction, float restitution) {
-	constexpr float box_start_x = -800.0f;
-	constexpr float box_start_y = -800.0f;
-	constexpr float boxWidth = 1600.0f;
-	constexpr float boxHeight = 1600.0f;
+	constexpr float box_start_x = -400.0f;
+	constexpr float box_start_y = -400.0f;
+	constexpr float boxWidth = 800.0f;
+	constexpr float boxHeight = 800.0f;
 
 	// 计算球心与矩形框各边的距离
 	float leftDist = ball.rigid_body->position.x - ball.radius - box_start_x;
@@ -124,22 +126,26 @@ void handleBoxCollision(Ball& ball, float friction, float restitution) {
 
 	// 检查是否发生碰撞，并计算碰撞后的速度
 	if (leftDist < 0) {
+		try_play_ball_hit_sound(ball);
 		ball.rigid_body->velocity.x = restitution * abs(ball.rigid_body->velocity.x);
 		ball.rigid_body->angular_velocity.y = friction * ball.rigid_body->velocity.x / ball.radius;
 		ball.rigid_body->position.x = box_start_x + ball.radius; // 将球移动到矩形框内部的一个安全位置
 	}
 	else if (rightDist < 0) {
+		try_play_ball_hit_sound(ball);
 		ball.rigid_body->velocity.x = -restitution * abs(ball.rigid_body->velocity.x);
 		ball.rigid_body->angular_velocity.y = -friction * ball.rigid_body->velocity.x / ball.radius;
 		ball.rigid_body->position.x = box_start_x + boxWidth - ball.radius; // 将球移动到矩形框内部的一个安全位置
 	}
 
 	if (topDist < 0) {
+		try_play_ball_hit_sound(ball);
 		ball.rigid_body->velocity.y = restitution * abs(ball.rigid_body->velocity.y);
 		ball.rigid_body->angular_velocity.x = -friction * ball.rigid_body->velocity.y / ball.radius;
 		ball.rigid_body->position.y = box_start_y + ball.radius; // 将球移动到矩形框内部的一个安全位置
 	}
 	else if (bottomDist < 0) {
+		try_play_ball_hit_sound(ball);
 		ball.rigid_body->velocity.y = -restitution * abs(ball.rigid_body->velocity.y);
 		ball.rigid_body->angular_velocity.x = friction * ball.rigid_body->velocity.y / ball.radius;
 		ball.rigid_body->position.y = box_start_y + boxHeight - ball.radius; // 将球移动到矩形框内部的一个安全位置
@@ -236,7 +242,7 @@ void draw() noexcept {
 
 	// draw all ball(s)
 	for (auto& ball : balls)
-		ball->ren_pipe->draw(ball->rigid_body->position, ball->rigid_body->orientation, 50.0f);
+		ball->ren_pipe->draw(ball->rigid_body->position, ball->rigid_body->orientation, 1.0f);
 }
 
 void mainLoop() noexcept {

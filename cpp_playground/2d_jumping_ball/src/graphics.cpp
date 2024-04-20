@@ -50,12 +50,12 @@ jumping_ball::graphics::RenPipe::~RenPipe() noexcept {
 	uninitiaze();
 }
 
-void jumping_ball::graphics::RenPipe::draw(const glm::vec3& position, glm::quat orientation, float r) noexcept {
+void jumping_ball::graphics::RenPipe::draw(const glm::vec3& position, glm::quat orientation, float scale) noexcept {
 	// 计算变换矩阵
 	// 暂时直接将窗口大小视为固定的800x800
-	float window_scaled_r = r / 800;
-	float window_scaled_x = position.x / 800;
-	float window_scaled_y = position.y / 800;
+	float window_scaled_r = scale / 400;
+	float window_scaled_x = position.x / 400;
+	float window_scaled_y = position.y / 400;
 
 	glm::mat4 transform_mat = glm::translate(glm::mat4(1.0f), glm::vec3(window_scaled_x, window_scaled_y, 0.0f));
 	glm::mat4 scale_mat = glm::scale(glm::mat4(1.0f), glm::vec3(window_scaled_r, window_scaled_r, window_scaled_r));
