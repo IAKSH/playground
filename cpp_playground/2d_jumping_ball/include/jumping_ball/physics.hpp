@@ -74,7 +74,7 @@ namespace jumping_ball::physics {
         glm::vec3 position;                             // 位置
         glm::vec3 velocity;                             // 速度
         glm::vec3 angular_velocity;                     // 角速度
-        float mass;                                     // 质量
+        float inverse_mass;                             // 质量的倒数
         glm::mat3 inertia_tensor;                       // 惯性张量
         glm::vec3 force;                                // 力
         glm::vec3 torque;                               // 扭矩

@@ -37,7 +37,7 @@ struct Ball : public GameObject {
 	Ball(std::shared_ptr<RenPipe> ren_pipe, std::unique_ptr<RigidBody> rigid_body) noexcept
 		: GameObject(ren_pipe, std::move(rigid_body))
 	{
-		this->rigid_body->mass = 1.0f;
+		this->rigid_body->inverse_mass = 1.0f;
 	}
 };
 
@@ -106,16 +106,6 @@ void processInput() noexcept {
 	}
 }
 
-void applyGravityAndUpdate(Ball& ball, float delta_time) {
-	// 应用重力
-	glm::vec3 gravityForce = glm::vec3(0.0f, -0.005f * ball.rigid_body->mass, 0.0f);
-	ball.rigid_body->applyForce(gravityForce, ball.rigid_body->position);
-
-	// 更新状态
-	ball.update(delta_time);
-}
-
-
 void try_play_ball_hit_sound(Ball& ball) noexcept {
 	float speed = sqrt(ball.rigid_body->velocity.x * ball.rigid_body->velocity.x
 		+ ball.rigid_body->velocity.y * ball.rigid_body->velocity.y
@@ -132,31 +122,20 @@ void handleBoxCollision(Ball& ball, float restitution, float friction) {
 	glm::vec3 min(-400, -400, 0);
 	glm::vec3 max(400, 400, 0);
 
-	// 不检查Z轴
 	for (int i = 0; i < 2; ++i) {
 		if (ball.rigid_body->position[i] - ball.radius < min[i]) {
-			glm::vec3 normal = glm::vec3(i == 0 ? 1 : 0, i == 1 ? 1 : 0, 0);
-			glm::vec3 tangent = glm::cross(normal, ball.rigid_body->angular_velocity);
-			glm::vec3 relative_velocity = ball.rigid_body->velocity - tangent;
-			float velocity_along_normal = glm::dot(relative_velocity, normal);
-			float impulse_scalar = -(1 + restitution) * velocity_along_normal / ball.rigid_body->mass;
-			glm::vec3 impulse = impulse_scalar * normal;
-			ball.rigid_body->velocity += impulse / ball.rigid_body->mass;
-			ball.rigid_body->angular_velocity += friction * impulse / ball.radius;
-			ball.rigid_body->position[i] = min[i] + ball.radius;  // 修正位置
-			try_play_ball_hit_sound(ball);  // 播放音效
+			ball.rigid_body->velocity[i] = -restitution * ball.rigid_body->velocity[i];
+			ball.rigid_body->velocity[(i + 1) % 2] *= (1 - friction);
+			//ball.rigid_body->angular_velocity += friction * glm::cross(ball.rigid_body->position, ball.rigid_body->velocity);
+			ball.rigid_body->position[i] = min[i] + ball.radius;
+			try_play_ball_hit_sound(ball);
 		}
 		else if (ball.rigid_body->position[i] + ball.radius > max[i]) {
-			glm::vec3 normal = glm::vec3(i == 0 ? -1 : 0, i == 1 ? -1 : 0, 0);
-			glm::vec3 tangent = glm::cross(normal, ball.rigid_body->angular_velocity);
-			glm::vec3 relative_velocity = ball.rigid_body->velocity - tangent;
-			float velocity_along_normal = glm::dot(relative_velocity, normal);
-			float impulse_scalar = -(1 + restitution) * velocity_along_normal / ball.rigid_body->mass;
-			glm::vec3 impulse = impulse_scalar * normal;
-			ball.rigid_body->velocity += impulse / ball.rigid_body->mass;
-			ball.rigid_body->angular_velocity += friction * impulse / ball.radius;
-			ball.rigid_body->position[i] = max[i] - ball.radius;  // 修正位置
-			try_play_ball_hit_sound(ball);  // 播放音效
+			ball.rigid_body->velocity[i] = -restitution * ball.rigid_body->velocity[i];
+			ball.rigid_body->velocity[(i + 1) % 2] *= (1 - friction);
+			//ball.rigid_body->angular_velocity += friction * glm::cross(ball.rigid_body->position, ball.rigid_body->velocity);
+			ball.rigid_body->position[i] = max[i] - ball.radius;
+			try_play_ball_hit_sound(ball);
 		}
 	}
 }
@@ -171,47 +150,72 @@ void checkAndHandleBallCollision(Ball& ball1, Ball& ball2, float restitution, fl
 
 	if (dist < radius_sum) {
 		glm::vec3 normal = glm::normalize(diff);
-		glm::vec3 tangent1 = glm::cross(normal, ball1.rigid_body->angular_velocity);
-		glm::vec3 tangent2 = glm::cross(normal, ball2.rigid_body->angular_velocity);
-		glm::vec3 relative_velocity = ball1.rigid_body->velocity - ball2.rigid_body->velocity - tangent1 + tangent2;
+		glm::vec3 relative_velocity = ball1.rigid_body->velocity - ball2.rigid_body->velocity;
 		float velocity_along_normal = glm::dot(relative_velocity, normal);
 
-		if (velocity_along_normal > 0) {
+		if (velocity_along_normal > 0)
 			return;
+
+		float impulse = -(1 + restitution) * velocity_along_normal;
+		impulse /= ball1.rigid_body->inverse_mass + ball2.rigid_body->inverse_mass;
+
+		glm::vec3 impulse_per_mass = impulse * normal;
+
+		ball1.rigid_body->velocity += ball1.rigid_body->inverse_mass * impulse_per_mass;
+		ball2.rigid_body->velocity -= ball2.rigid_body->inverse_mass * impulse_per_mass;
+
+		glm::vec3 tangent = relative_velocity - velocity_along_normal * normal;
+		if (glm::length(tangent) > 0) {
+			tangent = glm::normalize(tangent);
+			float jt = -glm::dot(relative_velocity, tangent);
+			jt /= ball1.rigid_body->inverse_mass + ball2.rigid_body->inverse_mass;
+
+			if (jt > impulse * friction)
+				jt = impulse * friction;
+			else if (jt < -impulse * friction)
+				jt = -impulse * friction;
+
+			glm::vec3 friction_impulse = jt * tangent;
+			ball1.rigid_body->velocity += ball1.rigid_body->inverse_mass * friction_impulse;
+			ball2.rigid_body->velocity -= ball2.rigid_body->inverse_mass * friction_impulse;
+
+			// 计算力矩并更新角速度
+			glm::vec3 r1 = ball1.rigid_body->position - ball2.rigid_body->position;
+			glm::vec3 r2 = ball2.rigid_body->position - ball1.rigid_body->position;
+			glm::vec3 torque1 = glm::cross(r1, friction_impulse);
+			glm::vec3 torque2 = glm::cross(r2, -friction_impulse);
+			//ball1.rigid_body->angular_velocity += ball1.rigid_body->inverse_inertia * torque1;
+			//ball2.rigid_body->angular_velocity += ball2.rigid_body->inverse_inertia * torque2;
+			ball1.rigid_body->angular_velocity += glm::mat3(1.0f) / ball1.rigid_body->inertia_tensor * torque1;
+			ball2.rigid_body->angular_velocity -= glm::mat3(1.0f) / ball1.rigid_body->inertia_tensor * torque2;
+			
 		}
 
-		float impulse_scalar = -(1 + restitution) * velocity_along_normal;
-		impulse_scalar /= ball1.rigid_body->mass + ball2.rigid_body->mass;
-
-		glm::vec3 impulse = impulse_scalar * normal;
-
-		ball1.rigid_body->velocity += impulse / ball1.rigid_body->mass;
-		ball1.rigid_body->angular_velocity += friction * impulse / ball1.radius;
-		ball2.rigid_body->velocity -= impulse / ball2.rigid_body->mass;
-		ball2.rigid_body->angular_velocity -= friction * impulse / ball2.radius;
-
-		// 修正位置
-		float penetration = radius_sum - dist;
-		glm::vec3 correction = (penetration / (ball1.rigid_body->mass + ball2.rigid_body->mass)) * normal;
-		ball1.rigid_body->position += correction * ball1.rigid_body->mass;
-		ball2.rigid_body->position -= correction * ball2.rigid_body->mass;
+		glm::vec3 correction = (radius_sum - dist) / (ball1.rigid_body->inverse_mass + ball2.rigid_body->inverse_mass) * 0.8f * normal;
+		ball1.rigid_body->position += ball1.rigid_body->inverse_mass * correction;
+		ball2.rigid_body->position -= ball2.rigid_body->inverse_mass * correction;
 	}
 }
 
-
 void processTick() noexcept {
-	spdlog::debug("{}\t{}\t{}", balls[0]->rigid_body->angular_velocity.x, balls[0]->rigid_body->angular_velocity.y, balls[0]->rigid_body->angular_velocity.z);
-
-	for (auto& ball : balls) {
-		applyGravityAndUpdate(*ball, delta_time);
-	}
+	//spdlog::debug("{}\t{}", balls[0]->rigid_body->angular_velocity.z, balls[1]->rigid_body->angular_velocity.z);
 
 	// 碰撞检测然后响应
 	for (size_t i = 0; i < balls.size(); ++i) {
-		handleBoxCollision(*balls[i], 0.8f, 0.5f);
+		// 应用重力
+		glm::vec3 gravityForce = glm::vec3(0.0f, -0.005f / balls[i]->rigid_body->inverse_mass, 0.0f);
+		balls[i]->rigid_body->applyForce(gravityForce, balls[i]->rigid_body->position);
+
+		handleBoxCollision(*balls[i], 0.8f, 0.001f);
 		for (size_t j = i + 1; j < balls.size(); ++j) {
-			checkAndHandleBallCollision(*balls[i], *balls[j], 0.8f, 0.5f);
+			checkAndHandleBallCollision(*balls[i], *balls[j], 0.8f, 0.001f);
 		}
+
+		// 更新状态
+		balls[i]->update(delta_time);
+
+		// 吐了，旋转怎么这么难做
+		balls[i]->rigid_body->angular_velocity *= 0.1f;
 	}
 }
 
@@ -229,7 +233,7 @@ void mainLoop() noexcept {
 	ball_ren_pipe = std::make_shared<RenPipe>(vshader_source, fshader_source, *sphere_vertices, sphere_indices);
 	glCheckError();
 
-	for (int i = 0; i < 2; i++) {
+	for (int i = 0; i < 50; i++) {
 		auto ball = std::make_unique<Ball>(ball_ren_pipe, std::make_unique<RigidBody>(sphere_vertices));
 		ball->rigid_body->bounding_volumes.emplace_back(std::make_unique<BoundingSphere>(glm::vec3(0.0f), 50.0f));
 		ball->rigid_body->position.x = -400.0f + ball->radius * i;

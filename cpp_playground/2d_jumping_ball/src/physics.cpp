@@ -30,7 +30,7 @@ void jumping_ball::physics::RigidBody::updateCenterOfMass() noexcept {
 
 void jumping_ball::physics::RigidBody::update(float deltaTime) noexcept {
     // 使用牛顿第二定律更新线性速度和位置
-    glm::vec3 acceleration = force / mass;
+    glm::vec3 acceleration = force * inverse_mass;
     velocity += acceleration * deltaTime;
     position += velocity * deltaTime;
 
@@ -59,7 +59,7 @@ void jumping_ball::physics::RigidBody::applyDefaultValue() noexcept {
     position = glm::vec3(0.0f);
     velocity = glm::vec3(0.0f);
     angular_velocity = glm::vec3(0.0f);
-    mass = 1.0f;
+    inverse_mass = 1.0f;
     inertia_tensor = glm::mat3(1.0f);
     force = glm::vec3(0.0f);
     torque = glm::vec3(0.0f);
