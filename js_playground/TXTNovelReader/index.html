@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>TXTNovelReader</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 80%;
+            height: 100vh;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            color: white;
+            transition: transform 0.5s;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+
+        #sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        #controlPanel {
+            width: 90%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+            overflow-wrap: break-word;
+            transition: width 0.5s;
+        }
+
+        #content {
+            width: 90%;
+            margin: 5px auto;
+            padding: 20px;
+            background-color: #fdf6e3;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+            overflow-wrap: break-word;
+            transition: width 0.5s;
+            font-size: 20px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        label {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+
+        select {
+            margin-left: 10px;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            line-height: 1.6;
+        }
+
+        .chapter {
+            cursor: pointer;
+        }
+
+        .chapter:hover {
+            text-decoration: underline;
+        }
+
+        #toggleButton {
+            position: fixed;
+            top: 10px;
+            left: 80%;
+            z-index: 2000;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: left 0.5s;
+        }
+
+        #chapterTitle {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        /* 媒体查询，当设备宽度大于600px时应用以下样式 */
+        @media (min-width: 600px) {
+            #sidebar {
+                width: 20%;
+            }
+
+            #controlPanel, #content {
+                width: 60%;
+            }
+
+            #toggleButton {
+                left: 20%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="toggleButton">章节</div>
+    <div id="sidebar"></div>
+    <div id="controlPanel">
+        <label for="fileInput">文件</label>
+        <input type="file" id="fileInput" accept=".txt">
+        <select id="encodingSelect">
+            <option value="UTF-8">UTF-8</option>
+            <option value="GB2312">GB2312</option>
+        </select>
+        <select id="fontSizeSelect">
+            <option value="12px">12px</option>
+            <option value="16px">16px</option>
+            <option value="20px" selected>20px</option>
+        </select>
+    </div>
+    <div id="content">
+        <div id="chapterTitle"></div>
+        <pre id="textDisplay"></pre>
+    </div>
+
+    <script>
+        var chapters = [];
+        var chapter_index = 0;
+
+        document.getElementById('fileInput').addEventListener('change', function (e) {
+            var file = e.target.files[0];
+            if (!file) return;
+
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var contents = e.target.result;
+                chapters = contents.split(/第\d+章/);
+                document.getElementById('chapterTitle').textContent = '序';
+                document.getElementById('textDisplay').textContent = chapters[0];
+
+                var sidebar = document.getElementById('sidebar');
+                sidebar.innerHTML = '';
+                for (var i = 1; i < chapters.length; i++) {
+                    var div = document.createElement('div');
+                    div.textContent = '第' + i + '章';
+                    div.className = 'chapter';
+                    div.dataset.index = i;
+                    div.addEventListener('click', function (e) {
+                        chapter_index = e.target.dataset.index;
+                        document.getElementById('chapterTitle').textContent = `第` + chapter_index + `章`;
+                        document.getElementById('textDisplay').textContent = chapters[chapter_index];
+                    });
+                    sidebar.appendChild(div);
+                }
+            };
+            var encoding = document.getElementById('encodingSelect').value;
+            reader.readAsText(file, encoding);
+
+            // 重置，以实现重复载入
+            e.target.value = '';
+        });
+
+        document.getElementById('fontSizeSelect').addEventListener('change', function (e) {
+            var fontSize = e.target.value;
+            document.getElementById('textDisplay').style.fontSize = fontSize;
+        });
+
+        document.getElementById('toggleButton').addEventListener('click', function () {
+            var sidebar = document.getElementById('sidebar');
+            var toggleButton = document.getElementById('toggleButton');
+            if (sidebar.style.transform === 'translateX(-100%)') {
+                sidebar.style.transform = 'translateX(0)';
+                toggleButton.style.left = '80%';
+            } else {
+                sidebar.style.transform = 'translateX(-100%)';
+                toggleButton.style.left = '0';
+            }
+        });
+    </script>
+</body>
+
+</html>
