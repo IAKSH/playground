@@ -109,7 +109,7 @@
             "name": "linux_gcc_debug_with_vcpkg",
             "displayName": "Linux GCC Debug",
             "description": "Linux GCC Debug with vcpk",
-            "generator": "Makefiles",
+            "generator": "Unix Makefiles",
             "binaryDir": "${sourceDir}/out/build/${presetName}",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
@@ -122,7 +122,7 @@
             "name": "linux_gcc_release_with_vcpkg",
             "displayName": "Linux GCC Release",
             "description": "Linux GCC Release with vcpkg",
-            "generator": "Makefiles",
+            "generator": "Unix Makefiles",
             "binaryDir": "${sourceDir}/out/build/${presetName}",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
