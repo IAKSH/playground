@@ -1,0 +1,44 @@
+{
+    "version": 2,
+    "configurePresets": [
+        {
+            "name": "mingw_debug_with_vcpkg_dynamic",
+            "displayName": "MinGW Debug (dynamic)",
+            "description": "MinGW with vcpkg dynamic",
+            "generator": "MinGW Makefiles",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+                "CMAKE_TOOLCHAIN_FILE": "D:/!Tools/vcpkg/scripts/buildsystems/vcpkg.cmake",
+                "VCPKG_TARGET_TRIPLET": "x64-mingw-dynamic"
+            }
+        },
+        {
+            "name": "mingw_debug_with_vcpkg_static",
+            "displayName": "MinGW Debug (static)",
+            "description": "MinGW with vcpkg static",
+            "generator": "MinGW Makefiles",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+                "CMAKE_TOOLCHAIN_FILE": "D:/!Tools/vcpkg/scripts/buildsystems/vcpkg.cmake",
+                "VCPKG_TARGET_TRIPLET": "x64-mingw-static"
+            }
+        },
+      {
+        "name": "msvc_debug_with_vcpkg",
+        "displayName": "MSVC Debug",
+        "description": "MSVC Debug with vcpkg",
+        "generator": "Visual Studio 17 2022",
+        "binaryDir": "${sourceDir}/out/build/${presetName}",
+        "cacheVariables": {
+          "CMAKE_BUILD_TYPE": "Debug",
+          "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+          "CMAKE_TOOLCHAIN_FILE": "D:/!Tools/vcpkg/scripts/buildsystems/vcpkg.cmake",
+          "VCPKG_TARGET_TRIPLET": "x64-windows"
+        }
+      }
+    ]
+}

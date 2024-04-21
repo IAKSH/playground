@@ -1,0 +1,18 @@
+{
+  "dependencies": [
+    "spdlog",
+    "openal-soft",
+    "mpg123",
+    "glfw3",
+    {
+      "name": "glad",
+      "features": [ "gl-api-43" ]
+    },
+    {
+      "name": "imgui",
+      "features": [ "opengl3-binding", "glfw-binding" ]
+    },
+    "glm",
+    "bullet3"
+  ]
+}
