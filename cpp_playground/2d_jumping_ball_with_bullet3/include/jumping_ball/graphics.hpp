@@ -1,11 +1,14 @@
 #pragma once
 
 #include <jumping_ball/physics.hpp>
+#include <jumping_ball/misc.hpp>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <spdlog/spdlog.h>
 
 namespace jumping_ball::graphics {
+	using namespace misc;
+
 	extern GLFWwindow* window;
 
 	void initialize() noexcept;
@@ -26,6 +29,27 @@ namespace jumping_ball::graphics {
 		+ RenPipe -> Frame (or RenderPass) (√)
 			+ shader (√)
 	*/
+
+	class Camera {
+    public:
+		RotatablePoint rotatable_point;
+        int screen_width;
+        int screen_height;
+		bool enable_ortho;
+
+        Camera(const float& w,const float& h,const float& fov = 45.0f,const float& zoom = 1.0f) noexcept;
+        ~Camera() = default;
+
+        float getZoom() const noexcept;
+        float getFOV() const noexcept;
+		void setZoom(const float& val) noexcept;
+        void setFov(const float& val) noexcept;
+        glm::mat4 getMatrix() const noexcept;
+
+	private:
+		float fov;
+        float zoom;
+    };
 
 	class RenObject {
 	public:
@@ -55,10 +79,12 @@ namespace jumping_ball::graphics {
 		~RenPipe() noexcept;
 
 		void draw(RenObject& obj) noexcept;
+		void setCamera(std::shared_ptr<Camera> camera) noexcept;
 
 	private:
 		void initialize(const std::string_view& vshader_source, const std::string_view& fshader_source) noexcept;
 		void uninitiaze() noexcept;
+		std::shared_ptr<Camera> camera;
 	};
 
 	inline static GLenum glCheckError_(const char* file, int line)

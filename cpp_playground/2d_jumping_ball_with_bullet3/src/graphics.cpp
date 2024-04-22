@@ -1,4 +1,7 @@
 #include <jumping_ball/graphics.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/ext/quaternion_geometric.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 GLFWwindow* jumping_ball::graphics::window;
 
@@ -103,16 +106,19 @@ namespace jumping_ball::graphics {
 		float window_scaled_x = obj.position.x / 400;
 		float window_scaled_y = obj.position.y / 400;
 
-		glm::mat4 transform_mat = glm::translate(glm::mat4(1.0f), glm::vec3(window_scaled_x, window_scaled_y, obj.position.z));
-		glm::mat4 scale_mat = glm::scale(glm::mat4(1.0f), glm::vec3(window_scaled_r, window_scaled_r, window_scaled_r));
-		glm::mat4 rotate_mat = glm::mat4_cast(obj.orientation);
+		glm::mat4 mvp_matrix = 
+			glm::translate(glm::mat4(1.0f), glm::vec3(window_scaled_x, window_scaled_y, obj.position.z))
+			* glm::mat4_cast(obj.orientation)
+			* glm::scale(glm::mat4(1.0f), glm::vec3(window_scaled_r, window_scaled_r, window_scaled_r))
+			* glm::mat4(1.0f);
+		if(camera) {
+			mvp_matrix = camera->getMatrix() * mvp_matrix;
+		}
 
 		// 将变换矩阵传递给着色器
 		glUseProgram(shader_id);
-		glUniformMatrix4fv(glGetUniformLocation(shader_id, "transform_mat"), 1, GL_FALSE, glm::value_ptr(transform_mat));
-		glUniformMatrix4fv(glGetUniformLocation(shader_id, "rotate_mat"), 1, GL_FALSE, glm::value_ptr(rotate_mat));
-		glUniformMatrix4fv(glGetUniformLocation(shader_id, "scale_mat"), 1, GL_FALSE, glm::value_ptr(scale_mat));
-
+		glUniformMatrix4fv(glGetUniformLocation(shader_id, "mvp_matrix"), 1, GL_FALSE, glm::value_ptr(mvp_matrix));
+		
 		// 临时
 		glEnable(GL_CULL_FACE);
 		glFrontFace(GL_CW);
@@ -125,7 +131,11 @@ namespace jumping_ball::graphics {
 		//glDrawElements(GL_TRIANGLE_FAN, indices_cnt, GL_UNSIGNED_INT, 0);
 	}
 
-	void jumping_ball::graphics::RenPipe::initialize(const std::string_view& vshader_source,const std::string_view& fshader_source) noexcept {
+	void RenPipe::setCamera(std::shared_ptr<Camera> camera) noexcept {
+		this->camera = camera;
+	}
+
+	void RenPipe::initialize(const std::string_view& vshader_source,const std::string_view& fshader_source) noexcept {
 		// 创建顶点着色器
 		GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
 		const char* vshader_source_cstr = vshader_source.data();
@@ -151,5 +161,37 @@ namespace jumping_ball::graphics {
 
 	void jumping_ball::graphics::RenPipe::uninitiaze() noexcept {
 		glDeleteProgram(shader_id);
+	}
+
+	Camera::Camera(const float& w,const float& h,const float& fov,const float& zoom) noexcept
+	    : fov(fov),zoom(zoom),screen_width(w),screen_height(h),enable_ortho(false)
+	{
+	}
+
+	void Camera::setFov(const float& val) noexcept
+	{
+	    if(val < 1.0f) {
+			spdlog::warn("camera's fov can't be less than 1.0f (trying to set as {}), forcing to 1.0f",val);
+	        fov = 1.0f;
+	    }
+	    else
+	        fov = val;
+	}
+
+	glm::mat4 Camera::getMatrix() const noexcept
+	{
+		const auto& up = rotatable_point.up;
+		const auto& quat = rotatable_point.orientation;
+
+	    glm::vec3 glm_position(rotatable_point.x,rotatable_point.y,rotatable_point.z);
+	    glm::vec3 glm_up(up[0],up[1],up[2]);
+	    glm::quat glm_quat(quat[0],quat[1],quat[2],quat[3]);
+
+	    glm::vec3 target = glm_position + glm::rotate(glm_quat, glm::vec3(0.0f, 0.0f, -1.0f));
+	    
+		if(enable_ortho)
+			return glm::ortho(0.0f, (float)screen_width, 0.0f, (float)screen_height, 0.1f, 2000.0f) * glm::lookAt(glm_position, target, glm_up);
+		else
+			return glm::perspective(glm::radians(fov), (float)screen_width / screen_height, 0.1f, 2000.0f) * glm::lookAt(glm_position, target, glm_up);
 	}
 }

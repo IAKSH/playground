@@ -18,7 +18,9 @@ add_executable(2d_jumping_ball
     "src/graphics.cpp"
     "src/audio.cpp"
     "src/physics.cpp"
- "src/gameobject.cpp")
+    "src/gameobject.cpp"
+    "src/misc.cpp"    
+)
 
 target_include_directories(2d_jumping_ball PUBLIC
     "include/"

@@ -6,13 +6,11 @@ static const std::string vshader_source = R"(
 #version 330 core
 layout (location = 0) in vec3 aPos;
 
-uniform mat4 transform_mat;
-uniform mat4 rotate_mat;
-uniform mat4 scale_mat;
+uniform mat4 mvp_matrix;
 
 void main()
 {
-    gl_Position =  transform_mat * scale_mat * rotate_mat * vec4(aPos, 1.0);
+    gl_Position =  mvp_matrix * vec4(aPos, 1.0);
 }
 )";
 
@@ -78,6 +76,11 @@ static double delta_time = 0.0;
 static double current_time = 0.0;
 static double last_time = 0.0;
 
+static std::shared_ptr<graphics::Camera> camera;
+
+double last_mouse_x = 0.0f;
+double last_mouse_y = 0.0f;
+
 void processInput() noexcept {
 	if (glfwGetKey(graphics::window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(graphics::window, true);
@@ -88,6 +91,9 @@ void processInput() noexcept {
 
 		mouse_x = mouse_x - 400.0f;
 		mouse_y = 400.0f - mouse_y;
+
+		// 加上camera后好像被镜像了，懒得调，暂时先取反下
+		mouse_x = -mouse_x;
 
 		for (auto& ball : balls) {
 			// 对小球施加速度
@@ -108,6 +114,57 @@ void processInput() noexcept {
 			ball->body->activate(true);
 			ball->body->setLinearVelocity(btVector3(velocity.x, velocity.y, velocity.z));
 		}
+	}
+
+	/*
+	if (glfwGetMouseButton(graphics::window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+		double mouse_x, mouse_y;
+		glfwGetCursorPos(graphics::window, &mouse_x, &mouse_y);
+		mouse_x = mouse_x - 400.0f;
+		mouse_y = 400.0f - mouse_y;
+
+		double mouse_dx = last_mouse_x - mouse_x;
+		double mouse_dy = last_mouse_y - mouse_y;
+		last_mouse_x = mouse_x;
+		last_mouse_y = mouse_y;
+
+		camera->rotatable_point.rotate(mouse_dy / 100.0f,mouse_dx / 100.0f,0.0f);
+	}
+	*/
+	if (glfwGetKey(graphics::window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+		camera->rotatable_point.rotate(0.0f,0.000001f,0.0f);
+	}
+	if (glfwGetKey(graphics::window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+		camera->rotatable_point.rotate(0.0f,-0.000001f,0.0f);
+	}
+	if (glfwGetKey(graphics::window, GLFW_KEY_UP) == GLFW_PRESS) {
+		camera->rotatable_point.rotate(0.000001f,0.0f,0.0f);
+	}
+	if (glfwGetKey(graphics::window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+		camera->rotatable_point.rotate(-0.000001f,0.1f,0.0f);
+	}
+
+	bool camera_moved = false;
+	if (glfwGetKey(graphics::window, GLFW_KEY_W) == GLFW_PRESS) {
+		camera->rotatable_point.move(0.1f,0.0f,0.0f);
+		camera_moved = true;
+	}
+	if (glfwGetKey(graphics::window, GLFW_KEY_A) == GLFW_PRESS) {
+		camera->rotatable_point.move(0.0f,-0.1f,0.0f);
+		camera_moved = true;
+	}
+	if (glfwGetKey(graphics::window, GLFW_KEY_S) == GLFW_PRESS) {
+		camera->rotatable_point.move(-0.1f,0.0f,0.0f);
+		camera_moved = true;
+	}
+	if (glfwGetKey(graphics::window, GLFW_KEY_D) == GLFW_PRESS) {
+		camera->rotatable_point.move(0.0f,0.1f,0.0f);
+		camera_moved = true;
+	}
+
+	if(camera_moved) {
+		// 好像有问题，listener听起来还是在(0,0,0)
+		alListener3f(AL_POSITION,camera->rotatable_point.x,camera->rotatable_point.y,camera->rotatable_point.z);
 	}
 }
 
@@ -149,6 +206,10 @@ void mainLoop() noexcept {
 	ball_ren_obj = std::make_shared<graphics::RenObject>(*sphere_vertices,sphere_indices);
 	ball_ren_pipe = std::make_shared<graphics::RenPipe>(vshader_source, fshader_source);
 	graphics::glCheckError();
+
+	camera = std::make_shared<graphics::Camera>(800.0f,800.0f);
+	camera->rotatable_point.z = -2.5f;
+	ball_ren_pipe->setCamera(camera);
 
 	for (int i = 0; i < 40; i++) {
 		auto ball = std::make_unique<Ball>();
