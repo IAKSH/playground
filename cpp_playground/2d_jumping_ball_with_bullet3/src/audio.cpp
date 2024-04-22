@@ -7,7 +7,7 @@ ALCcontext* jumping_ball::audio::al_context;
 
 ALuint jumping_ball::audio::al_buffer;
 
-void jumping_ball::audio::initAudio() noexcept {
+void jumping_ball::audio::initialize() noexcept {
 	mpg123_handle* mh;
 	unsigned char* buffer;
 	size_t buffer_size;
@@ -86,7 +86,7 @@ void jumping_ball::audio::initAudio() noexcept {
 	mpg123_exit();
 }
 
-void jumping_ball::audio::closeAudio() noexcept {
+void jumping_ball::audio::uninitialize() noexcept {
 	alDeleteBuffers(1, &al_buffer);
 	alcMakeContextCurrent(nullptr);
 	alcDestroyContext(al_context);

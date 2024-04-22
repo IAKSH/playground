@@ -6,6 +6,61 @@
 #include <spdlog/spdlog.h>
 
 namespace jumping_ball::graphics {
+	extern GLFWwindow* window;
+
+	void initialize() noexcept;
+	void uninitialize() noexcept;
+
+	/*
+	+ Camera (O)
+
+	+ RenObject (√)
+		+ vao (√)
+		+ vbo (√)
+		+ ebo (√)
+		+ indices_cnt (√)
+
+	+ GLSLPreprocessor (O)
+
+	+ Renderer (O)
+		+ RenPipe -> Frame (or RenderPass) (√)
+			+ shader (√)
+	*/
+
+	class RenObject {
+	public:
+		GLuint vao_id, vbo_id, ebo_id;
+		unsigned int indices_cnt;
+		const std::vector<float>& vertices;
+		const std::vector<unsigned int>& indices;
+		glm::vec3 position;
+		glm::quat orientation;
+		
+		RenObject(const std::vector<float>& vertices, const std::vector<unsigned int>& indices) noexcept;
+		RenObject() noexcept;
+		~RenObject() noexcept;
+		void updateVertices() noexcept;
+		void updateVertices(const std::vector<float>& vertices, const std::vector<unsigned int>& indices) noexcept;
+
+	private:
+		void initialize() noexcept;
+		void uninitialize() noexcept;
+	};
+
+	class RenPipe {
+	public:
+		GLuint shader_id;
+
+		RenPipe(const std::string_view& vshader_source, const std::string_view& fshader_source) noexcept;
+		~RenPipe() noexcept;
+
+		void draw(RenObject& obj) noexcept;
+
+	private:
+		void initialize(const std::string_view& vshader_source, const std::string_view& fshader_source) noexcept;
+		void uninitiaze() noexcept;
+	};
+
 	inline static GLenum glCheckError_(const char* file, int line)
 	{
 		GLenum error_code;
@@ -27,29 +82,4 @@ namespace jumping_ball::graphics {
 		return error_code;
 	}
 #define glCheckError() glCheckError_(__FILE__, __LINE__)
-
-	extern GLFWwindow* window;
-
-	void initGraphics() noexcept;
-	void closeGraphics() noexcept;
-
-	class RenPipe {
-	public:
-		GLuint vao_id, vbo_id, ebo_id;
-		GLuint shader_id;
-		unsigned int indices_cnt;
-
-		RenPipe(const std::string_view& vshader_source, const std::string_view& fshader_source,
-			const std::vector<float>& vertices, const std::vector<unsigned int>& indices) noexcept;
-		~RenPipe() noexcept;
-
-		void updateVertices(const std::vector<float>& vertices, const std::vector<unsigned int>& indices) noexcept;
-		// TODO: 这个函数可能需要很多参数
-		// TODO: 临时保留为绘制圆的函数
-		virtual void draw(const glm::vec3& position, glm::quat orientation, float scale) noexcept;
-
-	private:
-		void initialize(const std::string_view& vshader_source, const std::string_view& fshader_source) noexcept;
-		void uninitiaze() noexcept;
-	};
 }

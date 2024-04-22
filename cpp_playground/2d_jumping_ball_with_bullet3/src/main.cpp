@@ -26,16 +26,21 @@ void main()
 }
 )";
 
+static std::shared_ptr<graphics::RenPipe> ball_ren_pipe;
+static std::shared_ptr<graphics::RenObject> ball_ren_obj;
+
 static constexpr float BALL_RADIUS = 25.0f;
 
 struct Ball : public gameobject::GameObject {
 	const float radius = BALL_RADIUS;
 
-	Ball(std::shared_ptr<graphics::RenPipe> ren_pipe) noexcept
-		: GameObject(ren_pipe)
+	Ball() noexcept
+		: GameObject(ball_ren_pipe,ball_ren_obj)
 	{
 	}
 };
+
+static std::vector<std::unique_ptr<Ball>> balls;
 
 static std::shared_ptr<std::vector<float>> sphere_vertices = std::make_shared<std::vector<float>>();
 static std::vector<unsigned int> sphere_indices;
@@ -68,9 +73,6 @@ void genSphereVerticesAndIndices(int segments = 6, float radius = BALL_RADIUS) {
 		}
 	}
 }
-
-static std::shared_ptr<graphics::RenPipe> ball_ren_pipe;
-static std::vector<std::unique_ptr<Ball>> balls;
 
 static double delta_time = 0.0;
 static double current_time = 0.0;
@@ -138,16 +140,18 @@ void draw() noexcept {
 
 	// draw all ball(s)
 	for (auto& ball : balls)
-		ball->ren_pipe->draw(ball->getPosition(), ball->getRotate(), 1.0f);
+		//ball->ren_pipe->draw(*ball->ren_obj);
+		ball->draw();
 }
 
 void mainLoop() noexcept {
 	genSphereVerticesAndIndices();
-	ball_ren_pipe = std::make_shared<graphics::RenPipe>(vshader_source, fshader_source, *sphere_vertices, sphere_indices);
+	ball_ren_obj = std::make_shared<graphics::RenObject>(*sphere_vertices,sphere_indices);
+	ball_ren_pipe = std::make_shared<graphics::RenPipe>(vshader_source, fshader_source);
 	graphics::glCheckError();
 
 	for (int i = 0; i < 40; i++) {
-		auto ball = std::make_unique<Ball>(ball_ren_pipe);
+		auto ball = std::make_unique<Ball>();
 		ball->setCollisionCallback(try_play_ball_hit_sound);
 		balls.emplace_back(std::move(ball));
 	}
@@ -182,11 +186,11 @@ void mainLoop() noexcept {
 int main() noexcept {
 	//spdlog::set_level(spdlog::level::debug);
 	physics::initialize();
-	audio::initAudio();
-	graphics::initGraphics();
+	audio::initialize();
+	graphics::initialize();
 	mainLoop();
-	graphics::closeGraphics();
-	audio::closeAudio();
+	graphics::uninitialize();
+	audio::uninitialize();
 	physics::uninitialize();
 	return 0;
 }

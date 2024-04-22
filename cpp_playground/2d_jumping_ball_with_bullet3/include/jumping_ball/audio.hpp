@@ -11,8 +11,8 @@ namespace jumping_ball::audio {
 	extern ALCcontext* al_context;
 	extern ALuint al_buffer;
 
-	void initAudio() noexcept;
-	void closeAudio() noexcept;
+	void initialize() noexcept;
+	void uninitialize() noexcept;
 
 	class AudioPipe {
 	public:

@@ -31,18 +31,20 @@ namespace jumping_ball::gameobject {
 
     class GameObject {
     public:
-        std::shared_ptr<RenPipe> ren_pipe;// 要不直接删掉
+        std::shared_ptr<RenPipe> ren_pipe;
+        std::shared_ptr<RenObject> ren_obj;
         AudioPipe audio_pipe;
         btRigidBody* body;
 
-        GameObject(std::shared_ptr<RenPipe> ren_pipe) noexcept;
+        GameObject(std::shared_ptr<RenPipe> ren_pipe,std::shared_ptr<RenObject> ren_obj) noexcept;
         ~GameObject() noexcept;
         glm::vec3 getPosition() noexcept;
         glm::vec3 getVelocity() noexcept;
-        glm::quat getRotate() noexcept;
+        glm::quat getOrientation() noexcept;
         void applyForce(const glm::vec3& target_position, float force_magnitude = 1.0f) noexcept;
         void setCollisionCallback(std::function<void(GameObject&)> callback) noexcept;
         void checkCollision() noexcept;
+        void draw() noexcept;
 
     private:
         std::unique_ptr<CollisionCallback<GameObject>> collision_callback;
