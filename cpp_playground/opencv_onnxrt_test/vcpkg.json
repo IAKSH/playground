@@ -1,0 +1,10 @@
+{
+  "dependencies": [
+    "spdlog",
+    "eigen3",
+    {
+      "name": "opencv",
+      "features": [ "default-features", "cuda" ]
+    }
+  ]
+}
