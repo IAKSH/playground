@@ -40,7 +40,7 @@
             padding: 20px;
             background-color: white;
             border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
             overflow-wrap: break-word;
             transition: width 0.5s;
         }
@@ -51,7 +51,7 @@
             padding: 20px;
             background-color: #fdf6e3;
             border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
             overflow-wrap: break-word;
             transition: width 0.5s;
             font-size: 20px;
@@ -111,7 +111,8 @@
                 width: 20%;
             }
 
-            #controlPanel, #content {
+            #controlPanel,
+            #content {
                 width: 60%;
             }
 
@@ -145,6 +146,7 @@
 
     <script>
         var chapters = [];
+        var titles = [];
         var chapter_index = 0;
 
         document.getElementById('fileInput').addEventListener('change', function (e) {
@@ -153,21 +155,29 @@
 
             var reader = new FileReader();
             reader.onload = function (e) {
+                const regex = /第\S+章\s+\S+/g;
+
                 var contents = e.target.result;
-                chapters = contents.split(/第\d+章/);
+                chapters = contents.split(regex);
                 document.getElementById('chapterTitle').textContent = '序';
                 document.getElementById('textDisplay').textContent = chapters[0];
+
+                let m;
+                let index = 0;
+                while ((m = regex.exec(contents)) !== null) {
+                    titles[++index] = m[0];
+                }
 
                 var sidebar = document.getElementById('sidebar');
                 sidebar.innerHTML = '';
                 for (var i = 1; i < chapters.length; i++) {
                     var div = document.createElement('div');
-                    div.textContent = '第' + i + '章';
+                    div.textContent = titles[i];
                     div.className = 'chapter';
                     div.dataset.index = i;
                     div.addEventListener('click', function (e) {
                         chapter_index = e.target.dataset.index;
-                        document.getElementById('chapterTitle').textContent = `第` + chapter_index + `章`;
+                        document.getElementById('chapterTitle').textContent = titles[chapter_index];
                         document.getElementById('textDisplay').textContent = chapters[chapter_index];
                     });
                     sidebar.appendChild(div);
