@@ -155,7 +155,7 @@
 
             var reader = new FileReader();
             reader.onload = function (e) {
-                const regex = /第\S+章\s+\S+/g;
+                const regex = /^.{0,6}(?:[引楔]子|正文(?!完|结)|[引序前]言|[序终]章|扉页|[上中下][部篇卷]|卷首语|后记|尾声|番外|={2,4}|第\s{0,4}[\d〇零一二两三四五六七八九十百千万壹贰叁肆伍陆柒捌玖拾佰仟]+?\s{0,4}(?:章|节(?!课)|卷|页[、 　]|集(?![合和])|部(?![分是门落])|篇(?!张))).{0,40}$|^.{0,6}[\d〇零一二两三四五六七八九十百千万壹贰叁肆伍陆柒捌玖拾佰仟a-z]{1,8}[、. 　].{0,20}$/gm;
 
                 var contents = e.target.result;
                 chapters = contents.split(regex);
@@ -167,6 +167,7 @@
                 while ((m = regex.exec(contents)) !== null) {
                     titles[++index] = m[0];
                 }
+
 
                 var sidebar = document.getElementById('sidebar');
                 sidebar.innerHTML = '';
