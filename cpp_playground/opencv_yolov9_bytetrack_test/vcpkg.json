@@ -4,7 +4,7 @@
     "eigen3",
     {
       "name": "opencv",
-      "features": [ "default-features", "cuda" ]
+      "features": [ "default-features" ]
     }
   ]
 }
