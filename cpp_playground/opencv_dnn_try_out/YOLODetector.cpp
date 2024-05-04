@@ -13,7 +13,8 @@ void YOLODetector::initConfig(const std::string& onnxpath, int iw, int ih, float
     this->threshold_score = threshold;
     this->net = cv::dnn::readNetFromONNX(onnxpath);
     if(isCuda){
-        spdlog::info("Intialize Model By GPU");
+        spdlog::info("Intialize Model By GPU (using gpu device 0)");
+        cv::cuda::setDevice(0);
         this->net.setPreferableBackend(cv::dnn::DNN_BACKEND_CUDA);
         this->net.setPreferableTarget(cv::dnn::DNN_TARGET_CUDA);
     } else {

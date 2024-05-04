@@ -4,7 +4,7 @@
 
 #ifndef YOLO_ONNX_OPENCV_UTILS_H
 #define YOLO_ONNX_OPENCV_UTILS_H
-#include <opencv4/opencv2/opencv.hpp>
+#include <opencv2/opencv.hpp>
 
 /**
  * 图像工具类

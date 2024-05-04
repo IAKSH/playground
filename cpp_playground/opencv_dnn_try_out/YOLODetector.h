@@ -5,7 +5,7 @@
 #ifndef ONNX_SCRIPT_YOLODETECTOR_H
 #define ONNX_SCRIPT_YOLODETECTOR_H
 
-#include <opencv4/opencv2/opencv.hpp>
+#include <opencv2/opencv.hpp>
 #include <spdlog/spdlog.h>
 
 struct DetectResult

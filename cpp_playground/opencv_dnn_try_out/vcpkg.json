@@ -1,0 +1,11 @@
+{
+  "dependencies": [
+    "cli11",
+    "spdlog",
+    "yaml-cpp",
+    {
+      "name": "opencv",
+      "features": [ "cuda", "cudnn", "dnn-cuda" ]
+    }
+  ]
+}

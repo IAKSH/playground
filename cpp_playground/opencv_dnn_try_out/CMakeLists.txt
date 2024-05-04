@@ -15,13 +15,8 @@ add_executable(opencv-dnn-try-out main.cpp
         Utils/Utils.h
 )
 target_link_libraries(opencv-dnn-try-out
+        CLI11::CLI11
         spdlog::spdlog_header_only
-        opencv_ml
-        opencv_dnn
-        opencv_core
-        opencv_flann
-        opencv_video
-        opencv_videoio
-        opencv_highgui
+        ${OpenCV_LIBS}
         yaml-cpp
 )

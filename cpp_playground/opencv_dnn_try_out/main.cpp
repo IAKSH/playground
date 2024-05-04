@@ -1,4 +1,4 @@
-#include <opencv4/opencv2/opencv.hpp>
+#include <opencv2/opencv.hpp>
 #include "YOLODetector.h"
 #include <yaml-cpp/yaml.h>
 #include <fstream>
@@ -9,7 +9,7 @@
 
 int main(int argc, char** argv) {
     spdlog::set_level(spdlog::level::debug);
-    CLI::App app{"yolo onnx opencv dnn pred description"};
+    CLI::App app{ "yolo onnx opencv dnn pred description" };
     argv = app.ensure_utf8(argv);
     std::string onnxPath, yamlPath, inputPath;
     bool isImage = false, isVideo = false, isCuda = false;
@@ -24,40 +24,46 @@ int main(int argc, char** argv) {
     app.add_flag("--video, !--no-video", isVideo, "Video inference mode");
     app.add_flag("--gpu, !--no-gpu", isCuda, "Cuda inference mode");
     CLI11_PARSE(app, argc, argv);
-    if(onnxPath.empty()){
+
+    spdlog::debug("cuda count: {}",cv::cuda::getCudaEnabledDeviceCount());
+
+    if (onnxPath.empty()) {
         spdlog::error("onnx model path is empty !!!, onnx model path: {}", onnxPath);
         return 0;
-    } else {
-        if(!FileUtils::fileIsExist(onnxPath)){
+    }
+    else {
+        if (!FileUtils::fileIsExist(onnxPath)) {
             spdlog::error("onnx model path is not exist !!!, onnx model path: {}, Please check it", onnxPath);
             return 0;
         }
     }
-    if(yamlPath.empty()){
+    if (yamlPath.empty()) {
         spdlog::error("yolo yaml path is empty !!! , yolo yaml path: {}", yamlPath);
         return 0;
-    } else {
-        if(!FileUtils::fileIsExist(yamlPath)){
+    }
+    else {
+        if (!FileUtils::fileIsExist(yamlPath)) {
             spdlog::error("yolo yaml path is not exist !!!, yolo yaml path: {}, Please check it", yamlPath);
             return 0;
         }
     }
-    if(inputPath.empty()){
+    if (inputPath.empty()) {
         spdlog::error("pred input path is empty !!! , pred input path: {}", inputPath);
         return 0;
-    } else {
-        if(!FileUtils::fileIsExist(inputPath)) {
+    }
+    else {
+        if (!FileUtils::fileIsExist(inputPath)) {
             spdlog::error("pred input path is not exist !!!, pred input path: {}, Please check it", inputPath);
             return 0;
         }
     }
-    if(!isImage && !isVideo){
+    if (!isImage && !isVideo) {
         spdlog::error("Please select inference mode");
         return 0;
     }
-    if(isCuda){
+    if (isCuda) {
         int cudaCount = CUDAUtils::getCUDACount();
-        if(cudaCount < 1){
+        if (cudaCount < 1) {
             spdlog::warn("cuda size: {}, default use cpu, please check device exist gpu", cudaCount);
             isCuda = false;
         }
@@ -75,14 +81,14 @@ int main(int argc, char** argv) {
     std::map<int, std::string> classNames;
 
     YAML::Node config = YAML::LoadFile(yamlPath);
-    if(!config["names"].IsNull() && config["names"].IsMap()){
-            for(size_t i = 0; i < config["names"].size(); ++i){
-                classNames[i] = config["names"][i].as<std::string>();
+    if (!config["names"].IsNull() && config["names"].IsMap()) {
+        for (size_t i = 0; i < config["names"].size(); ++i) {
+            classNames[i] = config["names"][i].as<std::string>();
         }
     }
-    
+
     spdlog::info("classNames size: {}", classNames.size());
-    if(!classNames.empty()){
+    if (!classNames.empty()) {
         cv::Mat input = cv::imread(inputPath, cv::IMREAD_UNCHANGED);
         cv::Mat img;
         input.copyTo(img);
@@ -90,18 +96,12 @@ int main(int argc, char** argv) {
         int width = imgSize, height = imgSize;
         detector->initConfig(onnxPath, width, height, threshold, isCuda);
         std::vector<DetectResult> results;
-        if(isImage){
+        if (isImage) {
             detector->detect(img, results);
-            spdlog::debug("results count:\t{}",results.size());
+            spdlog::debug("results count:\t{}", results.size());
             for (DetectResult& dr : results)
             {
                 cv::Rect box = dr.box;
-
-                //temp
-                //box.x = 200;
-                //box.y = 200;
-                //box.width = 100;
-                //box.height = 100;
 
                 box.x = int(box.x);
                 box.y = int(box.y);
@@ -111,29 +111,30 @@ int main(int argc, char** argv) {
                 tips.append(": ");
                 tips.append(std::to_string(dr.score));
                 cv::putText(input, tips, cv::Point(box.tl().x, box.tl().y - 10), cv::FONT_HERSHEY_SIMPLEX,
-                            .5, cv::Scalar(255, 0, 0));
+                    .5, cv::Scalar(255, 0, 0));
                 cv::rectangle(input, box, cv::Scalar(0, 0, 255), 2, 8);
 
-                spdlog::debug("score:{}\tid:{}\tx:{},y:{},w:{},h:{}",dr.score,classNames[dr.classId],box.x,box.y,box.width,box.height);
+                spdlog::debug("score:{}\tid:{}\tx:{},y:{},w:{},h:{}", dr.score, classNames[dr.classId], box.x, box.y, box.width, box.height);
             }
             cv::imshow("OpenCV DNN", input);
             cv::waitKey(0);
-        } else if(isVideo){
+        }
+        else if (isVideo) {
             cv::VideoCapture cap(inputPath);
-            if(!cap.isOpened()){
+            if (!cap.isOpened()) {
                 spdlog::error("Error opening video stream or file!! path: {}", inputPath);
                 return 0;
             }
             cv::Mat mat;
-            while (true){
+            while (true) {
                 cv::Mat frame;
                 cap.read(mat); // 读取新的帧
                 frame = mat.clone();
-                if(frame.empty()){
+                if (frame.empty()) {
                     break;
                 }
                 detector->detect(frame, results);
-                spdlog::debug("results count:\t{}",results.size());
+                spdlog::debug("results count:\t{}", results.size());
                 for (DetectResult& dr : results)
                 {
                     cv::Rect box = dr.box;
@@ -141,7 +142,7 @@ int main(int argc, char** argv) {
                     tips.append(": ");
                     tips.append(std::to_string(dr.score));
                     cv::putText(frame, tips, cv::Point(box.tl().x, box.tl().y - 10), cv::FONT_HERSHEY_SIMPLEX,
-                                .5, cv::Scalar(255, 0, 0));
+                        .5, cv::Scalar(255, 0, 0));
                     cv::rectangle(frame, box, cv::Scalar(0, 0, 255), 2, 8);
 
                     spdlog::debug(dr.score);
@@ -153,7 +154,8 @@ int main(int argc, char** argv) {
             spdlog::info("Video inference mode todo");
         }
         results.clear();
-    } else {
+    }
+    else {
         spdlog::error("yaml parse error! yamlPath: {}", yamlPath);
     }
     return 0;
