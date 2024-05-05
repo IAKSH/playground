@@ -5,3 +5,5 @@ target/
 .vscode/
 Debug/
 Release/
+__pycache__/
+.idea
