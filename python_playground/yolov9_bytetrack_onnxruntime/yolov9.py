@@ -88,6 +88,7 @@ class YOLOv9:
         boxes = boxes.astype(np.int32)
         indices = cv2.dnn.NMSBoxes(boxes, scores, score_threshold=self.score_threshold, nms_threshold=self.iou_threshold)
         detections = []
+        # TODO: 考虑模仿此处实现track中的score和class_index获取，也许能修复精度问题
         for bbox, score, label in zip(self.xywh2xyxy(boxes[indices]), scores[indices], class_ids[indices]):
             detections.append({
                 "class_index": label,
