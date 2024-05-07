@@ -151,58 +151,6 @@ class Predictor(object):
         self.session = onnxruntime.InferenceSession(args.model, providers=providers)
         self.input_shape = tuple(map(int, args.input_shape.split(',')))
 
-        #self.model_inputs = self.session.get_inputs()
-        #self.input_names = [self.model_inputs[i].name for i in range(len(self.model_inputs))]
-        #self.input_shape = self.model_inputs[0].shape
-        #self.model_output = self.session.get_outputs()
-        #self.output_names = [self.model_output[i].name for i in range(len(self.model_output))]
-        #self.input_height, self.input_width = self.input_shape[2:]
-#
-        #self.score_threshold = args.score_thr
-        #self.conf_thresold = args.track_thresh
-        #self.iou_threshold = 0.4
-        #self.image_width, self.image_height = (1920, 1080)
-#
-        #self.classes = ['good', 'broke', 'lose', 'uncovered', 'circle']
-
-    def xywh2xyxy(self, x):
-        # Convert bounding box (x, y, w, h) to bounding box (x1, y1, x2, y2)
-        y = np.copy(x)
-        y[..., 0] = x[..., 0] - x[..., 2] / 2
-        y[..., 1] = x[..., 1] - x[..., 3] / 2
-        y[..., 2] = x[..., 0] + x[..., 2] / 2
-        y[..., 3] = x[..., 1] + x[..., 3] / 2
-        return y
-
-    def get_label_name(self, class_id: int) -> str:
-        return self.classes[class_id]
-
-    def postprocess(self, outputs):
-        predictions = np.squeeze(outputs).T
-        scores = np.max(predictions[:, 4:], axis=1)
-        predictions = predictions[scores > self.conf_thresold, :]
-        scores = scores[scores > self.conf_thresold]
-        class_ids = np.argmax(predictions[:, 4:], axis=1)
-
-        # Rescale box
-        boxes = predictions[:, :4]
-
-        input_shape = np.array([self.input_width, self.input_height, self.input_width, self.input_height])
-        boxes = np.divide(boxes, input_shape, dtype=np.float32)
-        boxes *= np.array([self.image_width, self.image_height, self.image_width, self.image_height])
-        boxes = boxes.astype(np.int32)
-        indices = cv2.dnn.NMSBoxes(boxes, scores, score_threshold=self.score_threshold,
-                                   nms_threshold=self.iou_threshold)
-        detections = []
-        for bbox, score, label in zip(self.xywh2xyxy(boxes[indices]), scores[indices], class_ids[indices]):
-            detections.append({
-                "class_index": label,
-                "confidence": score,
-                "box": bbox,
-                "class_name": self.get_label_name(label)
-            })
-        return detections
-
     def inference(self, ori_img, timer):
         img_info = {"id": 0}
         height, width = ori_img.shape[:2]
@@ -229,13 +177,10 @@ class Predictor(object):
         boxes_xyxy /= ratio
         dets = multiclass_nms(boxes_xyxy, scores, nms_thr=self.args.nms_thr, score_thr=self.args.score_thr)
 
-        class_indices = []
         if dets is None:
-            return np.array([]), class_indices, img_info
+            return np.array([]), [], img_info
         else:
-            # 获取目标类型索引
-            class_indices = np.argmax(scores, axis=1)
-            return dets[:, :-1], class_indices, img_info
+            return dets[:, :-1], dets[:, -1], img_info
 
 
 def imageflow_demo(predictor, args):
@@ -257,14 +202,15 @@ def imageflow_demo(predictor, args):
 
         ret_val, frame = cap.read()
         if ret_val:
-            outputs, class_indices, img_info = predictor.inference(frame,timer)
+            outputs, class_inds, img_info = predictor.inference(frame,timer)
             online_targets = []
             if outputs.size != 0:
                 online_targets = tracker.update(outputs, [img_info['height'], img_info['width']],
-                                                [img_info['height'], img_info['width']])
+                                                [img_info['height'], img_info['width']],class_inds)
             online_tlwhs = []
             online_ids = []
             online_scores = []
+            online_classes = []
             for t in online_targets:
                 tlwh = t.tlwh
                 tid = t.track_id
@@ -273,12 +219,13 @@ def imageflow_demo(predictor, args):
                     online_tlwhs.append(tlwh)
                     online_ids.append(tid)
                     online_scores.append(t.score)
+                    online_classes.append(t.class_index)
             timer.toc()
             results.append((frame_id + 1, online_tlwhs, online_ids, online_scores))
             classes = ['good', 'broke', 'lose', 'uncovered', 'circle']
             online_im = plot_tracking(img_info['raw_img'], online_tlwhs, online_ids, frame_id=frame_id + 1,
                                       fps=1. / timer.average_time, scores=online_scores, classes=classes,
-                                      class_indices=class_indices)
+                                      class_indices=online_classes)
             cv2.imshow('Image', online_im)
 
             vid_writer.write(online_im)

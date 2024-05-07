@@ -71,10 +71,11 @@ def plot_tracking(image, tlwhs, obj_ids, scores=None, frame_id=0, fps=0., classe
         intbox = tuple(map(int, (x1, y1, x1 + w, y1 + h)))
         obj_id = int(obj_ids[i])
         id_text = 'id:{}'.format(int(obj_id))
-        id_text = id_text + ' {} {:.2}'.format(classes[class_indices[i]],scores[i])
+        id_text = id_text + ' {} {:.2}'.format(classes[int(class_indices[i])],scores[i])
         color = get_color(abs(obj_id))
         cv2.rectangle(im, intbox[0:2], intbox[2:4], color=color, thickness=line_thickness)
         cv2.putText(im, id_text, (intbox[0], intbox[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),1, cv2.LINE_AA)
+
     return im
 
 
