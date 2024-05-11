@@ -12,10 +12,10 @@
 #define SEG_7_DATA_2 (5)
 #define SEG_7_DATA_3 (18)
 
-#define SEG_7_CHANNEL_1 (13)
-#define SEG_7_CHANNEL_2 (12)
-#define SEG_7_CHANNEL_3 (14)
-#define SEG_7_CHANNEL_4 (27)
+#define SEG_7_CHANNEL_1 (27)
+#define SEG_7_CHANNEL_2 (26)
+#define SEG_7_CHANNEL_3 (22)
+#define SEG_7_CHANNEL_4 (23)
 
 uint8_t d = 0;
 
@@ -125,9 +125,9 @@ void seg_7_update_data_task(void* param) {
             for(j = 0;j < 3;j++) {
                 for(k = 0;k < 3;k++)
                     state_138[k] = code[(i + j + d) % 6][k];
-                gpio_set_level(4, state_138[0]);
-                gpio_set_level(5, state_138[1]);
-                gpio_set_level(18, state_138[2]);
+                gpio_set_level(SEG_7_DATA_1, state_138[0]);
+                gpio_set_level(SEG_7_DATA_2, state_138[1]);
+                gpio_set_level(SEG_7_DATA_3, state_138[2]);
                 vTaskDelay(1 / portTICK_PERIOD_MS);
             }
             vTaskDelay(10 / portTICK_PERIOD_MS);
