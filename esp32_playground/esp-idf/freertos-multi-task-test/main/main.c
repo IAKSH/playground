@@ -130,7 +130,7 @@ void seg_7_update_data_task(void* param) {
                 gpio_set_level(SEG_7_DATA_3, state_138[2]);
                 vTaskDelay(1 / portTICK_PERIOD_MS);
             }
-            vTaskDelay(10 / portTICK_PERIOD_MS);
+            vTaskDelay(5 / portTICK_PERIOD_MS);
             //ESP_LOGI(TAG, "[%d,%d,%d]",state_138[0],state_138[1],state_138[2]);            
         }
     }
@@ -139,7 +139,8 @@ void seg_7_update_data_task(void* param) {
 void app_main(void) {
     // 很多教程的堆栈大小用的1024，太小了，很容易炸，需要换大一点的
     xTaskCreate(board_led_blink_task,"board_led_blink_task",8192,NULL,1,NULL);
-    xTaskCreate(seg_7_update_data_task,"seg_7_update_task",8192,NULL,1,NULL);
+    // tskIDLE_PRIORITY可以设置优先级低于IDELx，让IDELx有机会去喂狗，防止watch dog饿死
+    xTaskCreate(seg_7_update_data_task,"seg_7_update_task",8192,NULL,tskIDLE_PRIORITY,NULL);
 
     //xTaskCreate(TaskFun,TaskName,StackSize,Param,Priority,*Task)
     //1:TaskFun 任务函数
