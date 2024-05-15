@@ -1,0 +1,94 @@
+Timer减时，朝绿翻转时检查另一路是否为黄，为黄则跳过本次更新（保持1s红），不为黄则更新。
+状态更新时切换LED
+两个外部中断连控制按钮
+主线程不断刷新数据到四个7段2位数码管
+
+ew_duration[3] = {30,30,3};// red,green,yellow
+sn_duration[3] = {30,30,3};
+
+ew_current_state = 0;// 0,1,2: red,green,yellow
+ew_current_duration = ew_duration[ew_current_state];
+
+sn_current_state = 1;// 0,1,2: red,green,yellow
+sn_current_duration = sn_duration[sn_current_state];
+
+// 期望周期1s
+t0_irs():
+    // 两路计时更新和状态更新
+    if ew_current_duration-- == -1:
+        // 朝绿翻转时检查另一路是否为黄，为黄则跳过本次更新（保持1s红），不为黄则更新。
+        if(ew_current_state == 0 && sn_current_state == 2):
+            ew_current_duration++;
+            goto A;// 可以通过将两路更新包装成函数来避免使用goto
+        // 更新状态
+        ew_current_state = ++ew_current_state % 3;
+        // 重装
+        ew_current_duration = ew_duration[ew_current_state];
+        // 更新LED
+        ew_led_update(ew_current_state);
+A:
+    if sn_current_duration-- == -1:
+        // 朝绿翻转时检查另一路是否为黄，为黄则跳过本次更新（保持1s红），不为黄则更新。
+        if(sn_current_state == 0 && ew_current_state == 2):
+            sn_current_duration++;
+            return;
+        // 更新状态
+        sn_current_state = ++sn_current_state % 3;
+        // 重装
+        sn_current_duration = sn_duration[sn_current_state];
+        // 更新LED
+        sn_led_update(sn_current_state);
+
+// 两个按键处理索性直接放在两路外部中断
+et0_irs():
+    // 直接修改重装值来完成周期的更新
+    ew_duration[0] = 40;
+    ew_duration[2] = 20;
+    sn_duration[0] = 20;
+    sn_duration[2] = 40;
+et1_irs():
+    ew_duration[0] = 20;
+    ew_duration[2] = 40;
+    sn_duration[0] = 40;
+    sn_duration[2] = 20;
+
+main():
+    init_everything();
+    while(1):
+        // 主线程主要是刷新四路7段二位数码管
+        ew_update_7s2d(ew_current_duration);
+        sn_update_7s2d(sn_current_duration);
+
+////////////////////////////////
+// 部分函数实现的伪代码
+////////////////////////////////
+
+ew_update_7s2d(val):
+    // 输出个位字形到数据总线
+    7S2D_DATA_PORT = 7S2D_DATA_MAP[val % 10];
+    // 片选
+    7S2D_CS_PORT = 7S2D_CS_MAP[0];//0->ew0; 1->ew1; 2->sn0; 3->sn1
+    // 给与一定显示时间
+    delay1ms();
+
+    // 输出十位字形到数据总线（假设val最高两位数）
+    7S2D_DATA_PORT = 7S2D_DATA_MAP[val / 10];
+    // 片选
+    7S2D_CS_PORT = 7S2D_CS_MAP[1];//0->ew0; 1->ew1; 2->sn0; 3->sn1
+    // 给与一定显示时间
+    delay1ms();
+        
+sn_update_7s2d(val):
+    // 输出个位字形到数据总线
+    7S2D_DATA_PORT = 7S2D_DATA_MAP[val % 10];
+    // 片选
+    7S2D_CS_PORT = 7S2D_CS_MAP[2];//0->ew0; 1->ew1; 2->sn0; 3->sn1
+    // 给与一定显示时间
+    delay1ms();
+
+    // 输出十位字形到数据总线（假设val最高两位数）
+    7S2D_DATA_PORT = 7S2D_DATA_MAP[val / 10];
+    // 片选
+    7S2D_CS_PORT = 7S2D_CS_MAP[3];//0->ew0; 1->ew1; 2->sn0; 3->sn1
+    // 给与一定显示时间
+    delay1ms();
