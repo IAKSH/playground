@@ -6,8 +6,6 @@ unsigned char count = 0;
 void initUART() {
 	PCON = 0x80;
 	SCON = 0x90;
-	//ES = 1;
-	//EA = 1;
 }
 
 void sendChar(char c) {
@@ -15,9 +13,6 @@ void sendChar(char c) {
 	while(!TI);
 	TI = 0;
 }
-
-//void uartIsr() interrupt 4 {
-//}
 
 void waitAct() {
 	while(!RI);
@@ -39,7 +34,7 @@ int main() {
 		waitAct();
 		if(!RB8) {
 			P2 = table[count];
-			count = ++count % 9;
+			count = ++count % 10;
 			delay(500);
 		}
 	}
