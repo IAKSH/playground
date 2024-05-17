@@ -58,6 +58,16 @@ birthday DATE,
 address VARCHAR(50) 
 );
 
-DESCRIBE teacherInfo;
+DELETE FROM teacherInfo;
+SELECT * FROM teacherInfo;
 
-DROP TABLE teacherInfo;
+ALTER TABLE teacherInfo MODIFY NAME VARCHAR(30) NOT NULL;
+ALTER TABLE teacherInfo MODIFY birthday DATE AFTER NAME;
+ALTER TABLE teacherInfo CHANGE id t_id INT NOT NULL; 
+ALTER TABLE teacherInfo DROP address;
+ALTER TABLE teacherInfo  ADD wages DECIMAL(5,2);
+ALTER TABLE teacherInfo RENAME teacherInfo_Info;
+
+DESCRIBE teacherInfo_Info;
+
+DROP TABLE teacherInfo_Info;
