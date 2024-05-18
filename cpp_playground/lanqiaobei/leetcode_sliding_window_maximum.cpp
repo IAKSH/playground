@@ -1,6 +1,6 @@
 // https://leetcode.cn/problems/sliding-window-maximum/?utm_source=LCUS&utm_medium=ip_redirect&utm_campaign=transfer2china
-// 优先队列，不知道为什么还是TLE
-// 37 / 51 TLE
+// O(n)的优先队列
+// AC
 
 #include <bits/stdc++.h>
 
@@ -10,18 +10,18 @@ class Solution {
 public:
     vector<int> maxSlidingWindow(vector<int>& nums, int k) {
         vector<int> res;
-        deque<pair<int,int>> pq;//val,index
+        deque<int> pq;// 实际上不需要考虑重复，因为即便重复也能够像下面这样处理
 
-        int i,j,n = nums.size() - k;
-        for(i = 0;i <= n;i++) {
-            for(j = 0;j < k;j++) {
-                while(!pq.empty() && pq.back().first <= nums[i + j])
-                    pq.pop_back();
-                pq.emplace_back(pair<int,int>(nums[i + j],i + j));
+        int i,n = nums.size();
+        for(i = 0;i < n;i++) {
+            while(!pq.empty() && pq.back() < nums[i])
+                pq.pop_back();
+            pq.emplace_back(nums[i]);
+            if(i >= k - 1) {
+                res.emplace_back(pq.front());
+                if(nums[i - k + 1] == pq.front())
+                    pq.pop_front();
             }
-            res.emplace_back(pq.front().first);
-            if(i == pq.front().second)
-                pq.pop_front();
         }
 
         return res;
@@ -30,9 +30,18 @@ public:
 
 int main() {
     //nums = [1,3,-1,-3,5,3,6,7], k = 3; should be 3 3 5 5 6 7
-    //nums = [1,3,1,2,0,5],k = 3; should be [3,3,2,5]
     vector<int> v{1,3,-1,-3,5,3,6,7};
+
+    //nums = [1,3,1,2,0,5],k = 3; should be [3,3,2,5]
+    //vector<int> v{1,3,1,2,0,5};
     int k = 3;
+
+    // -7,-8,7,5,7,1,6,0
+    // 4
+    // should be [7,7,7,7,7]
+    //vector<int> v{-7,-8,7,5,7,1,6,0};
+    //int k = 4;
+    
     for(const auto& i : Solution().maxSlidingWindow(v,k))
         cout << i << ' ';
     cout << '\n';
