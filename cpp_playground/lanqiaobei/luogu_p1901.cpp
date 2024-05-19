@@ -1,43 +1,32 @@
 // https://www.luogu.com.cn/problem/P1901
+// 单调栈
+// AC
 
 #include <bits/stdc++.h>
 
 using namespace std;
 
-// 不对，不能这样做
-// 只能拿单调栈或者类似的东西来，不能下面这样只考虑靠近的两个
-// 这道题必须要考虑遮挡问题。
-// 下次继续了
-
 int main() {
     cin.sync_with_stdio(false);
 
-    int i,j,n,max_v;
-    int h[3] = {0};
-    int v[3] = {0};
-    cin >> n;
+    int n;cin >> n;
+    int h[n],v[n],res[n] = {0};
+    stack<int> s;
 
-    for(i = 0;i < n;i++) {
-        if(i > 2 && i != n - 1) {
-            for(j = 0;j < 2;j++) {
-                h[j] = h[j + 1];
-                v[j] = v[j + 1];
-            }
+    for(int i = 0;i < n;i++) {
+        cin >> h[i] >> v[i];
+        while(!s.empty() && h[s.top()] < h[i]) {
+            // 从s.top()传到i
+            res[i] += v[s.top()];
+            s.pop();
         }
-        cin >> h[(i > 2 ? 2 : i)] >> v[(i > 2 ? 2 : i)];
-        if(i == 2) {
-            max_v = v[0] + (h[0] > h[1] ? v[1] : 0);
-        }
-        else if(i == n - 1) {
-            max_v = max(max_v,v[2] + (h[2] > h[1] ? v[1] : 0));
-            
-        }
-        else {
-            max_v = max(max_v,v[1] + (h[1] > h[0] ? v[0] : 0) + (h[1] > h[2] ? v[2] : 0));
-        }
+        if(!s.empty())
+            // 从i传到s.top()
+            res[s.top()] += v[i];
+        s.emplace(i);
     }
 
-    cout << max_v << '\n';
+    cout << *max_element(res,res + n) << '\n';
     return 0;
 }
 
