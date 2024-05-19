@@ -21,6 +21,8 @@ int find(int f[],int k) {
 }
 
 int main() {
+    ios::sync_with_stdio(false);
+
     int n,m,i,z,x,y;
     cin >> n >> m;
 

@@ -7,7 +7,7 @@
 using namespace std;
 
 int main() {
-    cin.sync_with_stdio(false);
+    ios::sync_with_stdio(false);
 
     int n;cin >> n;
     int h[n],v[n],res[n] = {0};

@@ -18,7 +18,7 @@ long long quick_power(long long a, long long b,long long c) {
 }
 
 int main() {
-    cin.sync_with_stdio(false);
+    ios::sync_with_stdio(false);
     long long a,b,p;
     cin >> a >> b >> p;
     cout << a << '^' << b << " mod " << p << "=" << quick_power(a,b,p) << '\n';
