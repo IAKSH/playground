@@ -1,38 +1,39 @@
 // https://www.luogu.com.cn/problem/P3367
-// 2 AC 3 LTE 5 WA
+// 递归查并集 + 路径压缩
+// AC
 
 #include <bits/stdc++.h>
 
 using namespace std;
 
+// 按照树划分集合，然后递归查找根节点，并且顺便进行路径压缩
+int find(int f[],int k) {
+    if(f[k] == k)               // 根节点没有父节点，但是我们定义对于根节点有f[k] = k
+        return k;
+    return f[k] = find(f,f[k]); // 将当前节点的父节点改为直接指向所在树的根节点，所谓路径压缩。
+    //return find(f,f[k]);// 不带路径压缩，会造成3个TLE
+}
+
 int main() {
-    int n,m,z,x,y,i,j,k;
-    char res[m],cnt = 0;
+    int n,m,i,z,x,y;// f[x]是x所在的树的父节点，通过递归能递归到所在树的根节点。
     cin >> n >> m;
 
-    unordered_map<int,int> map;//val,group
-    
-    for(i = 0;i < n;i++)
-        map[i + 1] = i + 1;
+    int f[n];
 
-    for(i = 0;i < m;i++) {
+    for(i = 1;i <= n;i++)
+        f[i] = i;// 初始化根节点的父指向自己
+    
+    for(i = 1;i <= m;i++) {
         cin >> z >> x >> y;
         if(z == 1) {
-            // merge
-            auto& p1_i = map[x];
-            auto& p2_i = map[y];
-            for(auto& p : map) {
-                if(p.second == p2_i)
-                    p.second = p1_i;
-            }
+            // 将x所在树的根节点直接改为y所在树的根节点，即完成了将x所在集合与y所在集合合并
+            f[find(f,x)] = find(f,y);
         }
         else {
-            // check
-            res[cnt++] = (map[x] == map[y] ? 'Y' : 'N');
+            // 直接通过比较x，y所在根节点是否相同来判断是否属于同一集合
+            cout << (find(f,x) == find(f,y) ? 'Y' : 'N') << '\n';
         }
     }
 
-    for(i = 0;i < cnt;i++)
-        cout << res[i] << '\n';
     return 0;
 }
