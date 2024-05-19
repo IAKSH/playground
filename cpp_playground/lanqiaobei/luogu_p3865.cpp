@@ -2,6 +2,9 @@
 // 先来个无脑的
 // 甚至捞了1个AC，2 WA，10 TLE
 
+// https://www.luogu.com.cn/article/61z2lumk
+// 正解是用ST表
+
 #include <bits/stdc++.h>
 
 using namespace std;
