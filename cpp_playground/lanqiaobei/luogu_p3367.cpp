@@ -1,6 +1,5 @@
 // https://www.luogu.com.cn/problem/P3367
-// 8 RE 2 LTE
-// 惨不忍睹
+// 2 AC 3 LTE 5 WA
 
 #include <bits/stdc++.h>
 
@@ -11,24 +10,25 @@ int main() {
     char res[m],cnt = 0;
     cin >> n >> m;
 
-    vector<unordered_set<int>> v(n);
+    unordered_map<int,int> map;//val,group
+    
     for(i = 0;i < n;i++)
-        v[i].emplace(i + 1);
+        map[i + 1] = i + 1;
 
     for(i = 0;i < m;i++) {
         cin >> z >> x >> y;
-        for(j = 0;j < n && v[j].count(x) == 0;j++);
-        for(k = 0;k < n && v[k].count(y) == 0;k++);
         if(z == 1) {
             // merge
-            for(const auto& val : v[j])
-                if(v[k].count(val) == 0)
-                    v[k].emplace(val);
-            v[j].clear();
+            auto& p1_i = map[x];
+            auto& p2_i = map[y];
+            for(auto& p : map) {
+                if(p.second == p2_i)
+                    p.second = p1_i;
+            }
         }
         else {
             // check
-            res[cnt++] = (j == k ? 'Y' : 'N');
+            res[cnt++] = (map[x] == map[y] ? 'Y' : 'N');
         }
     }
 
