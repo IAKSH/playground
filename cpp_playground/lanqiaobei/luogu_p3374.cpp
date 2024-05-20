@@ -2,6 +2,9 @@
 // 树状数组 (二元索引树)
 // AC
 
+// 一个比较不错的原理解释
+// https://www.bilibili.com/video/BV1ce411u7qP
+
 #include <bits/stdc++.h>
 
 using namespace std;
