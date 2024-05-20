@@ -1,6 +1,6 @@
 // https://www.luogu.com.cn/problem/P3368
-// 树状数组 (二元索引树)
-// 7AC 3TLE
+// 由树状数组维护的差分数组 
+// AC
 
 #include <bits/stdc++.h>
 
@@ -8,62 +8,43 @@ using namespace std;
 
 class BITree {
 public:
-    BITree(vector<int>& nums) : nums(nums) {
-        int len = nums.size();
-        tree.resize(len + 1);
-		for(int i = 0; i < len; i++) {
-			add(i + 1, nums[i]);
-		}
+    BITree(vector<int>& v) {
+        n = v.size();
+        bitree.resize(n + 1, 0);
+        for(int i = 0; i < n; i++)
+            range_add(i + 1, i + 2, v[i]);
     }
 
-    void add(int index,int val) {
-        int len = tree.size();
-		while (index < len) {
-			tree[index] += val;
-			index += lowbit(index);
-		}
-	}
+    void range_add(int l, int r, int val) {
+        add(l, val);
+        add(r, -val);
+    }
 
-    void update(int index,int v) {
-		add(index + 1,v - nums[index]);
-		nums[index] = v;
-	}
-
-    int prefix_sum(int index) {
-		int sum = 0;
-		while (index > 0) {
-			sum += tree[index];
-			index -= lowbit(index);
-		}
-		return sum;
-	}
-
-    int range_sum(int left,int right) {
-		return prefix_sum(right) - prefix_sum(left - 1);
-	}
-
-    int get(int index){
-	    //int res = 0;
-	    //for(int i = index;i >= 1;i -= lowbit(i))
-        //    res += tree[i];
-	    //return res;
-
-        return prefix_sum(index) - prefix_sum(index - 1);
+    int get_at(int i) {
+        return prefix_sum(i);
     }
 
 private:
-    int lowbit(int x) {
-		return x & (-x);
-	}
+    void add(int i, int val) {
+        for(; i <= n; i += i & -i)
+            bitree[i] += val;
+    }
 
-    vector<int>& nums;
-    vector<int> tree;
+    int prefix_sum(int i) {
+        int res = 0;
+        for(; i > 0; i -= i & -i)
+            res += bitree[i];
+        return res;
+    }
+
+    vector<int> bitree;
+    int n;
 };
 
 int main() {
     ios::sync_with_stdio(false);
     
-    int n,m,a,b,c,d,i,j;
+    int n, m, a, b, c, d, i, j;
     cin >> n >> m;
 
     vector<int> v(n);
@@ -72,16 +53,17 @@ int main() {
 
     BITree bitree(v);
     
-    for(i = 0;i < m;i++) {
+    for(i = 0; i < m; i++) {
         cin >> a;
         if(a == 1) {
+            // 将区间 [b,c]内每个数加上d
             cin >> b >> c >> d;
-            for(j = b;j <= c;j++)
-                bitree.add(j,d);
+            bitree.range_add(b, c + 1, d);
         }
         else {
+            // 输出b处的值
             cin >> b;
-            cout << bitree.get(b) << '\n';
+            cout << bitree.get_at(b) << '\n';
         }
     }
 
