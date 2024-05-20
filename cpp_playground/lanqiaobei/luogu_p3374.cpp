@@ -9,9 +9,12 @@
 
 using namespace std;
 
+// 纯粹的树状数组
+// 适合处理点修改和区间求和
+
 class BITree {
 public:
-    BITree(vector<int>& nums) : nums(nums) {
+    BITree(vector<int>& nums) {
         int len = nums.size();
         tree.resize(len + 1);
 		for(int i = 0; i < len; i++) {
@@ -25,11 +28,6 @@ public:
 			tree[index] += val;
 			index += lowbit(index);
 		}
-	}
-
-    void update(int index,int v) {
-		add(index + 1,v - nums[index]);
-		nums[index] = v;
 	}
 
     int prefix_sum(int index) {
@@ -50,7 +48,6 @@ private:
 		return x & (-x);
 	}
 
-    vector<int>& nums;
     vector<int> tree;
 };
 

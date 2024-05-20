@@ -6,9 +6,12 @@
 
 using namespace std;
 
-class BITree {
+// 由树状数组维护的差分数组 
+// 适合处理点查询和区间修改
+
+class BITreeDiffArray {
 public:
-    BITree(vector<int>& v) {
+    BITreeDiffArray(vector<int>& v) {
         n = v.size();
         bitree.resize(n + 1, 0);
         for(int i = 0; i < n; i++)
@@ -51,7 +54,7 @@ int main() {
     for(auto& val : v)
         cin >> val;
 
-    BITree bitree(v);
+    BITreeDiffArray bitree(v);
     
     for(i = 0; i < m; i++) {
         cin >> a;
