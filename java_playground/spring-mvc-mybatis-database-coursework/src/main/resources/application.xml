@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context" xmlns:task="http://www.springframework.org/schema/task" xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/task
+        http://www.springframework.org/schema/task/spring-task.xsd">
+	<!-- 配置文件 -->
+	<context:property-placeholder location="classpath:jdbc.properties"/>
+	<!-- 其他的bean定义 -->
+	<!-- Service -->
+	<bean id="DailySalesService" class="me.iaksh.service.DailySalesService">
+		<property name="mapper" ref="DailySalesMapper" />
+	</bean>
+	<bean id="MemberService" class="me.iaksh.service.MemberService">
+		<property name="mapper" ref="MemberMapper" />
+	</bean>
+	<bean id="MonthlySalesService" class="me.iaksh.service.MonthlySalesService">
+		<property name="mapper" ref="MonthlySalesMapper" />
+	</bean>
+	<bean id="ProductService" class="me.iaksh.service.ProductService">
+		<property name="mapper" ref="ProductMapper" />
+	</bean>
+	<bean id="PurchaseService" class="me.iaksh.service.PurchaseService">
+		<property name="mapper" ref="PurchaseMapper" />
+	</bean>
+	<bean id="SalesService" class="me.iaksh.service.SalesService">
+		<property name="mapper" ref="SalesMapper" />
+	</bean>
+	<bean id="SourceService" class="me.iaksh.service.SourceService">
+		<property name="mapper" ref="SourceMapper" />
+	</bean>
+	<bean id="StaffService" class="me.iaksh.service.StaffService">
+		<property name="mapper" ref="StaffMapper" />
+	</bean>
+	<bean id="TotalExpenseService" class="me.iaksh.service.TotalExpenseService">
+		<property name="mapper" ref="TotalExpenseMapper" />
+	</bean>
+	<bean id="TotalIncomeService" class="me.iaksh.service.TotalIncomeService">
+		<property name="mapper" ref="TotalIncomeMapper" />
+	</bean>
+	<bean id="YearlySalesService" class="me.iaksh.service.YearlySalesService">
+		<property name="mapper" ref="YearlySalesMapper" />
+	</bean>
+	<!-- Controller -->
+	<bean id="MemberController" class="me.iaksh.controller.MemberController">
+		<property name="service" ref="MemberService" />
+	</bean>
+	<bean id="ProductController" class="me.iaksh.controller.ProductController">
+		<property name="service" ref="ProductService" />
+	</bean>
+	<bean id="PurchaseController" class="me.iaksh.controller.PurchaseController">
+		<property name="service" ref="PurchaseService" />
+	</bean>
+	<bean id="SalesController" class="me.iaksh.controller.SalesController">
+		<property name="service" ref="SalesService" />
+	</bean>
+	<bean id="SourceController" class="me.iaksh.controller.SourceController">
+		<property name="service" ref="SourceService" />
+	</bean>
+	<bean id="StaffController" class="me.iaksh.controller.StaffController">
+		<property name="service" ref="StaffService" />
+	</bean>
+	<bean id="StatisticController" class="me.iaksh.controller.StatisticController">
+		<property name="dailySalesService" ref="DailySalesService" />
+		<property name="monthlySalesService" ref="MonthlySalesService" />
+		<property name="yearlySalesService" ref="YearlySalesService" />
+		<property name="totalIncomeService" ref="TotalIncomeService" />
+		<property name="totalExpenseService" ref="TotalExpenseService" />
+	</bean>
+	<!-- Mapper -->
+	<bean id="DailySalesMapper" class="org.mybatis.spring.mapper.MapperFactoryBean">
+		<property name="mapperInterface" value="me.iaksh.mapper.DailySalesMapper" />
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<bean id="MemberMapper" class="org.mybatis.spring.mapper.MapperFactoryBean">
+		<property name="mapperInterface" value="me.iaksh.mapper.MemberMapper" />
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<bean id="MonthlySalesMapper" class="org.mybatis.spring.mapper.MapperFactoryBean">
+		<property name="mapperInterface" value="me.iaksh.mapper.MonthlySalesMapper" />
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<bean id="ProductMapper" class="org.mybatis.spring.mapper.MapperFactoryBean">
+		<property name="mapperInterface" value="me.iaksh.mapper.ProductMapper" />
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<bean id="PurchaseMapper" class="org.mybatis.spring.mapper.MapperFactoryBean">
+		<property name="mapperInterface" value="me.iaksh.mapper.PurchaseMapper" />
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<bean id="SalesMapper" class="org.mybatis.spring.mapper.MapperFactoryBean">
+		<property name="mapperInterface" value="me.iaksh.mapper.SalesMapper" />
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<bean id="SourceMapper" class="org.mybatis.spring.mapper.MapperFactoryBean">
+		<property name="mapperInterface" value="me.iaksh.mapper.SourceMapper" />
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<bean id="StaffMapper" class="org.mybatis.spring.mapper.MapperFactoryBean">
+		<property name="mapperInterface" value="me.iaksh.mapper.StaffMapper" />
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<bean id="TotalExpenseMapper" class="org.mybatis.spring.mapper.MapperFactoryBean">
+		<property name="mapperInterface" value="me.iaksh.mapper.TotalExpenseMapper" />
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<bean id="TotalIncomeMapper" class="org.mybatis.spring.mapper.MapperFactoryBean">
+		<property name="mapperInterface" value="me.iaksh.mapper.TotalIncomeMapper" />
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<bean id="YearlySalesMapper" class="org.mybatis.spring.mapper.MapperFactoryBean">
+		<property name="mapperInterface" value="me.iaksh.mapper.YearlySalesMapper" />
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<!-- Database -->
+	<bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource">
+		<property name="jdbcUrl" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+		<property name="autoCommit" value="false" />
+		<property name="connectionTimeout" value="250" />
+		<property name="idleTimeout" value="60" />
+	</bean>
+	<!-- Others -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+</beans>
