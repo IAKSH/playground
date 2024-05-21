@@ -1,34 +1,69 @@
 <template>
+  <div>
+    <h1>会员</h1>
+    <table>
+      <tr v-for="member in members" :key="member.memberID">
+        <td>{{ member.name }}</td>
+        <td>{{ member.membershipStartDate }}</td>
+        <td>{{ member.membershipEndDate }}</td>
+        <td>
+          <button @click="updateMember(member)">修改</button>
+          <button @click="deleteMember(member)">删除</button>
+        </td>
+      </tr>
+    </table>
     <div>
-      <h1>会员</h1>
-      <!-- 这里应该是从服务器获取的Member数据 -->
-      <!-- 这里应该是一个表格，显示Member数据 -->
-      <!-- 这里应该是一些按钮和输入框，用于向后端添加一条Member记录 -->
+      <input v-model="newMember.name" placeholder="姓名" />
+      <input v-model="newMember.membershipStartDate" placeholder="会员开始日期" />
+      <input v-model="newMember.membershipEndDate" placeholder="会员结束日期" />
+      <button @click="insertMember(newMember)">添加会员</button>
     </div>
-  </template>
-  
-  <script>
-  export default {
-    name: 'Member',
-    data() {
-      return {
-        // 这里应该是从服务器获取的Member数据
-      }
-    },
-    created() {
-      // 在这里发送请求到服务器获取Member数据
-    },
-    methods: {
-      updateMember(member) {
-        // 在这里发送请求到服务器更新Member数据
-      },
-      insertMember(member) {
-        // 在这里发送请求到服务器插入Member数据
-      },
-      deleteMember(member) {
-        // 在这里发送请求到服务器删除Member数据
+  </div>
+</template>
+
+<script>
+import axios from 'axios';
+
+export default {
+  name: 'Member',
+  data() {
+    return {
+      members: [],
+      newMember: {
+        name: '',
+        membershipStartDate: '',
+        membershipEndDate: ''
       }
     }
+  },
+  created() {
+    axios.get('/api/member/all')
+      .then(response => {
+        this.members = response.data;
+      });
+  },
+  methods: {
+    updateMember(member) {
+      axios.post('/api/member/update', member)
+        .then(response => {
+          // 更新成功
+        });
+    },
+    insertMember(member) {
+      axios.post('/api/member/insert', member)
+        .then(response => {
+          // 插入成功
+          this.members.push(member);
+        });
+    },
+    deleteMember(member) {
+      axios.get(`/api/member/delete/${member.memberID}`)
+        .then(response => {
+          // 删除成功
+          const index = this.members.indexOf(member);
+          this.members.splice(index, 1);
+        });
+    }
   }
-  </script>
-  
+}
+</script>

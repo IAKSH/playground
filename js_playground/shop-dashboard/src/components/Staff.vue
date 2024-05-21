@@ -1,34 +1,72 @@
 <template>
+  <div>
+    <h1>员工</h1>
+    <table>
+      <tr v-for="staff in staffs" :key="staff.staffID">
+        <td>{{ staff.name }}</td>
+        <td>{{ staff.gender }}</td>
+        <td>{{ staff.age }}</td>
+        <td>{{ staff.monthlySalary }}</td>
+        <td>
+          <button @click="updateStaff(staff)">修改</button>
+          <button @click="deleteStaff(staff)">删除</button>
+        </td>
+      </tr>
+    </table>
     <div>
-      <h1>员工</h1>
-      <!-- 这里应该是从服务器获取的Staff数据 -->
-      <!-- 这里应该是一个表格，显示Staff数据 -->
-      <!-- 这里应该是一些按钮和输入框，用于向后端添加一条Staff记录 -->
+      <input v-model="newStaff.name" placeholder="姓名" />
+      <input v-model="newStaff.gender" placeholder="性别" />
+      <input v-model="newStaff.age" placeholder="年龄" />
+      <input v-model="newStaff.monthlySalary" placeholder="月薪" />
+      <button @click="insertStaff(newStaff)">添加员工记录</button>
     </div>
-  </template>
-  
-  <script>
-  export default {
-    name: 'Staff',
-    data() {
-      return {
-        // 这里应该是从服务器获取的Staff数据
-      }
-    },
-    created() {
-      // 在这里发送请求到服务器获取Staff数据
-    },
-    methods: {
-      updateStaff(staff) {
-        // 在这里发送请求到服务器更新Staff数据
-      },
-      insertStaff(staff) {
-        // 在这里发送请求到服务器插入Staff数据
-      },
-      deleteStaff(staff) {
-        // 在这里发送请求到服务器删除Staff数据
+  </div>
+</template>
+
+<script>
+import axios from 'axios';
+
+export default {
+  name: 'Staff',
+  data() {
+    return {
+      staffs: [],
+      newStaff: {
+        name: '',
+        gender: '',
+        age: '',
+        monthlySalary: ''
       }
     }
+  },
+  created() {
+    axios.get('/api/staff/all')
+      .then(response => {
+        this.staffs = response.data;
+      });
+  },
+  methods: {
+    updateStaff(staff) {
+      axios.post('/api/staff/update', staff)
+        .then(response => {
+          // 更新成功
+        });
+    },
+    insertStaff(staff) {
+      axios.post('/api/staff/insert', staff)
+        .then(response => {
+          // 插入成功
+          this.staffs.push(staff);
+        });
+    },
+    deleteStaff(staff) {
+      axios.get(`/api/staff/delete/${staff.staffID}`)
+        .then(response => {
+          // 删除成功
+          const index = this.staffs.indexOf(staff);
+          this.staffs.splice(index, 1);
+        });
+    }
   }
-  </script>
-  
+}
+</script>
