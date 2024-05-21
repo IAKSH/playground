@@ -1,0 +1,76 @@
+plugins {
+    id 'java'
+}
+
+allprojects {
+    repositories {
+        maven { url 'https://mirrors.cloud.tencent.com/nexus/repository/maven-public/' }
+        mavenCentral()
+        mavenLocal()
+    }
+}
+
+group = 'me.iaksh'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs << '-parameters'
+}
+
+dependencies {
+    //testImplementation platform('org.junit:junit-bom:5.9.1')
+    //testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    // Spring
+    // https://mvnrepository.com/artifact/org.springframework/spring-core
+    //implementation group: 'org.springframework', name: 'spring-core', version: '6.1.4'
+    // https://mvnrepository.com/artifact/org.springframework/spring-webmvc
+    implementation group: 'org.springframework', name: 'spring-webmvc', version: '6.1.4'
+    // https://mvnrepository.com/artifact/org.springframework/spring-context
+    implementation group: 'org.springframework', name: 'spring-context', version: '6.1.4'
+    // https://mvnrepository.com/artifact/org.springframework/spring-tx
+    implementation group: 'org.springframework', name: 'spring-tx', version: '6.1.4'
+    // https://mvnrepository.com/artifact/org.springframework/spring-jdbc
+    implementation group: 'org.springframework', name: 'spring-jdbc', version: '6.1.4'
+
+    // Database
+    // https://mvnrepository.com/artifact/org.mybatis/mybatis
+    implementation group: 'org.mybatis', name: 'mybatis', version: '3.5.15'
+    // https://mvnrepository.com/artifact/org.mybatis/mybatis-spring
+    implementation group: 'org.mybatis', name: 'mybatis-spring', version: '3.0.3'
+    // https://mvnrepository.com/artifact/com.zaxxer/HikariCP
+    implementation group: 'com.zaxxer', name: 'HikariCP', version: '5.1.0'
+    // https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client
+    implementation group: 'org.mariadb.jdbc', name: 'mariadb-java-client', version: '3.3.3'
+
+    // Jakarta API
+    // https://mvnrepository.com/artifact/jakarta.annotation/jakarta.annotation-api
+    implementation group: 'jakarta.annotation', name: 'jakarta.annotation-api', version: '3.0.0-M1'
+    // https://mvnrepository.com/artifact/jakarta.servlet/jakarta.servlet-api
+    compileOnly group: 'jakarta.servlet', name: 'jakarta.servlet-api', version: '6.1.0-M1'
+
+
+    // Embedded Jetty
+    // https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-server
+    implementation group: 'org.eclipse.jetty', name: 'jetty-server', version: '11.0.20'
+    // https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-servlet
+    implementation group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '11.0.20'
+
+    // log
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.12'
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
+    implementation group: 'org.slf4j', name: 'slf4j-simple', version: '2.0.12'
+
+    // json
+    // https://mvnrepository.com/artifact/com.alibaba.fastjson2/fastjson2
+    implementation group: 'com.alibaba.fastjson2', name: 'fastjson2', version: '2.0.50'
+}
+
+test {
+    useJUnitPlatform()
+}
