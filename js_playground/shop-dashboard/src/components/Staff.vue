@@ -47,13 +47,21 @@ export default {
   },
   methods: {
     updateStaff(staff) {
-      axios.post('/api/staff/update', staff)
+      axios.post('/api/staff/update', staff, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
         .then(response => {
           // 更新成功
         });
     },
     insertStaff(staff) {
-      axios.post('/api/staff/insert', staff)
+      axios.post('/api/staff/insert', staff, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
         .then(response => {
           // 插入成功
           this.staffs.push(staff);
