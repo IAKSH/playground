@@ -1,12 +1,12 @@
 package me.iaksh.entity;
 
 import java.math.BigDecimal;
-import java.sql.Date;
+import java.sql.Timestamp;
 
 public class Sales {
     private Integer salesID;
     private Integer productID;
-    private Date saleTime;
+    private Timestamp saleTime;
     private BigDecimal actualUnitPrice;
     private Integer soldQuantity;
     private Integer memberID;
@@ -27,7 +27,7 @@ public class Sales {
         this.salesID = salesID;
     }
 
-    public void setSaleTime(Date saleTime) {
+    public void setSaleTime(Timestamp saleTime) {
         this.saleTime = saleTime;
     }
 
@@ -47,7 +47,7 @@ public class Sales {
         return actualUnitPrice;
     }
 
-    public Date getSaleTime() {
+    public Timestamp getSaleTime() {
         return saleTime;
     }
 

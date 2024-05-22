@@ -3,7 +3,6 @@ package me.iaksh.mapper;
 import me.iaksh.entity.Sales;
 import org.apache.ibatis.annotations.*;
 
-import java.sql.Date;
 import java.util.List;
 
 public interface SalesMapper {

@@ -1,22 +1,22 @@
 package me.iaksh.entity;
 
-import java.sql.Date;
+import java.sql.Timestamp;
 
 public class Member {
     private Integer memberID;
     private String name;
-    private Date membershipStartDate;
-    private Date membershipEndDate;
+    private Timestamp membershipStartDate;
+    private Timestamp membershipEndDate;
 
     public String getName() {
         return name;
     }
 
-    public Date getMembershipEndDate() {
+    public Timestamp getMembershipEndDate() {
         return membershipEndDate;
     }
 
-    public Date getMembershipStartDate() {
+    public Timestamp getMembershipStartDate() {
         return membershipStartDate;
     }
 
@@ -32,11 +32,11 @@ public class Member {
         this.memberID = memberID;
     }
 
-    public void setMembershipEndDate(Date membershipEndDate) {
+    public void setMembershipEndDate(Timestamp membershipEndDate) {
         this.membershipEndDate = membershipEndDate;
     }
 
-    public void setMembershipStartDate(Date membershipStartDate) {
+    public void setMembershipStartDate(Timestamp membershipStartDate) {
         this.membershipStartDate = membershipStartDate;
     }
 }
