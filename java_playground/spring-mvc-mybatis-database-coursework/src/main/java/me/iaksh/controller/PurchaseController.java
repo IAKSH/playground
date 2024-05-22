@@ -5,6 +5,8 @@ import me.iaksh.entity.Purchase;
 import me.iaksh.service.PurchaseService;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Timestamp;
+
 @RestController
 @RequestMapping("/purchase")
 public class PurchaseController {
@@ -30,6 +32,9 @@ public class PurchaseController {
     @ResponseBody
     public String insertPurchase(@RequestBody String strPurchase) {
         Purchase purchase = JSON.parseObject(strPurchase,Purchase.class);
+        if (purchase.getPurchaseTime() == null) {
+            purchase.setPurchaseTime(new Timestamp(System.currentTimeMillis()));
+        }
         service.purchaseProduct(purchase);
         return JSON.toJSONString(purchase);
     }

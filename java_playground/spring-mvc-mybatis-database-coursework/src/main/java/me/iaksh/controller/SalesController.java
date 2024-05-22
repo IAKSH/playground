@@ -5,6 +5,8 @@ import me.iaksh.entity.Sales;
 import me.iaksh.service.SalesService;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Timestamp;
+
 @RestController
 @RequestMapping("/sales")
 public class SalesController {
@@ -31,6 +33,9 @@ public class SalesController {
     @ResponseBody
     public String insertSales(@RequestBody String strSales) {
         Sales sales = JSON.parseObject(strSales,Sales.class);
+        if(sales.getSaleTime() == null) {
+            sales.setSaleTime(new Timestamp(System.currentTimeMillis()));
+        }
         service.sellProduct(sales);
         return JSON.toJSONString(sales);
     }

@@ -5,6 +5,10 @@ import me.iaksh.entity.Member;
 import me.iaksh.service.MemberService;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+
 @RestController
 @RequestMapping("/member")
 public class MemberController {
@@ -31,6 +35,13 @@ public class MemberController {
     @ResponseBody
     public String insertMember(@RequestBody String strMember) {
         Member member = JSON.parseObject(strMember,Member.class);
+        if (member.getMembershipStartDate() == null) {
+            member.setMembershipStartDate(new Timestamp(System.currentTimeMillis()));
+        }
+        if (member.getMembershipEndDate() == null) {
+            LocalDateTime localDateTime = LocalDateTime.now().plusMonths(1);
+            member.setMembershipEndDate(Timestamp.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant()));
+        }
         service.insert(member);
         return JSON.toJSONString(member);
     }
