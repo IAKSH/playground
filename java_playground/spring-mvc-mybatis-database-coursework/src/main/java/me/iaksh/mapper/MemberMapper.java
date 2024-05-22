@@ -12,13 +12,13 @@ public interface MemberMapper {
     @Select("SELECT * FROM Member")
     List<Member> getAll();
 
-    @Options(useGeneratedKeys = true, keyProperty = "MemberID", keyColumn = "MemberID")
+    @Options(useGeneratedKeys = true, keyProperty = "memberID", keyColumn = "MemberID")
     @Insert("INSERT INTO Member (Name, MembershipStartDate, MembershipEndDate) " +
             "VALUES (#{member.name}, #{member.membershipStartDate}, #{member.membershipEndDate})")
     void insert(@Param("member") Member member);
 
     @Update("UPDATE Member SET Name = #{member.name}, MembershipStartDate = #{member.membershipStartDate}, " +
-            "MembershipEndDate = #{member.membershipEndDate} WHERE id = #{member.MemberID}")
+            "MembershipEndDate = #{member.membershipEndDate} WHERE MemberID = #{member.memberID}")
     void update(@Param("member") Member member);
 
     @Delete("DELETE FROM Member WHERE MemberID = #{id}")

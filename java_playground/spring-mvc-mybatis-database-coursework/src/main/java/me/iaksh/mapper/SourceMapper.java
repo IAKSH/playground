@@ -12,12 +12,12 @@ public interface SourceMapper {
     @Select("SELECT * FROM Source")
     List<Source> getAll();
 
-    @Options(useGeneratedKeys = true, keyProperty = "SourceID", keyColumn = "SourceID")
+    @Options(useGeneratedKeys = true, keyProperty = "sourceID", keyColumn = "SourceID")
     @Insert("INSERT INTO Source (Name) " +
             "VALUES (#{source.name})")
     void insert(@Param("source") Source source);
 
-    @Update("UPDATE Source SET Name = #{source.name} WHERE id = #{source.SourceID}")
+    @Update("UPDATE Source SET Name = #{source.name} WHERE SourceID = #{source.sourceID}")
     void update(@Param("source") Source source);
 
     @Delete("DELETE FROM Source WHERE SourceID = #{id}")

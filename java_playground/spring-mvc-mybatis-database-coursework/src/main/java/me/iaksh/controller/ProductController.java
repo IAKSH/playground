@@ -18,8 +18,8 @@ public class ProductController {
             consumes = "application/json;charset=UTF-8",
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String updateProduct(@RequestBody Product product) {
-        service.update(product);
+    public String updateProduct(@RequestBody String product) {
+        service.update(JSON.parseObject(product,Product.class));
         return "{\n\"status\":\"ok\"\n}";
     }
 
@@ -27,8 +27,8 @@ public class ProductController {
             consumes = "application/json;charset=UTF-8",
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String insertProduct(@RequestBody Product product) {
-        service.insert(product);
+    public String insertProduct(@RequestBody String product) {
+        service.insert(JSON.parseObject(product,Product.class));
         return "{\n\"status\":\"ok\"\n}";
     }
 

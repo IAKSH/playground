@@ -18,8 +18,8 @@ public class SourceController {
             consumes = "application/json;charset=UTF-8",
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String updateSource(@RequestBody Source source) {
-        service.update(source);
+    public String updateSource(@RequestBody String source) {
+        service.update(JSON.parseObject(source,Source.class));
         return "{\n\"status\":\"ok\"\n}";
     }
 
@@ -27,8 +27,8 @@ public class SourceController {
             consumes = "application/json;charset=UTF-8",
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String insertSource(@RequestBody Source source) {
-        service.insert(source);
+    public String insertSource(@RequestBody String source) {
+        service.insert(JSON.parseObject(source,Source.class));
         return "{\n\"status\":\"ok\"\n}";
     }
 

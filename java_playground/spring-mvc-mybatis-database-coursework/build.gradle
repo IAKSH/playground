@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.1.2' // 添加shadowJar插件
 }
 
 allprojects {
@@ -69,6 +70,21 @@ dependencies {
     // json
     // https://mvnrepository.com/artifact/com.alibaba.fastjson2/fastjson2
     implementation group: 'com.alibaba.fastjson2', name: 'fastjson2', version: '2.0.50'
+}
+
+// shadowJar的配置
+shadowJar {
+    mergeServiceFiles()
+    append 'META-INF/spring.handlers'
+    append 'META-INF/spring.schemas'
+    append 'META-INF/spring.tooling'
+
+    archiveBaseName.set('shop-api') // 你的应用名
+    archiveVersion.set('0.0.1') // 版本号
+    archiveClassifier.set('')
+    manifest {
+        attributes 'Main-Class': 'me.iaksh.Application' // 请替换为你的主类
+    }
 }
 
 test {

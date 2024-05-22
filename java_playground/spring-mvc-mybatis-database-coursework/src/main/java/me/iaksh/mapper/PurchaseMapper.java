@@ -12,13 +12,13 @@ public interface PurchaseMapper {
     @Select("SELECT * FROM Purchase")
     List<Purchase> getAll();
 
-    @Options(useGeneratedKeys = true, keyProperty = "PurchaseID", keyColumn = "PurchaseID")
+    @Options(useGeneratedKeys = true, keyProperty = "purchaseID", keyColumn = "PurchaseID")
     @Insert("INSERT INTO Purchase (ProductID, PurchaseTime, PurchaseUnitPrice, PurchaseQuantity, SourceID) " +
             "VALUES (#{purchase.productID}, #{purchase.purchaseTime}, #{purchase.purchaseUnitPrice}, #{purchase.purchaseQuantity}, #{purchase.sourceID})")
     void insert(@Param("purchase") Purchase purchase);
 
     @Update("UPDATE Purchase SET ProductID = #{purchase.productID}, PurchaseTime = #{purchase.purchaseTime}, " +
-            "PurchaseUnitPrice = #{purchase.purchaseUnitPrice}, PurchaseQuantity = #{purchase.purchaseQuantity}, SourceID = #{purchase.sourceID} WHERE id = #{purchase.PurchaseID}")
+            "PurchaseUnitPrice = #{purchase.purchaseUnitPrice}, PurchaseQuantity = #{purchase.purchaseQuantity}, SourceID = #{purchase.sourceID} WHERE PurchaseID = #{purchase.purchaseID}")
     void update(@Param("purchase") Purchase purchase);
 
     @Delete("DELETE FROM Purchase WHERE PurchaseID = #{id}")

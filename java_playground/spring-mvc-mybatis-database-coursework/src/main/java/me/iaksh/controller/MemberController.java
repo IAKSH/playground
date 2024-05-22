@@ -19,8 +19,8 @@ public class MemberController {
             consumes = "application/json;charset=UTF-8",
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String updateMember(@RequestBody Member member) {
-        service.update(member);
+    public String updateMember(@RequestBody String member) {
+        service.update(JSON.parseObject(member,Member.class));
         return "{\n\"status\":\"ok\"\n}";
     }
 
@@ -28,8 +28,8 @@ public class MemberController {
             consumes = "application/json;charset=UTF-8",
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String insertMember(@RequestBody Member member) {
-        service.insert(member);
+    public String insertMember(@RequestBody String member) {
+        service.insert(JSON.parseObject(member,Member.class));
         return "{\n\"status\":\"ok\"\n}";
     }
 

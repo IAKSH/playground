@@ -18,8 +18,8 @@ public class PurchaseController {
             consumes = "application/json;charset=UTF-8",
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String updatePurchase(@RequestBody Purchase purchase) {
-        service.update(purchase);
+    public String updatePurchase(@RequestBody String purchase) {
+        service.update(JSON.parseObject(purchase,Purchase.class));
         return "{\n\"status\":\"ok\"\n}";
     }
 
@@ -27,8 +27,8 @@ public class PurchaseController {
             consumes = "application/json;charset=UTF-8",
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String insertPurchase(@RequestBody Purchase purchase) {
-        service.insert(purchase);
+    public String insertPurchase(@RequestBody String purchase) {
+        service.insert(JSON.parseObject(purchase,Purchase.class));
         return "{\n\"status\":\"ok\"\n}";
     }
 

@@ -18,8 +18,8 @@ public class StaffController {
             consumes = "application/json;charset=UTF-8",
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String updateStaff(@RequestBody Staff staff) {
-        service.update(staff);
+    public String updateStaff(@RequestBody String staff) {
+        service.update(JSON.parseObject(staff,Staff.class));
         return "{\n\"status\":\"ok\"\n}";
     }
 
@@ -27,8 +27,8 @@ public class StaffController {
             consumes = "application/json;charset=UTF-8",
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String insertStaff(@RequestBody Staff staff) {
-        service.insert(staff);
+    public String insertStaff(@RequestBody String staff) {
+        service.insert(JSON.parseObject(staff,Staff.class));
         return "{\n\"status\":\"ok\"\n}";
     }
 

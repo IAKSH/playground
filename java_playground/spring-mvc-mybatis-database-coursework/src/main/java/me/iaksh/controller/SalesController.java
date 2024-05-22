@@ -19,8 +19,8 @@ public class SalesController {
             consumes = "application/json;charset=UTF-8",
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String updateSales(@RequestBody Sales sales) {
-        service.update(sales);
+    public String updateSales(@RequestBody String sales) {
+        service.update(JSON.parseObject(sales,Sales.class));
         return "{\n\"status\":\"ok\"\n}";
     }
 
@@ -28,8 +28,8 @@ public class SalesController {
             consumes = "application/json;charset=UTF-8",
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String insertSales(@RequestBody Sales sales) {
-        service.insert(sales);
+    public String insertSales(@RequestBody String sales) {
+        service.insert(JSON.parseObject(sales,Sales.class));
         return "{\n\"status\":\"ok\"\n}";
     }
 

@@ -12,13 +12,13 @@ public interface SalesMapper {
     @Select("SELECT * FROM Sales")
     List<Sales> getAll();
 
-    @Options(useGeneratedKeys = true, keyProperty = "SalesID", keyColumn = "SalesID")
+    @Options(useGeneratedKeys = true, keyProperty = "salesID", keyColumn = "SalesID")
     @Insert("INSERT INTO Sales (ProductID, SaleTime, ActualUnitPrice, SoldQuantity, MemberID) " +
             "VALUES (#{sales.productID}, #{sales.saleTime}, #{sales.actualUnitPrice}, #{sales.soldQuantity}, #{sales.memberID})")
     void insert(@Param("sales") Sales sales);
 
     @Update("UPDATE Sales SET ProductID = #{sales.productID}, SaleTime = #{sales.saleTime}, " +
-            "ActualUnitPrice = #{sales.actualUnitPrice}, SoldQuantity = #{sales.soldQuantity}, MemberID = #{sales.memberID} WHERE id = #{sales.SalesID}")
+            "ActualUnitPrice = #{sales.actualUnitPrice}, SoldQuantity = #{sales.soldQuantity}, MemberID = #{sales.memberID} WHERE SalesID = #{sales.salesID}")
     void update(@Param("sales") Sales sales);
 
     @Delete("DELETE FROM Sales WHERE SalesID = #{id}")
