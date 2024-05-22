@@ -31,4 +31,8 @@ public class SalesService {
     public void deleteById(long id) {
         mapper.deleteById(id);
     }
+
+    public void sellProduct(Sales sales) {
+        mapper.sellProduct(sales);
+    }
 }

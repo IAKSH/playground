@@ -18,18 +18,20 @@ public class SourceController {
             consumes = "application/json;charset=UTF-8",
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String updateSource(@RequestBody String source) {
-        service.update(JSON.parseObject(source,Source.class));
-        return "{\n\"status\":\"ok\"\n}";
+    public String updateSource(@RequestBody String strSource) {
+        Source source = JSON.parseObject(strSource,Source.class);
+        service.update(source);
+        return JSON.toJSONString(source);
     }
 
     @PostMapping(value = "/insert",
             consumes = "application/json;charset=UTF-8",
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String insertSource(@RequestBody String source) {
-        service.insert(JSON.parseObject(source,Source.class));
-        return "{\n\"status\":\"ok\"\n}";
+    public String insertSource(@RequestBody String strSource) {
+        Source source = JSON.parseObject(strSource,Source.class);
+        service.insert(source);
+        return JSON.toJSONString(source);
     }
 
     @GetMapping(value = "/{id}",

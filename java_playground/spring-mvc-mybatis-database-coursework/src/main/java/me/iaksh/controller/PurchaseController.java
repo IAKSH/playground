@@ -18,18 +18,20 @@ public class PurchaseController {
             consumes = "application/json;charset=UTF-8",
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String updatePurchase(@RequestBody String purchase) {
-        service.update(JSON.parseObject(purchase,Purchase.class));
-        return "{\n\"status\":\"ok\"\n}";
+    public String updatePurchase(@RequestBody String strPurchase) {
+        Purchase purchase = JSON.parseObject(strPurchase,Purchase.class);
+        service.update(purchase);
+        return JSON.toJSONString(purchase);
     }
 
     @PostMapping(value = "/insert",
             consumes = "application/json;charset=UTF-8",
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String insertPurchase(@RequestBody String purchase) {
-        service.insert(JSON.parseObject(purchase,Purchase.class));
-        return "{\n\"status\":\"ok\"\n}";
+    public String insertPurchase(@RequestBody String strPurchase) {
+        Purchase purchase = JSON.parseObject(strPurchase,Purchase.class);
+        service.purchaseProduct(purchase);
+        return JSON.toJSONString(purchase);
     }
 
     @GetMapping(value = "/{id}",

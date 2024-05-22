@@ -31,4 +31,8 @@ public class PurchaseService {
     public void deleteById(long id) {
         mapper.deleteById(id);
     }
+
+    public void purchaseProduct(Purchase purchase) {
+        mapper.purchaseProduct(purchase);
+    }
 }

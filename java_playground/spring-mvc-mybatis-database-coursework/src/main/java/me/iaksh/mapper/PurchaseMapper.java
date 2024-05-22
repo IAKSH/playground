@@ -23,4 +23,10 @@ public interface PurchaseMapper {
 
     @Delete("DELETE FROM Purchase WHERE PurchaseID = #{id}")
     void deleteById(@Param("id") long id);
+
+    @Select("SELECT Name FROM Source WHERE SourceID = #{sourceID}")
+    String getSourceName(@Param("sourceID") Integer sourceID);
+
+    @Insert("{CALL PurchaseProduct(#{purchase.productID}, #{purchase.sourceID}, #{purchase.purchaseTime}, #{purchase.purchaseUnitPrice}, #{purchase.purchaseQuantity})}")
+    void purchaseProduct(@Param("purchase") Purchase purchase);
 }

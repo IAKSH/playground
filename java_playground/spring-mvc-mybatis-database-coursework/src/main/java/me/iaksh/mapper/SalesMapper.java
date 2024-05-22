@@ -3,6 +3,7 @@ package me.iaksh.mapper;
 import me.iaksh.entity.Sales;
 import org.apache.ibatis.annotations.*;
 
+import java.sql.Date;
 import java.util.List;
 
 public interface SalesMapper {
@@ -23,4 +24,7 @@ public interface SalesMapper {
 
     @Delete("DELETE FROM Sales WHERE SalesID = #{id}")
     void deleteById(@Param("id") long id);
+
+    @Insert("{CALL SellProduct(#{sales.productID}, #{sales.saleTime}, #{sales.soldQuantity}, #{sales.memberID})}")
+    void sellProduct(@Param("sales") Sales sales);
 }

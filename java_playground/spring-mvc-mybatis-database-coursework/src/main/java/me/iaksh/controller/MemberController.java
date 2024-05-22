@@ -19,18 +19,20 @@ public class MemberController {
             consumes = "application/json;charset=UTF-8",
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String updateMember(@RequestBody String member) {
-        service.update(JSON.parseObject(member,Member.class));
-        return "{\n\"status\":\"ok\"\n}";
+    public String updateMember(@RequestBody String strMember) {
+        Member member = JSON.parseObject(strMember,Member.class);
+        service.update(member);
+        return JSON.toJSONString(member);
     }
 
     @PostMapping(value = "/insert",
             consumes = "application/json;charset=UTF-8",
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String insertMember(@RequestBody String member) {
-        service.insert(JSON.parseObject(member,Member.class));
-        return "{\n\"status\":\"ok\"\n}";
+    public String insertMember(@RequestBody String strMember) {
+        Member member = JSON.parseObject(strMember,Member.class);
+        service.insert(member);
+        return JSON.toJSONString(member);
     }
 
     @GetMapping(value = "/{id}",

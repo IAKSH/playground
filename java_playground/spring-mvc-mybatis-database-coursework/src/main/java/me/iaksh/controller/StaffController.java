@@ -18,18 +18,20 @@ public class StaffController {
             consumes = "application/json;charset=UTF-8",
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String updateStaff(@RequestBody String staff) {
-        service.update(JSON.parseObject(staff,Staff.class));
-        return "{\n\"status\":\"ok\"\n}";
+    public String updateStaff(@RequestBody String strStaff) {
+        Staff staff = JSON.parseObject(strStaff,Staff.class);
+        service.update(staff);
+        return JSON.toJSONString(staff);
     }
 
     @PostMapping(value = "/insert",
             consumes = "application/json;charset=UTF-8",
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String insertStaff(@RequestBody String staff) {
-        service.insert(JSON.parseObject(staff,Staff.class));
-        return "{\n\"status\":\"ok\"\n}";
+    public String insertStaff(@RequestBody String strStaff) {
+        Staff staff = JSON.parseObject(strStaff,Staff.class);
+        service.insert(staff);
+        return JSON.toJSONString(staff);
     }
 
     @GetMapping(value = "/{id}",

@@ -19,18 +19,20 @@ public class SalesController {
             consumes = "application/json;charset=UTF-8",
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String updateSales(@RequestBody String sales) {
-        service.update(JSON.parseObject(sales,Sales.class));
-        return "{\n\"status\":\"ok\"\n}";
+    public String updateSales(@RequestBody String strSales) {
+        Sales sales = JSON.parseObject(strSales,Sales.class);
+        service.update(sales);
+        return JSON.toJSONString(sales);
     }
 
     @PostMapping(value = "/insert",
             consumes = "application/json;charset=UTF-8",
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String insertSales(@RequestBody String sales) {
-        service.insert(JSON.parseObject(sales,Sales.class));
-        return "{\n\"status\":\"ok\"\n}";
+    public String insertSales(@RequestBody String strSales) {
+        Sales sales = JSON.parseObject(strSales,Sales.class);
+        service.sellProduct(sales);
+        return JSON.toJSONString(sales);
     }
 
     @GetMapping(value = "/{id}",
