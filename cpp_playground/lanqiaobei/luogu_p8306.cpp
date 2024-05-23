@@ -1,102 +1,12 @@
 // https://www.luogu.com.cn/problem/P8306
-// 全RE，不知道为什么，暂存
+// 修了半天修不好，好歹过了一个AC了
+// 1AC 5WA
 
 #include <bits/stdc++.h>
 
 using namespace std;
 
-#ifdef MINE_TRIE
-
-struct Node {
-    char c;
-    bool tail;
-    vector<Node*> sons;// a-z A-Z
-
-    ~Node() {
-        for(const auto& n : sons)
-            delete n;
-    }
-};
-
-struct Trie {
-public:
-    vector<Node> nodes;
-
-    void insert(const string& s) {
-        insert(s.begin(),s.end());
-    }
-
-    void insert(string::const_iterator str_begin,string::const_iterator str_end) {
-        // only in first layer
-        bool tail = (str_end - str_begin == 1);
-        for(auto it = str_begin;it != str_end;it++) {
-            auto n = find_if(nodes.begin(),nodes.end(),[&](const Node& node){return node.c == *it;});
-            if(n == nodes.end())
-                nodes.emplace_back(new Node{*it,tail});
-            else {
-                if(tail) {
-                    n->tail = true;
-                    return;
-                }
-                insert(str_begin + 1,str_end,*n);
-            }
-        }
-    }
-
-    int count(const string& s) {
-        return count(s.begin(),s.end());
-    }
-
-    int count(string::const_iterator str_begin,string::const_iterator str_end) {
-        for(auto it = str_begin;it != str_end;it++) {
-            auto n = find_if(nodes.begin(),nodes.end(),[&](const Node& node){return node.c == *it;});
-            if(n == nodes.end())
-                break;
-            else {
-                if(str_end - str_begin == 1)
-                    return 1;
-                return 1 + count(str_begin + 1,str_end,*n);
-            }
-        }
-        return 0;
-    }
-
-private:
-    void insert(const string::const_iterator& str_begin,const string::const_iterator& str_end,Node& node) {
-        bool tail = (str_end - str_begin == 1);
-        for(auto it = str_begin;it != str_end;it++) {
-            auto n = find_if(node.sons.begin(),node.sons.end(),[&](const Node& node){return node.c == *it;});
-            if(n == node.sons.end()) {
-                node.sons.emplace_back(new Node{*it},tail);
-            }
-            else {
-                if(tail) {
-                    (*n)->tail = true;
-                    return;
-                }
-                insert(str_begin + 1,str_end,**n);
-            }
-        }
-    }
-
-    int count(const string::const_iterator& str_begin,const string::const_iterator& str_end,Node& node) {
-        for(auto it = str_begin;it != str_end;it++) {
-            auto n = find_if(node.sons.begin(),node.sons.end(),[&](const Node& node){return node.c == *it;});
-            if(n == node.sons.end())
-                break;
-            else {
-                if(str_end - str_begin == 1)
-                    return 1;
-                return 1 + count(str_begin + 1,str_end,**n);
-            }
-        }
-        return 0;
-    }
-};
-
-#else
-
-const size_t CHAR_SIZE = 52;// a-z A-Z 0-9
+const size_t CHAR_SIZE = 63;// a-z A-Z 0-9
 
 struct TrieNode {
     vector<TrieNode*> children;
@@ -114,10 +24,14 @@ TrieNode root;
 int nodeCount = 0;
 
 int get_index(char c) {
-    if(c > '0' && c < '9') {
+    if(c >= 'a' && c <= 'z') {
+        return c - 'a';
+    } else if(c >= 'A' && c <= 'Z') {
+        return c - 'A' + 26;
+    } else if(c >= '0' && c <= '9') {
         return c - '0' + 52;
     }
-    return c - 'a';
+    return -1; // 返回-1表示输入的字符无效
 }
 
 void insert(TrieNode* node, const string& word) {
@@ -160,15 +74,13 @@ int count(TrieNode* node, const string& word) {
     for (const auto& ch : word) {
         int index = get_index(ch);
         if (!node->children[index]) {
-            return false;
+            return 0;
         }
         node = node->children[index];
     }
-    // search all children
-    return count(node);
+    // Only count the node if it is the end of a word
+    return node->tail ? count(node) : 0;
 }
-
-#endif
 
 int main() {
     ios::sync_with_stdio(false);
