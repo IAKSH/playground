@@ -1,5 +1,5 @@
 // https://www.luogu.com.cn/problem/P8306
-// 怎么还是炸了？
+// 怎么还是炸了？？
 // 暂存
 
 #include <bits/stdc++.h>
@@ -9,114 +9,120 @@ using namespace std;
 // 字典树在查找上只比哈希表节约一些内存吧，除此之外啥也不是
 // 但是字典树能做前缀匹配，哈希表不能
 
-// 支持A-Z a-z 0-9的基于数组的字典树
-struct Trie {
+// 支持A-Z a-z 0-9的字典树
+// 因为是打比赛用的，所以没有delete
+class Trie {
 private:
     struct TrieNode {
-    int children[62];
-    bool is_end;
+        TrieNode* children[62];
+        bool isEndOfWord;
         TrieNode() {
-            memset(children, -1, sizeof(children));
+            isEndOfWord = false;
+            for (int i = 0; i < 62; i++)
+                children[i] = nullptr;
         }
     };
 
+    int charToInt(char c) {
+        if(c >= 'A' && c <= 'Z')
+            return c - 'A';
+        if(c >= 'a' && c <= 'z')
+            return c - 'a' + 26;
+        if(c >= '0' && c <= '9')
+            return c - '0' + 52;
+        return -1;
+    }
+
+    int countWords(TrieNode* node) {
+        if (!node)
+            return 0;
+        int count = 0;
+        if (node->isEndOfWord)
+            count++;
+        for (int i = 0; i < 62; i++)
+            if (node->children[i])
+                count += countWords(node->children[i]);
+        return count;
+    }
+
+    char intToChar(int i) {
+        if(i >= 0 && i < 26)
+            return 'A' + i;
+        if(i >= 26 && i < 52)
+            return 'a' + (i - 26);
+        if(i >= 52 && i < 62)
+            return '0' + (i - 52);
+        return ' ';
+    }
+
+    void findAllWords(TrieNode* node, string &match, vector<string> &matches) {
+        if (node->isEndOfWord)
+            matches.push_back(match);
+        for (int i = 0; i < 62; i++) {
+            if (node->children[i]) {
+                match.push_back(intToChar(i));
+                findAllWords(node->children[i], match, matches);
+                match.pop_back();
+            }
+        }
+    }
+
 public:
-    vector<TrieNode> nodes;
+    TrieNode* root;
 
     Trie() {
-        nodes.push_back(TrieNode());
+        root = new TrieNode();
     }
 
-    void insert(const string& str) {
-        int nodeIndex = 0;
-        for (char c : str) {
-            int index = getIndex(c);
-            if (nodes[nodeIndex].children[index] == -1) {
-                nodes[nodeIndex].children[index] = nodes.size();
-                nodes.push_back(TrieNode());
-            }
-            nodeIndex = nodes[nodeIndex].children[index];
+    void insert(const string &word) {
+        TrieNode* node = root;
+        for (char c : word) {
+            int index = charToInt(c);
+            if (!node->children[index])
+                node->children[index] = new TrieNode();
+            node = node->children[index];
         }
-        nodes[nodeIndex].is_end = true;
+        node->isEndOfWord = true;
     }
 
-    bool search(const string& str) {
-        int nodeIndex = 0;
-        for (char c : str) {
-            int index = getIndex(c);
-            if (nodes[nodeIndex].children[index] == -1) {
+    bool search(const string &word) {
+        TrieNode* node = root;
+        for (char c : word) {
+            int index = charToInt(c);
+            if (!node->children[index])
                 return false;
-            }
-            nodeIndex = nodes[nodeIndex].children[index];
+            node = node->children[index];
         }
-        return nodes[nodeIndex].is_end;
+        return node != nullptr && node->isEndOfWord;
     }
 
-    int prefixCount(const string& str) {
-        int nodeIndex = 0;
-        for (char c : str) {
-            int index = getIndex(c);
-            if (nodes[nodeIndex].children[index] == -1) {
+    int prefixCount(const string &prefix) {
+        TrieNode* node = root;
+        for (char c : prefix) {
+            int index = charToInt(c);
+            if (!node->children[index])
                 return 0;
-            }
-            nodeIndex = nodes[nodeIndex].children[index];
+            node = node->children[index];
         }
-        return countWords(nodeIndex);
+        return countWords(node);
     }
 
-    vector<string> prefixMatch(const string& str) {
+    vector<string> prefixMatch(const string &prefix) {
         vector<string> matches;
-        int nodeIndex = 0;
-        string prefix = "";
-        for (char c : str) {
-            int index = getIndex(c);
-            if (nodes[nodeIndex].children[index] == -1) {
+        TrieNode* node = root;
+        string match;
+        for (char c : prefix) {
+            int index = charToInt(c);
+            if (!node->children[index])
                 return matches;
-            }
-            nodeIndex = nodes[nodeIndex].children[index];
-            prefix += c;
-            collectWords(nodeIndex, prefix, matches);
+            node = node->children[index];
+            match.push_back(c);
         }
+        findAllWords(node, match, matches);
         return matches;
     }
-
-private:
-    int getIndex(char c) {
-        if(c >= 'A' && c <= 'Z') {
-            return c - 'A';
-        } else if(c >= 'a' && c <= 'z') {
-            return c - 'a' + 26;
-        } else if(c >= '0' && c <= '9') {
-            return c - '0' + 52;
-        }
-        return -1; // 返回-1表示输入的字符无效
-    }
-
-    int countWords(int nodeIndex) {
-        int result = 0;
-        if (nodes[nodeIndex].is_end) {
-            result++;
-        }
-        for (int i = 0; i < 62; i++) {
-            if (nodes[nodeIndex].children[i] != -1) {
-                result += countWords(nodes[nodeIndex].children[i]);
-            }
-        }
-        return result;
-    }
-
-    void collectWords(int nodeIndex, const string& prefix, vector<string>& matches) {
-        if (nodes[nodeIndex].is_end) {
-            matches.push_back(prefix);
-        }
-        for (int i = 0; i < 62; i++) {
-            if (nodes[nodeIndex].children[i] != -1) {
-                char c = i < 26 ? 'A' + i : (i < 52 ? 'a' + i - 26 : '0' + i - 52);
-                collectWords(nodes[nodeIndex].children[i], prefix + c, matches);
-            }
-        }
-    }
 };
+
 
 int main() {
     ios::sync_with_stdio(false);
