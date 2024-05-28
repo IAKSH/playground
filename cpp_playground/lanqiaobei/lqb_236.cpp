@@ -58,21 +58,26 @@ int main() {
         }
     }
 
-    map<int,int> mx;// mx[i] => x = i线上的点数
-    map<int,int> my;// my[i] => y = i线上的点数
+    unordered_map<int,int> mx;// mx[i] => x = i线上的点数
+    unordered_map<int,int> my;// my[i] => y = i线上的点数
 
     for(t = 0; t < 1000; ++t) {
         mx.clear();
         my.clear();
         for(i = 1; i <= n; ++i) {
             // 还有这种操作？
+            // 好吧，这种事情确实适合map来做，需要不定上限的下标
+            // 就算不用map，也得自己实现一个类似的东西
+            // 或者可以自己包装一个pair之类的，first存索引，second存数据。（等等，这不就是map吗？！）
+            // 虽然这样的话可以用线性表来存，在一定数据量下也许会更快？
+            // 但是语法上还是不如直接用map
             ++mx[a[i].x + a[i].v * t * dx[a[i].d]];
             ++my[a[i].y + a[i].v * t * dy[a[i].d]];
         }
 
-        for(auto p : mx)
+        for(const auto& p : mx)
             max_cnt = max(max_cnt, p.second);
-        for(auto p : my)
+        for(const auto& p : my)
             max_cnt = max(max_cnt, p.second);
     }
 
