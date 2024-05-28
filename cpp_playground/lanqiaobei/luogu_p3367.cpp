@@ -1,5 +1,5 @@
 // https://www.luogu.com.cn/problem/P3367
-// 递归查并集 + 路径压缩
+// 递归并查集 + 路径压缩
 // AC
 
 // 一个还不错的题解
