@@ -1,9 +1,6 @@
 // https://www.lanqiao.cn/problems/2193/learning/?page=8&first_category_id=1&second_category_id=3&tags=%E5%9B%BD%E8%B5%9B&sort=pass_rate&asc=0
-// 实际上不用字符串（用字符串会非常低效）
-// 解决方案是在dfs之前给n扩一位来进行保护，只要记录之前的位数以及计算max的时候减回来就行了
-// 用了long long还是有几个爆了，而且快速幂都搬上来了还是有超时
-// 看来得剪枝
-// 50%
+// nmd，还得贪心
+// 暂存
 
 #include <bits/stdc++.h>
 
@@ -23,23 +20,22 @@ long long quick_power(long long a, long long b,long long c = LONG_LONG_MAX) {
     return res % c;
 }
 
-long long opA(long long x,int ind) {
+int getAt(long long x,int ind) {
     int val = x;
     for(int i = 0;i < ind;i++)
         val /= 10;
-    val %= 10;
-    if(val == 9)
+    return val % 10;
+}
+
+long long opA(long long x,int ind) {
+    if(getAt(x,ind) == 9)
         return x - 9 * quick_power(10,ind);
     else
         return x + quick_power(10,ind);
 }
 
 long long opB(long long x,int ind) {
-    int val = x;
-    for(int i = 0;i < ind;i++)
-        val /= 10;
-    val %= 10;
-    if(val == 0)
+    if(getAt(x,ind) == 0)
         return x + 9 * quick_power(10,ind);
     else
         return x - quick_power(10,ind);
@@ -51,10 +47,34 @@ void dfs(long long x,int ind,bool op,int cur_a,int cur_b) {
     else
         max_res = max(max_res,(x = opB(x,ind)) - offset);
     for(int i = 0;i < m;i++) {
-        if(cur_a)
-            dfs(x,i,true,cur_a - 1,cur_b);
-        if(cur_b)
-            dfs(x,i,false,cur_a,cur_b - 1);
+        if(cur_a) {
+            int val = getAt(x,i);
+            if(val + cur_a >= 9) {
+                // 可以则尝试直接拉到最大(9)
+                int da = 9 - val;
+                cur_a -= da;
+                for(int j = 0;j < da;j++)
+                    x = opA(x,i);
+            }
+            else {
+                // 否则一个一个找
+                dfs(x,i,true,cur_a - 1,cur_b);
+            }
+        }
+        if(cur_b) {
+            int val = getAt(x,i);
+            if(val - cur_b <= -1) {
+                // 可以则尝试直接拉到最大(9)
+                int db = val + 1;
+                cur_b -= db;
+                for(int j = 0;j < db;j++)
+                    x = opB(x,i);
+            }
+            else {
+                // 否则一个一个找
+                dfs(x,i,false,cur_a,cur_b - 1);
+            }
+        }
     }
 }
 
