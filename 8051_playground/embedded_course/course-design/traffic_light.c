@@ -1,4 +1,5 @@
 #include <reg51.h>
+#include <intrins.h>
 
 #define S7D2_DATA_PORT (P2)
 #define S7D2_CS_PORT (P0)
@@ -7,8 +8,8 @@
 const unsigned char S7D2_DATA_MAP[10] = {
 	0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f};
 
-char ew_duration[3] = {30,30,3};// {30,30,3}
-char sn_duration[3] = {30,30,3};
+char ew_duration[3] = {33,30,3};// {30,30,3}
+char sn_duration[3] = {33,30,3};
 
 char ew_current_state = 0;// 0,1,2: red,green,yellow
 char ew_current_duration;
@@ -92,9 +93,9 @@ void sn_led_update() {
 }
 
 void update_ew_state() {
-	if(--ew_current_duration == -1) {
+	if(--ew_current_duration == 0) {
 		P0 = !P0;
-		if((ew_current_state == 0 && (sn_current_state == 1 || (sn_current_state == 2 && sn_current_duration != 0)))) {
+		if((ew_current_state == 0 && (sn_current_state == 1 || (sn_current_state == 2 && sn_current_duration != 1)))) {
 			++ew_current_duration;
 			return;
 		}
@@ -105,7 +106,7 @@ void update_ew_state() {
 }
 
 void update_sn_state() {
-	if(--sn_current_duration == -1) {
+	if(--sn_current_duration == 0) {
 		// can't add && ew_current_duration != 0 here for some reason that I don't know yet
 		// or it will cause sync fall at every second yellow light
 		if(sn_current_state == 0 && (ew_current_state == 1 || ew_current_state == 2)) {
@@ -134,26 +135,44 @@ void t0_irs() interrupt 1 {
 	}
 }
 
+bit et0_state = 0;
+bit et1_state = 1;
+
 void et0_irs() interrupt 0 {
-	ew_duration[0] = 40;
-	ew_duration[1] = 20;
-	sn_duration[0] = 20;
-	sn_duration[1] = 40;
+	if(et0_state == 1) {
+		ew_duration[0] = 40;
+		ew_duration[1] = 20;
+		sn_duration[0] = 20;
+		sn_duration[1] = 40;
+	}
+	else {
+		ew_duration[0] = 20;
+		ew_duration[1] = 40;
+		sn_duration[0] = 40;
+		sn_duration[1] = 20;
+	}
+	et0_state = !et0_state;
 }
 
 void et1_irs() interrupt 2 {
-	ew_duration[0] = 20;
-	ew_duration[1] = 40;
-	sn_duration[0] = 40;
-	sn_duration[1] = 20;
+	ew_current_state = et1_state;
+	sn_current_state = !et1_state;
+
+	ew_led_update();
+	sn_led_update();
+
+	ew_current_duration = ew_duration[ew_current_state];
+	sn_current_duration = sn_duration[sn_current_state];
+
+	et1_state = !et1_state;
 }
 
 //12MHz
-void delay10ms() {
+void delay1ms() {
 	unsigned char i, j;
 
-	i = 20;
-	j = 113;
+	i = 2;
+	j = 239;
 	do {
 		while (--j);
 	} while (--i);
@@ -162,19 +181,18 @@ void delay10ms() {
 void update_ew_s7d2() {
 	S7D2_CS_PORT = 0xfd;
 	S7D2_DATA_PORT = S7D2_DATA_MAP[ew_current_duration % 10];
-	delay10ms();
+	delay1ms();
 	S7D2_CS_PORT = 0xfe;
 	S7D2_DATA_PORT = S7D2_DATA_MAP[ew_current_duration / 10];
-	delay10ms();
+	delay1ms();
 }
-
 void update_sn_s7d2() {
-	S7D2_CS_PORT = 0xf7;
-	S7D2_DATA_PORT = S7D2_DATA_MAP[sn_current_duration % 10];
-	delay10ms();
 	S7D2_CS_PORT = 0xfb;
 	S7D2_DATA_PORT = S7D2_DATA_MAP[sn_current_duration / 10];
-	delay10ms();
+	delay1ms();
+	S7D2_CS_PORT = 0xf7;
+	S7D2_DATA_PORT = S7D2_DATA_MAP[sn_current_duration % 10];
+	delay1ms();
 }
 
 void main() {
