@@ -1,0 +1,4 @@
+FROM openjdk:17-jdk-alpine
+WORKDIR /app
+COPY build/libs/springboot-speedrun-0.0.1-SNAPSHOT.jar /app/springboot-speedrun.jar
+ENTRYPOINT ["java", "-jar", "/app/springboot-speedrun.jar"]

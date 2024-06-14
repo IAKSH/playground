@@ -1,0 +1,20 @@
+version: '3'
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: myDatabase
+      POSTGRES_USER: myUser
+      POSTGRES_PASSWORD: myPassword
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+  app:
+    build: .
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/myDatabase
+      SPRING_DATASOURCE_USERNAME: myUser
+      SPRING_DATASOURCE_PASSWORD: myPassword
+    ports:
+      - 8080:8080
