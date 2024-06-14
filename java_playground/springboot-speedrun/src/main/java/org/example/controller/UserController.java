@@ -42,9 +42,9 @@ public class UserController {
         }
     }
 
-    @GetMapping("/without-orm/{id}")
-    public ResponseEntity<List<Map<String,Object>>> getUserByIdWithoutORM() {
-        String sql = "SELECT * FROM user";
+    @GetMapping("/without-orm")
+    public ResponseEntity<List<Map<String,Object>>> getAllUsersWithoutORM() {
+        String sql = "SELECT * FROM users";
         List<Map<String,Object>> res = jdbcTemplate.queryForList(sql);
         return ResponseEntity.ok(res);
     }
