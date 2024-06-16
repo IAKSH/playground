@@ -51,28 +51,28 @@ dependencies {
 
 3. 更新 Gradle 配置，现在你应该已经拥有 SpringBoot 了，可以尝试以下代码来测试
 ```java
-package org.example;  
-  
-import org.springframework.boot.SpringApplication;  
-import org.springframework.boot.autoconfigure.SpringBootApplication;  
-import org.springframework.web.bind.annotation.RequestMapping;  
-import org.springframework.web.bind.annotation.RestController;  
-  
-@RestController  
-@SpringBootApplication  
-public class MyApplication {  
-  
-    private int i = 0;  
-  
-    @RequestMapping("/")  
-    String home() {  
-        return "Hello World! " + (++i);  
-    }  
-  
-    public static void main(String[] args) {  
-        SpringApplication.run(MyApplication.class, args);  
-    }  
-  
+package org.example;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@SpringBootApplication
+public class MyApplication {
+
+    private int i = 0;
+
+    @RequestMapping("/")
+    String home() {
+        return "Hello World! " + (++i);
+    }
+
+    public static void main(String[] args) {
+        SpringApplication.run(MyApplication.class, args);
+    }
+
 }
 ```
 
@@ -97,17 +97,17 @@ public class MyApplication {
 SpringBoot 需要一个用来配置和启动整个程序的类，通过 SpringApplication 注解来标记这个类。在上面的例子中，我们直接使用一个 Controller 兼职 SpringApplication，但是 SpringApplication 也可以是独立的。
 
 ```java
-package org.example;  
-  
-import org.springframework.boot.SpringApplication;  
-import org.springframework.boot.autoconfigure.SpringBootApplication;  
-  
-@SpringBootApplication  
-public class Application {  
-    public static void main(String[] args) {  
-        System.out.println("Hello SpringBoot!");  
-        SpringApplication.run(Application.class, args);  
-    }  
+package org.example;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        System.out.println("Hello SpringBoot!");
+        SpringApplication.run(Application.class, args);
+    }
 }
 ```
 
@@ -116,20 +116,20 @@ public class Application {
 然后其他的 Controller 就还是照常写。
 
 ```java
-package org.example;  
-  
-import org.springframework.web.bind.annotation.RequestMapping;  
-import org.springframework.web.bind.annotation.RestController;  
-  
-@RestController  
-public class HelloController {  
-  
-    private int i = 0;  
-  
-    @RequestMapping("/hello")  
-    String sayHello() {  
-        return "Hello World! " + (++i);  
-    }  
+package org.example;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class HelloController {
+
+    private int i = 0;
+
+    @RequestMapping("/hello")
+    String sayHello() {
+        return "Hello World! " + (++i);
+    }
 }
 ```
 
@@ -140,67 +140,67 @@ public class HelloController {
 这里实际上就还是 Spring MVC 的内容，SpringBoot 不过是简化了 Bean 还有依赖的配置。
 
 ```java
-package org.example;  
-  
-import com.fasterxml.jackson.core.JsonProcessingException;  
-import com.fasterxml.jackson.databind.ObjectMapper;  
-import org.springframework.web.bind.annotation.*;  
-  
-import java.util.HashMap;  
-import java.util.Map;  
-  
-@RestController  
-public class HelloController {  
-  
-    private int i = 0;  
-  
-    @RequestMapping("/hello")  
-    String sayHello() {  
-        return "Hello World! " + (++i);  
-    }  
-  
-    @RequestMapping("/hello/{name}")  
-    String sayHello(@PathVariable String name) {  
-        return "Hello " + name + "!";  
-    }  
-  
-    @GetMapping(value = "/json/{id}",  
-            produces = "application/json;charset=UTF-8")  
-    public String testHttpGet(@PathVariable Long id) throws JsonProcessingException {  
-        Map<String,Object> map=new HashMap<>();  
-        map.put("name","aihao");  
-        map.put("age",23);  
-        map.put("gender","男");  
-        map.put("received_id",id);  
-        ObjectMapper mapper = new ObjectMapper();  
-        return mapper.writeValueAsString(map);  
-    }  
-  
-    @PostMapping(value = "/json/post",  
-            consumes = "application/json;charset=UTF-8",  
-            produces = "application/json;charset=UTF-8")  
-    @ResponseBody  
-    public String testHttpPost(@RequestBody String strStaff) throws JsonProcessingException {  
-        ObjectMapper mapper = new ObjectMapper();  
-        return mapper.readValue(strStaff, Map.class).toString();  
-    }  
-  
-    @PutMapping(value = "/json/put",  
-            consumes = "application/json;charset=UTF-8",  
-            produces = "application/json;charset=UTF-8")  
-    @ResponseBody  
-    public String testHttpPut(@RequestBody String strStaff) throws JsonProcessingException {  
-        ObjectMapper mapper = new ObjectMapper();  
-        return mapper.readValue(strStaff, Map.class).toString();  
-    }  
-  
-    @DeleteMapping(value = "/json/delete/{id}",  
-            produces = "application/json;charset=UTF-8")  
-    @ResponseBody  
-    public String testHttpDelete(@RequestBody String strStaff) throws JsonProcessingException {  
-        ObjectMapper mapper = new ObjectMapper();  
-        return mapper.readValue(strStaff, Map.class).toString();  
-    }  
+package org.example;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@RestController
+public class HelloController {
+
+    private int i = 0;
+
+    @RequestMapping("/hello")
+    String sayHello() {
+        return "Hello World! " + (++i);
+    }
+
+    @RequestMapping("/hello/{name}")
+    String sayHello(@PathVariable String name) {
+        return "Hello " + name + "!";
+    }
+
+    @GetMapping(value = "/json/{id}",
+            produces = "application/json;charset=UTF-8")
+    public String testHttpGet(@PathVariable Long id) throws JsonProcessingException {
+        Map<String,Object> map=new HashMap<>();
+        map.put("name","aihao");
+        map.put("age",23);
+        map.put("gender","男");
+        map.put("received_id",id);
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(map);
+    }
+
+    @PostMapping(value = "/json/post",
+            consumes = "application/json;charset=UTF-8",
+            produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String testHttpPost(@RequestBody String strStaff) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(strStaff, Map.class).toString();
+    }
+
+    @PutMapping(value = "/json/put",
+            consumes = "application/json;charset=UTF-8",
+            produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String testHttpPut(@RequestBody String strStaff) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(strStaff, Map.class).toString();
+    }
+
+    @DeleteMapping(value = "/json/delete/{id}",
+            produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String testHttpDelete(@RequestBody String strStaff) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(strStaff, Map.class).toString();
+    }
 }
 ```
 
@@ -215,8 +215,8 @@ public class HelloController {
 ```java
 @Component
 public class MyBean {
-	@Value("${name}") private String name;
-	// ...
+    @Value("${name}") private String name;
+    // ...
 }
 ```
 
@@ -231,19 +231,19 @@ java -jar app.jar --name="Spring"
 命令行的属性配置总是优先于基于文件的，但是命令行配置可以被手动关闭：
 
 ```java
-package org.example;  
-  
-import org.springframework.boot.SpringApplication;  
-import org.springframework.boot.autoconfigure.SpringBootApplication;  
-  
-@SpringBootApplication  
-public class Application {  
-  
-    public static void main(String[] args) {  
-        SpringApplication app = new SpringApplication(Application.class);  
-        app.setAddCommandLineProperties(false);  
-        app.run(args);  
-    }  
+package org.example;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class Application {
+
+    public static void main(String[] args) {
+        SpringApplication app = new SpringApplication(Application.class);
+        app.setAddCommandLineProperties(false);
+        app.run(args);
+    }
 }
 ```
 ## 外部配置文件 `application.properties/yaml `
@@ -660,7 +660,7 @@ dependencies {
 
 [JWT block record in Redis delete when JWT is outdated · IAKSH/playground@46a74e1 (github.com)](https://github.com/IAKSH/playground/commit/46a74e128f033905979cfee0729742e4fbf37da6)
 
-# Websocket 集成 - TODO
+# Websocket 集成
 
 参考：
 +  [Spring Boot 集成 WebSocket（原生注解与Spring封装）_springboot集成websocket-CSDN博客](https://blog.csdn.net/qq991658923/article/details/127022522)
@@ -671,3 +671,5 @@ dependencies {
 实际上疑似有点过于简单了，由于 websocket 本来就是再 jakarta 里包了一遍的，spring 也有给相应的 starter，所以编写和使用起来异常无脑
 
 [websocket · IAKSH/playground@45aa93b (github.com)](https://github.com/IAKSH/playground/commit/45aa93baafa1baf0cc9feb82adbba3927294c202)
+
+# 测试 TODO
