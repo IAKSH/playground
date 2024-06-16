@@ -1,7 +1,5 @@
-package org.example.controller;
+package org.example.security;
 
-import org.example.security.JwtRedisLogoutService;
-import org.example.security.JwtService;
 import org.example.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
