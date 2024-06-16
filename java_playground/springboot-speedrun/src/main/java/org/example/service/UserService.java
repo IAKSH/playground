@@ -7,8 +7,12 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
+    private final UserMapper userMapper;
+
     @Autowired
-    private UserMapper userMapper;
+    public UserService(UserMapper userMapper) {
+        this.userMapper = userMapper;
+    }
 
     public User getUser(Long id) {
         return userMapper.getUser(id);

@@ -70,7 +70,7 @@ public class SecruityConfig {
     { return authenticationConfiguration.getAuthenticationManager();}
 
     @Bean
-    public PasswordEncoder passwordEncoder()
-    { return new PlainTextPasswordEncoder(); }
-
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 }

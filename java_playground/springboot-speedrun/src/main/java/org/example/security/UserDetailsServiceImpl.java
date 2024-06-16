@@ -26,7 +26,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         if (user == null) {
             throw new UsernameNotFoundException("Could not find user");
         }
-        // 两个参数分别是用户名和密码
-        return new org.springframework.security.core.userdetails.User(user.getName(), user.getEmail(), new ArrayList<>());
+        return new org.springframework.security.core.userdetails.User(user.getName(), user.getPassword(), new ArrayList<>());
     }
 }

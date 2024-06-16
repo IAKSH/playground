@@ -28,8 +28,8 @@ public class JwtAuthenticationController {
     public ResponseEntity<?> createAuthenticationToken(@RequestBody User authenticationRequest) throws Exception {
         try {
             authenticationManager.authenticate(
-                    // 两个参数分别是用户名和密码
-                    new UsernamePasswordAuthenticationToken(authenticationRequest.getName(),authenticationRequest.getEmail())
+                    // 使用用户的密码进行认证
+                    new UsernamePasswordAuthenticationToken(authenticationRequest.getName(),authenticationRequest.getPassword())
             );
         } catch (Exception e) {
             throw new Exception("Incorrect username or password", e);
