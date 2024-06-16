@@ -43,17 +43,11 @@ public class SecruityConfig {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers(
-                                        /*
-                                        "/error/**",
-                                        "/api/register",             //用戶註冊
-                                        "/api/register/check",       //用戶註冊確認
-                                        "/api/auth",                 //用戶登入
-                                        "/api/password/forgot",      //忘記密碼
-                                        "/api/verification/send",    //發送驗證碼
-                                        "/api/verification/check"   //檢查驗證碼
-                                         */
-                                    "/auth"
+                                        "/auth"
                                 ).permitAll()
+                                .requestMatchers(
+                                        "/users/**"
+                                ).hasAuthority("ADMIN")
                                 // 其他路徑需要認證
                                 .anyRequest().authenticated()
                 )
