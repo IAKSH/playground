@@ -36,7 +36,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .map(role -> new SimpleGrantedAuthority(role.getName())) // 不要添加 "ROLE_" 前缀
                 .collect(Collectors.toList());
 
-        System.out.println(authorities);
         return new org.springframework.security.core.userdetails.User(user.getName(), user.getPassword(), authorities);
     }
 }
