@@ -8,6 +8,9 @@ public interface UserMapper {
     @Select("SELECT * FROM users WHERE id = #{id}")
     User getUser(Long id);
 
+    @Select("SELECT * FROM users WHERE name=#{name}")
+    User getUserByName(String name);
+
     @Insert("INSERT INTO users (name, age, email) VALUES (#{name}, #{age}, #{email})")
     int insertUser(User user);
 

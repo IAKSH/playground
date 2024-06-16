@@ -1,11 +1,11 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.2.0-SNAPSHOT'
+    id 'org.springframework.boot' version '3.2.3'
 }
 
 apply plugin: 'io.spring.dependency-management'
 
-group = 'com.example'
+group = 'org.example'
 version = '0.0.1-SNAPSHOT'
 
 repositories {
@@ -15,12 +15,15 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-security:3.2.3'
+    implementation 'org.springframework.boot:spring-boot-starter-web:3.2.3'
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
     implementation 'org.postgresql:postgresql'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.2.3'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:3.2.3'
+    implementation 'io.jsonwebtoken:jjwt:0.12.5'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
-    developmentOnly("org.springframework.boot:spring-boot-docker-compose")
+    //developmentOnly("org.springframework.boot:spring-boot-docker-compose")
+    testImplementation 'org.springframework.security:spring-security-test:3.2.3'
 }
