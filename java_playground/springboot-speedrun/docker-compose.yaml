@@ -2,19 +2,30 @@ version: '3'
 services:
   db:
     image: postgres:13
+    ports:
+      - 5432:5432
     environment:
       POSTGRES_DB: myDatabase
       POSTGRES_USER: myUser
       POSTGRES_PASSWORD: myPassword
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+  redis:
+    container_name: 'redis'
+    image: redis:7.0-alpine
+    ports:
+      - 6379:6379
+    volumes:
+      - ./redis.conf:/etc/redis/redis.conf
+    command: ["redis-server","/etc/redis/redis.conf"]
   app:
     build: .
+    ports:
+      - 8080:8080
     depends_on:
       - db
+      - redis
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/myDatabase
       SPRING_DATASOURCE_USERNAME: myUser
       SPRING_DATASOURCE_PASSWORD: myPassword
-    ports:
-      - 8080:8080

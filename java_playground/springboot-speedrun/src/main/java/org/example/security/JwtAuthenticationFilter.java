@@ -28,11 +28,13 @@ import java.util.stream.Collectors;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService ;
+    private final JwtRedisLogoutService jwtRedisLogoutService;
     private final UserDetailsServiceImpl userDetailsService ;
 
     @Autowired
-    public JwtAuthenticationFilter(JwtService jwtService, UserDetailsServiceImpl userDetailsService) {
+    public JwtAuthenticationFilter(JwtService jwtService, JwtRedisLogoutService jwtRedisLogoutService, UserDetailsServiceImpl userDetailsService) {
         this.jwtService = jwtService;
+        this.jwtRedisLogoutService = jwtRedisLogoutService;
         this.userDetailsService = userDetailsService;
     }
 
@@ -46,6 +48,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String jwt = authHeader.substring(7); //从索引7开始取 "Bearer " 后面的Token
+
+            if (jwtRedisLogoutService.isTokenBlacklisted(jwt)) {
+                throw new ServletException("This token is blacklisted.");
+            }
 
             try {
                 Claims claims = jwtService.extractAllClaims(jwt);

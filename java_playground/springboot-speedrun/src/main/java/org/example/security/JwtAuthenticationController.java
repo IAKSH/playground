@@ -1,5 +1,6 @@
 package org.example.controller;
 
+import org.example.security.JwtRedisLogoutService;
 import org.example.security.JwtService;
 import org.example.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +17,14 @@ public class JwtAuthenticationController {
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
     private final JwtService jwtService;
+    private final JwtRedisLogoutService jwtRedisLogoutService;
 
     @Autowired
-    public JwtAuthenticationController(AuthenticationManager authenticationManager, UserDetailsService userDetailsService, JwtService jwtService) {
+    public JwtAuthenticationController(AuthenticationManager authenticationManager, UserDetailsService userDetailsService, JwtService jwtService, JwtRedisLogoutService jwtRedisLogoutService) {
         this.authenticationManager = authenticationManager;
         this.userDetailsService = userDetailsService;
         this.jwtService = jwtService;
+        this.jwtRedisLogoutService = jwtRedisLogoutService;
     }
 
     @PostMapping("/auth")
@@ -41,5 +44,15 @@ public class JwtAuthenticationController {
         final String jwt = jwtService.generateToken(userDetails);
 
         return ResponseEntity.ok(jwt);
+    }
+
+    @PostMapping("/auth/logout")
+    public ResponseEntity<?> logout(@RequestHeader("Authorization") String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String jwt = authHeader.substring(7); //从索引7开始取 "Bearer " 后面的Token
+            jwtRedisLogoutService.addTokenToBlacklist(jwt);
+        }
+
+        return ResponseEntity.ok().build();
     }
 }
