@@ -1,0 +1,17 @@
+spring:
+  profiles:
+    include:
+      - security
+      - hello
+  port: 8080
+  tomcat:
+      uri-encoding: utf-8
+  datasource:
+    url: jdbc:postgresql://192.168.1.110:5432/myDatabase
+    username: myUser
+    password: myPassword
+  data:
+    redis:
+      host: 192.168.1.110
+      port: 6379
+      password: myredis

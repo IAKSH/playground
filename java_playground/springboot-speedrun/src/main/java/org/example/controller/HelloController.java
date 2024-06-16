@@ -11,7 +11,7 @@ import java.util.Map;
 @RestController
 public class HelloController {
 
-    @Value("${i_init_val}")
+    @Value("${hello.i}")
     private int i;
 
     @RequestMapping("/hello")

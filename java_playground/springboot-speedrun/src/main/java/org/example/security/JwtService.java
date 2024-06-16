@@ -21,12 +21,12 @@ import java.util.stream.Collectors;
 @Service
 public class JwtService {
     // Token有效期限
-    @Value("${conf.token.expiration}") // 透過文件配置的方式給值，詳細教學在此系列的第7天文章
+    @Value("${security.token.expiration}") // 透過文件配置的方式給值，詳細教學在此系列的第7天文章
     private Long EXPIRATION_TIME; //單位ms
     // 上述兩行可以改寫為下面這行
     // private Long EXPIRATION_TIME = 900000L
 
-    @Value("${conf.token.secret}") // 透過文件配置的方式給值
+    @Value("${security.token.secret}") // 透過文件配置的方式給值
     private String SECRET_KEY;
     // 上述兩行可以改寫為下面這行
     // private String SECRET_KEY = "你的私鑰" //在這個範例中我使用的簽名算法為(HS256)"SignatureAlgorithm.HS256"，我們可以透過線上的密碼產生器，產生長度64的任意字元組成的字串。注意!如果你使用的是其他算法，則你需要給定該算法對應的私鑰規則，具體可以上網查詢
