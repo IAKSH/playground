@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test</title>
+    <script>
+        window.onload = function() {
+            // 创建一个新的WebSocket连接
+            var socket = new WebSocket('ws://localhost:8080/chat/websocket');
+
+            // 当连接打开时，发送一条消息
+            socket.onopen = function(event) {
+                socket.send('hello websocket server!');
+            };
+
+            // 当接收到消息时，将其添加到页面
+            socket.onmessage = function(event) {
+                var messageList = document.getElementById('message-list');
+                var messageItem = document.createElement('li');
+                messageItem.textContent = event.data;
+                messageList.appendChild(messageItem);
+            };
+
+            // 当连接关闭时，记录一条消息
+            socket.onclose = function(event) {
+                console.log('connection closed');
+            };
+        };
+    </script>
+</head>
+<body>
+<ul id="message-list"></ul>
+</body>
+</html>

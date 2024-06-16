@@ -37,13 +37,12 @@ public class SecruityConfig {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers(
-                                        "/auth"
-                                ).permitAll()
-                                .requestMatchers(
                                         "/users/**"
                                 ).hasAuthority("ADMIN")
-                                // 其他路徑需要認證
-                                .anyRequest().authenticated()
+                                .requestMatchers(
+                                        "/hello"
+                                ).authenticated()
+                                .anyRequest().permitAll()
                 )
                 .sessionManagement(sessionManagement -> {
                     sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS); // 無狀態
