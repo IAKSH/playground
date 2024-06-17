@@ -9,7 +9,7 @@ const unsigned char S7D2_DATA_MAP[10] = {
 
 #define NIXIETUBE_ORIGINAL_RED (33)
 #define NIXIETUBE_ORIGINAL_GREEN (30)
-#define NIXIETUBE_ORIGINAL_YELLOW (30)
+#define NIXIETUBE_ORIGINAL_YELLOW (3)
 
 char ew_duration[3] = {NIXIETUBE_ORIGINAL_RED,NIXIETUBE_ORIGINAL_GREEN,NIXIETUBE_ORIGINAL_YELLOW};
 char sn_duration[3] = {NIXIETUBE_ORIGINAL_RED,NIXIETUBE_ORIGINAL_GREEN,NIXIETUBE_ORIGINAL_YELLOW};
@@ -125,7 +125,7 @@ void update_ew_state() {
 
 void update_sn_state() {
 	if(!night_mode) {
-			if(--sn_current_duration == 0) {
+		if(--sn_current_duration == 0) {
 			// can't add && ew_current_duration != 0 here for some reason that I don't know yet
 			// or it will cause sync fall at every second yellow light
 			if(sn_current_state == 0 && (ew_current_state == 1 || ew_current_state == 2)) {
