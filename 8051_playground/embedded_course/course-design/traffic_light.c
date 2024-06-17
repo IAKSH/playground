@@ -65,44 +65,15 @@ void sn_led_toggle() {
 }
 
 void ew_led_update() {
-	//LED_PORT |= 0x07;// fill 1 into low 3bit
-	//LED_PORT ^= (0x01 << ew_current_state);// flip a single bit
-	LED_PIN_0 = 1;
-	LED_PIN_1 = 1;
-	LED_PIN_2 = 1;
-	switch(ew_current_state) {
-		case 0:
-			LED_PIN_0 = 0;
-			break;
-		case 1:
-			LED_PIN_1 = 0;
-			break;
-		case 2:
-			LED_PIN_2 = 0;
-			break;
-	}
+	LED_PORT |= 0x07;// fill 1 into low 3bit
+	LED_PORT ^= (0x01 << ew_current_state);// flip a single bit
 }
 
 sbit P1_6 = P1^6;
 
 void sn_led_update() {
-	//LED_PORT |= 0x38;// fill 1 into low 3bit, with 3bit offset
-	//LED_PORT ^= (0x08 << ew_current_state);// flip a single bit, with 3bit offset
-	LED_PIN_3 = 1;
-	LED_PIN_4 = 1;
-	LED_PIN_5 = 1;
-	switch(sn_current_state) {
-		case 0:
-			LED_PIN_3 = 0;
-			break;
-		case 1:
-			LED_PIN_4 = 0;
-			break;
-		case 2:
-			//P1_6 = !P1_6;// cant get here!
-			LED_PIN_5 = 0;
-			break;
-	}
+	LED_PORT |= 0x38;// fill 1 into low 3bit, with 3bit offset
+	LED_PORT ^= (0x08 << sn_current_state);// flip a single bit, with 3bit offset
 }
 
 void update_ew_state() {
