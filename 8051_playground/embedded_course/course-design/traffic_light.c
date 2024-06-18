@@ -120,25 +120,11 @@ void init_button_ite() {
 	IT1 = 1;
 }
 
-bit hypered_key_check_enabled = 0;
+bit hypered_key0_check_enabled = 0;
+bit hypered_key1_check_enabled = 0;
 
 sbit ET0_PIN = P3^2;
-
-	/*
-	if(et0_state == 1) {
-		ew_duration[0] = 40;
-		ew_duration[1] = 20;
-		sn_duration[0] = 20;
-		sn_duration[1] = 40;
-	}
-	else {
-		ew_duration[0] = 20;
-		ew_duration[1] = 40;
-		sn_duration[0] = 40;
-		sn_duration[1] = 20;
-	}
-	et0_state = !et0_state;
-	*/
+sbit ET1_PIN = P3^3;
 
 void set_ew_longger_green() {
 	ew_current_state = 1;
@@ -162,28 +148,54 @@ void set_sn_longger_green() {
 	sn_current_duration = 40;
 }
 
-void t0_irs() interrupt 1 {
-	reload_timer0();
-	++t0_cycle;
-	if(hypered_key_check_enabled && ET0_PIN) {
-		hypered_key_check_enabled = 0;
-		set_ew_longger_green();
-	}
-	if(t0_cycle == 20) {
-		t0_cycle = 0;
-		if(hypered_key_check_enabled) {
-			hypered_key_check_enabled = 0;
-			set_sn_longger_green();
-		}
-		update_ew_state();
-		update_sn_state();
-	}
-}
+unsigned char long_short_duration_mode_state = 0;
 
-// short: reset to 40s(green):43s(red) (won't change original val) 
-// long:  reset to 43s(red):40s(green) (won't change original val)  
-void et0_irs() interrupt 0 {
-	hypered_key_check_enabled = 1;
+void toggle_long_short_duration_mode() {
+	if(long_short_duration_mode_state <= 1) {
+		ew_duration[0] = 99;
+		ew_duration[1] = 96;
+		ew_duration[2] = 3;
+		sn_duration[0] = 99;
+		sn_duration[1] = 96;
+		sn_duration[2] = 3;
+
+		ew_current_state = ((long_short_duration_mode_state & 1) == 0);
+		sn_current_state = ((long_short_duration_mode_state & 1) == 1);
+
+		ew_current_duration = ew_duration[ew_current_state];
+		sn_current_duration = sn_duration[sn_current_state];
+	}
+	else if(long_short_duration_mode_state <= 3){
+		ew_duration[0] = 13;
+		ew_duration[1] = 10;
+		ew_duration[2] = 3;
+		sn_duration[0] = 13;
+		sn_duration[1] = 10;
+		sn_duration[2] = 3;
+
+		ew_current_state = ((long_short_duration_mode_state & 1) == 0);
+		sn_current_state = ((long_short_duration_mode_state & 1) == 1);
+
+		ew_current_duration = ew_duration[ew_current_state];
+		sn_current_duration = sn_duration[sn_current_state];
+	}
+	else {
+		ew_duration[0] = 30;
+		ew_duration[1] = 15;
+		ew_duration[2] = 15;
+		sn_duration[0] = 30;
+		sn_duration[1] = 15;
+		sn_duration[2] = 15;
+
+		ew_current_state = ((long_short_duration_mode_state & 1) == 0);
+		sn_current_state = ((long_short_duration_mode_state & 1) == 1);
+
+		ew_current_duration = ew_duration[ew_current_state];
+		sn_current_duration = sn_duration[sn_current_state];
+	}
+	ew_led_update();
+	sn_led_update();
+	long_short_duration_mode_state = (long_short_duration_mode_state + 1) % 6;
 }
 
 void toggle_night_mode() {
@@ -211,9 +223,42 @@ void toggle_night_mode() {
 	}
 }
 
+void t0_irs() interrupt 1 {
+	reload_timer0();
+	++t0_cycle;
+	if(hypered_key0_check_enabled && ET0_PIN) {
+		hypered_key0_check_enabled = 0;
+		set_ew_longger_green();
+	}
+	if(hypered_key1_check_enabled && ET1_PIN) {
+		hypered_key1_check_enabled = 0;
+		toggle_night_mode();
+	}
+	if(t0_cycle == 20) {
+		t0_cycle = 0;
+		if(hypered_key0_check_enabled) {
+			hypered_key0_check_enabled = 0;
+			set_sn_longger_green();
+		}
+		if(hypered_key1_check_enabled) {
+			hypered_key1_check_enabled = 0;
+			toggle_long_short_duration_mode();
+		}
+		update_ew_state();
+		update_sn_state();
+	}
+}
+
+// short: reset to 40s(green):43s(red) (won't change original val) 
+// long:  reset to 43s(red):40s(green) (won't change original val)  
+void et0_irs() interrupt 0 {
+	hypered_key0_check_enabled = 1;
+}
+
 // short: toggle night mode
+// long: toggle long/short mode (6 cases)
 void et1_irs() interrupt 2 {
-	toggle_night_mode();
+	hypered_key1_check_enabled = 1;
 }
 
 //12MHz
