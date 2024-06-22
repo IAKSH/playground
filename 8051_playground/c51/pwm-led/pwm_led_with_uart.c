@@ -41,7 +41,7 @@ void init_uart() {
     SCON = 0x50;
     ES = 1;
     TR1 = 1;
-    PS = 1;// 提高优先级，防止串口的Timer1被饿死进不了中断
+    PS = 1;// 提高优先级，防止串口的中断被饿死导致进不去或者刚刚进去就被嵌套中断
 }
 
 void uart_send_char(char c) {
