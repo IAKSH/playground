@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API 数据展示</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <table id="dataTable">
+        <tr>
+            <th>From</th>
+            <th>To</th>
+            <th>Message</th>
+        </tr>
+    </table>
+
+    <script>
+        fetch('https://localhost:18080/json')
+            .then(response => response.json())
+            .then(data => {
+                let table = document.getElementById('dataTable');
+                let row = table.insertRow(-1);
+                let cell1 = row.insertCell(0);
+                let cell2 = row.insertCell(1);
+                let cell3 = row.insertCell(2);
+                cell1.innerHTML = data.from;
+                cell2.innerHTML = data.to;
+                cell3.innerHTML = data.message;
+            })
+            .catch(error => console.error('Error:', error));
+    </script>
+</body>
+</html>
