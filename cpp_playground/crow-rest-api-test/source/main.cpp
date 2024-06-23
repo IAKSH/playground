@@ -4,28 +4,38 @@
 
 #include <crow_all.h>
 
-struct AdminAreaGuard
-{
-    struct context
-    {};
+struct AdminAreaGuard {
+    struct context {};
 
-    void before_handle(crow::request& req, crow::response& res, context& ctx)
-    {
-        if (req.remote_ip_address != "192.168.1.110")
-        {
+    void before_handle(crow::request& req, crow::response& res, context& ctx) {
+        if (req.remote_ip_address != "192.168.1.109") {
+            CROW_LOG_WARNING << "none-admin request from " << req.remote_ip_address;
+        }
+    }
+
+    void after_handle(crow::request& req, crow::response& res, context& ctx) {
+        //CROW_LOG_INFO << "middleware after_handle: " << req.body;
+    }
+};
+
+struct LocalAdminAreaGuard : crow::ILocalMiddleware {
+    struct context {};
+
+    void before_handle(crow::request& req, crow::response& res, context& ctx) {
+        if (req.remote_ip_address != "192.168.1.109") {
+            CROW_LOG_WARNING << "kicked connection from " << req.remote_ip_address;
             res.code = 403;
             res.end();
         }
     }
 
-    void after_handle(crow::request& req, crow::response& res, context& ctx)
-    {
-        CROW_LOG_INFO << "middleware after_handle: " << req.body;
+    void after_handle(crow::request& req, crow::response& res, context& ctx) {
+        //CROW_LOG_INFO << "middleware after_handle: " << req.body;
     }
 };
 
 int main() {
-    crow::App<AdminAreaGuard> app;
+    crow::App<AdminAreaGuard, LocalAdminAreaGuard> app;
     // set log level
     //app.loglevel(crow::LogLevel::Warning);
 
@@ -117,7 +127,9 @@ int main() {
     });
 
     // static resource
-    CROW_ROUTE(app, "/sayori")([](){
+    CROW_ROUTE(app, "/sayori")
+    .CROW_MIDDLEWARES(app,LocalAdminAreaGuard)
+    ([](){
         crow::response res;
         res.set_static_file_info("static/Sayori_Sticker_Excited.webp");
         return res;
