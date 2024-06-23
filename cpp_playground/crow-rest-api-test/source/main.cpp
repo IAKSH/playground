@@ -1,5 +1,6 @@
 #define CROW_ENFORCE_WS_SPEC
 #define CROW_ENABLE_SSL
+#define CROW_ENABLE_COMPRESSION
 
 #include <crow_all.h>
 
@@ -21,6 +22,11 @@ int main() {
 
     CROW_ROUTE(app, "/html/ws")([](){
         auto page = crow::mustache::load_text("test_ws.html");
+        return page;
+    });
+
+    CROW_ROUTE(app, "/html/json")([](){
+        auto page = crow::mustache::load_text("test_json.html");
         return page;
     });
 
@@ -132,5 +138,9 @@ int main() {
         return "no page for you!";
     });
 
-    app.ssl_file("./tls/server.crt","./tls/server.key").port(18080).multithreaded().run();
+    app.port(18080)
+        .ssl_file("./tls/server.crt","./tls/server.key")
+        .use_compression(crow::compression::algorithm::GZIP)
+        .multithreaded()
+        .run();
 }
