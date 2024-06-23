@@ -185,6 +185,8 @@ int main() {
         return "no page for you!";
     });
 
+    //crow::mustache::set_global_base("custom_templates");
+
     app.port(18080)
         .ssl_file("./tls/server.crt","./tls/server.key")
         .use_compression(crow::compression::algorithm::GZIP)
