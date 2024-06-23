@@ -3,7 +3,7 @@
 int main() {
     crow::SimpleApp app;
     // set log level
-    app.loglevel(crow::LogLevel::Warning);
+    //app.loglevel(crow::LogLevel::Warning);
 
     // basical
     CROW_ROUTE(app, "/")([](){
@@ -13,6 +13,11 @@ int main() {
     // static html
     CROW_ROUTE(app, "/html")([](){
         auto page = crow::mustache::load_text("index.html");
+        return page;
+    });
+
+    CROW_ROUTE(app, "/html/ws")([](){
+        auto page = crow::mustache::load_text("test_ws.html");
         return page;
     });
 
@@ -26,9 +31,7 @@ int main() {
     // json
     CROW_ROUTE(app, "/json")
     ([]{
-        crow::json::wvalue x({{"message", "Hello, World!"}});
-        x["message2"] = "Hello, World.. Again!";
-        return x;
+        return crow::json::wvalue({{"from","admin"},{"to","you"},{"message","hello!"}});
     });
 
     // with arg
@@ -108,6 +111,19 @@ int main() {
         response += another_key_values["sub_key1"];
         return crow::response(200, response);
     });
+
+    CROW_WEBSOCKET_ROUTE(app, "/ws")
+    .onopen([&](crow::websocket::connection& conn){
+            conn.send_text("hello");
+        })
+    .onclose([&](crow::websocket::connection& conn, const std::string& reason){
+            conn.send_text("bye");
+        })
+    .onmessage([&](crow::websocket::connection& conn, const std::string& data, bool is_binary){
+            conn.send_text(is_binary ? "recieved binary" : "recieved str");
+            conn.send_text(data);
+            CROW_LOG_INFO << "ws: " << data;
+        });
 
     CROW_CATCHALL_ROUTE(app)([](){
         return "no page for you!";

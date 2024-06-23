@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket 测试</title>
+    <script>
+        var ws;
+
+        function connect() {
+            ws = new WebSocket("ws://localhost:18080/ws");
+
+            ws.onopen = function() {
+                console.log("已连接到服务器");
+                ws.send("你好");
+            };
+
+            ws.onmessage = function(event) {
+                console.log("从服务器接收到消息: " + event.data);
+            };
+
+            ws.onclose = function() {
+                console.log("与服务器的连接已关闭");
+            };
+        }
+
+        function send() {
+            var message = document.getElementById("message").value;
+            ws.send(message);
+        }
+    </script>
+</head>
+<body onload="connect()">
+    <input type="text" id="message" />
+    <button onclick="send()">发送消息</button>
+</body>
+</html>
