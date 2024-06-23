@@ -4,8 +4,28 @@
 
 #include <crow_all.h>
 
+struct AdminAreaGuard
+{
+    struct context
+    {};
+
+    void before_handle(crow::request& req, crow::response& res, context& ctx)
+    {
+        if (req.remote_ip_address != "192.168.1.110")
+        {
+            res.code = 403;
+            res.end();
+        }
+    }
+
+    void after_handle(crow::request& req, crow::response& res, context& ctx)
+    {
+        CROW_LOG_INFO << "middleware after_handle: " << req.body;
+    }
+};
+
 int main() {
-    crow::SimpleApp app;
+    crow::App<AdminAreaGuard> app;
     // set log level
     //app.loglevel(crow::LogLevel::Warning);
 
@@ -50,6 +70,21 @@ int main() {
             return crow::response(crow::status::BAD_REQUEST);
         std::ostringstream os;
         os << count << " bottles of beer!";
+        return crow::response(os.str());
+    });
+
+    CROW_ROUTE(app,"/base64/decode/<string>")
+    ([](std::string str){
+        std::ostringstream os;
+        os << "decode result: " << crow::utility::base64decode(str,str.size());
+        return crow::response(os.str());
+    });
+
+    CROW_ROUTE(app,"/base64/<string>")
+    ([](std::string str){
+        std::ostringstream os;
+        os << "base64 result: " << crow::utility::base64encode(str,str.size()) << '\n';
+        os << "url safe base64 result: " << crow::utility::base64encode_urlsafe(str,str.size());
         return crow::response(os.str());
     });
 
