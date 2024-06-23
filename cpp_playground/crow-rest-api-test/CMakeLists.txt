@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0.0)
 project(crow-rest-api-test VERSION 0.1.0 LANGUAGES C CXX)
 
 find_package(OpenSSL REQUIRED)
-find_package(ZLIB)
+find_package(ZLIB REQUIRED)
 
 message(OPENSSL_CRYPTO_LIBRARY = ${OPENSSL_CRYPTO_LIBRARY})
 message(OPENSSL_SSL_LIBRARY = ${OPENSSL_SSL_LIBRARY})
