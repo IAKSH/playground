@@ -1,3 +1,6 @@
+#define CROW_ENFORCE_WS_SPEC
+#define CROW_ENABLE_SSL
+
 #include <crow_all.h>
 
 int main() {
@@ -128,6 +131,6 @@ int main() {
     CROW_CATCHALL_ROUTE(app)([](){
         return "no page for you!";
     });
-    
-    app.port(18080).multithreaded().run();
+
+    app.ssl_file("./tls/server.crt","./tls/server.key").port(18080).multithreaded().run();
 }

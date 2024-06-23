@@ -6,7 +6,7 @@
         var ws;
 
         function connect() {
-            ws = new WebSocket("ws://localhost:18080/ws");
+            ws = new WebSocket("wss://localhost:18080/ws");
 
             ws.onopen = function() {
                 console.log("已连接到服务器");
