@@ -27,6 +27,15 @@ target_include_directories(pqxx-test PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include/)
 target_sources(pqxx-test PUBLIC ${CMAKE_CURRENT_LIST_DIR}/source/pqxx_test.cpp)
 target_link_libraries(pqxx-test PUBLIC ${PQXX_LIB} ${PQ_LIB})
 
+find_library(HIREDIS_LIB hiredis)
+
+message(HIREDIS_LIB = ${HIREDIS_LIB})
+
+add_executable(hiredis-test)
+target_include_directories(hiredis-test PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include/)
+target_sources(hiredis-test PUBLIC ${CMAKE_CURRENT_LIST_DIR}/source/hiredis_test.cpp)
+target_link_libraries(hiredis-test PUBLIC ${HIREDIS_LIB})
+
 execute_process( COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/templates ${CMAKE_CURRENT_LIST_DIR}/out/build/linux-gcc-11/templates)
 execute_process( COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/static ${CMAKE_CURRENT_LIST_DIR}/out/build/linux-gcc-11/static)
 execute_process( COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/tls ${CMAKE_CURRENT_LIST_DIR}/out/build/linux-gcc-11/tls)
