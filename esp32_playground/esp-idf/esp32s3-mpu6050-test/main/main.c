@@ -22,8 +22,7 @@ void initialize_i2c(void) {
     i2c_driver_install(I2C_MASTER_NUM, conf.mode, I2C_MASTER_RX_BUF_DISABLE, I2C_MASTER_TX_BUF_DISABLE, 0);
 }
 
-void app_main(void)
-{
+void app_main(void) {
     initialize_i2c();
     mpu6050_init(I2C_MASTER_NUM);
 
