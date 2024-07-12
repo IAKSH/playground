@@ -153,20 +153,16 @@ static const uint16_t GATTS_SERVICE_UUID_TEST      = 0x00FF;
 //static const uint16_t GATTS_CHAR_UUID_TEST_B       = 0xFF02;
 //static const uint16_t GATTS_CHAR_UUID_TEST_C       = 0xFF03;
 /* MPU6050 Service */
-static const uint16_t GATTS_CHAR_UUID_MPU6050_ACCEL_X = 0xFF04;
-static const uint16_t GATTS_CHAR_UUID_MPU6050_ACCEL_Y = 0xFF05;
-static const uint16_t GATTS_CHAR_UUID_MPU6050_ACCEL_Z = 0xFF06;
-static const uint16_t GATTS_CHAR_UUID_MPU6050_EULER_X = 0xFF07;
-static const uint16_t GATTS_CHAR_UUID_MPU6050_EULER_Y = 0xFF08;
-static const uint16_t GATTS_CHAR_UUID_MPU6050_EULER_Z = 0xFF09;
-static const uint16_t GATTS_CHAR_UUID_MPU6050_TEMPERATURE = 0xFF10;
+static const uint16_t GATTS_CHAR_UUID_MPU6050_ACCEL = 0xFF01;
+static const uint16_t GATTS_CHAR_UUID_MPU6050_EULER = 0xFF02;
+static const uint16_t GATTS_CHAR_UUID_MPU6050_TEMPERATURE = 0xFF03;
 
 static const uint16_t primary_service_uuid         = ESP_GATT_UUID_PRI_SERVICE;
 static const uint16_t character_declaration_uuid   = ESP_GATT_UUID_CHAR_DECLARE;
 //static const uint16_t character_client_config_uuid = ESP_GATT_UUID_CHAR_CLIENT_CONFIG;
-static const uint8_t char_prop_read                =  ESP_GATT_CHAR_PROP_BIT_READ;
+//static const uint8_t char_prop_read                =  ESP_GATT_CHAR_PROP_BIT_READ;
 //static const uint8_t char_prop_write               = ESP_GATT_CHAR_PROP_BIT_WRITE;
-//static const uint8_t char_prop_read_write_notify   = ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_NOTIFY;
+static const uint8_t char_prop_read_write_notify   = ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_NOTIFY;
 //static const uint8_t heart_measurement_ccc[2]      = {0x00, 0x00};
 //static const uint8_t char_value[4]                 = {0x11, 0x22, 0x33, 0x44};
 
@@ -181,57 +177,27 @@ static const esp_gatts_attr_db_t gatt_db[HRS_IDX_NB] =
       sizeof(uint16_t), sizeof(GATTS_SERVICE_UUID_TEST), (uint8_t *)&GATTS_SERVICE_UUID_TEST}},
     // MPU6050
     /* Characteristic Declaration */
-    [MPU6050_CHAR_ACCEL_X]      =
+    [MPU6050_CHAR_ACCEL]      =
     {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
-      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read}},
+      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write_notify}},
     /* Characteristic Value */
-    [MPU6050_CHAR_VAL_ACCEL_X]  =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_CHAR_UUID_MPU6050_ACCEL_X, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-      GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(float), (uint8_t *)&mpu6050_results.accel[0]}},
+    [MPU6050_CHAR_VAL_ACCEL]  =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_CHAR_UUID_MPU6050_ACCEL, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+      GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(float) * 3, (uint8_t *)mpu6050_results.accel}},
+
     /* Characteristic Declaration */
-    [MPU6050_CHAR_ACCEL_Y]      =
+    [MPU6050_CHAR_EULER]      =
     {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
-      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read}},
-    /* Characteristic Value */
-    [MPU6050_CHAR_VAL_ACCEL_Y]  =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_CHAR_UUID_MPU6050_ACCEL_Y, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-      GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(float), (uint8_t *)&mpu6050_results.accel[1]}},
-    /* Characteristic Declaration */
-    [MPU6050_CHAR_ACCEL_Z]      =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
-      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read}},
-    /* Characteristic Value */
-    [MPU6050_CHAR_VAL_ACCEL_Z]  =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_CHAR_UUID_MPU6050_ACCEL_Z, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-      GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(float), (uint8_t *)&mpu6050_results.accel[2]}},
-    /* Characteristic Declaration */
-    [MPU6050_CHAR_EULER_X]      =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
-      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read}},
+      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write_notify}},
     /* Characteristic Value */ 
-    [MPU6050_CHAR_VAL_EULER_X]  =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_CHAR_UUID_MPU6050_EULER_X, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-      GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(float), (uint8_t *)&mpu6050_results.euler[0]}},
-    /* Characteristic Declaration */
-    [MPU6050_CHAR_EULER_Y]      =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
-      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read}},
-    /* Characteristic Value */
-    [MPU6050_CHAR_VAL_EULER_Y]  =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_CHAR_UUID_MPU6050_EULER_Y, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-      GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(float), (uint8_t *)&mpu6050_results.euler[1]}},
-    /* Characteristic Declaration */
-    [MPU6050_CHAR_EULER_Z]      =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
-      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read}},
-    /* Characteristic Value */
-    [MPU6050_CHAR_VAL_EULER_Z]  =
-    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_CHAR_UUID_MPU6050_EULER_Z, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-      GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(float), (uint8_t *)&mpu6050_results.euler[2]}},
+    [MPU6050_CHAR_VAL_EULER]  =
+    {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_CHAR_UUID_MPU6050_EULER, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+      GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(float) * 3, (uint8_t *)mpu6050_results.euler}},
+    
     /* Characteristic Declaration */
     [MPU6050_CHAR_TEMPERATURE]      =
     {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ,
-      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read}},
+      CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write_notify}},
     /* Characteristic Value */
     [MPU6050_CHAR_VAL_TEMPERATURE]  =
     {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_CHAR_UUID_MPU6050_TEMPERATURE, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
@@ -404,31 +370,17 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
             if (!param->write.is_prep){
                 ESP_LOGI(GATTS_TABLE_TAG, "GATT_WRITE_EVT, handle = %d, value len = %d, value :", param->write.handle, param->write.len);
                 ESP_LOG_BUFFER_HEX(GATTS_TABLE_TAG, param->write.value, param->write.len);
-                if (heart_rate_handle_table[MPU6050_CHAR_VAL_ACCEL_X] == param->write.handle){
+                if (heart_rate_handle_table[MPU6050_CHAR_VAL_ACCEL] == param->write.handle){
                     // Handle the write request to the MPU6050_CHAR_VAL_ACCEL_X characteristic here.
                     // For example, you can update the value of the characteristic:
-                    mpu6050_results.accel[0] = *(float*)param->write.value;
-                    ESP_LOGI(GATTS_TABLE_TAG, "Updated MPU6050_CHAR_VAL_ACCEL_X to %f", mpu6050_results.accel[0]);
+                    memcpy(mpu6050_results.accel,param->write.value,sizeof(float) * 3);
+                    ESP_LOGI(GATTS_TABLE_TAG, "Updated MPU6050_CHAR_VAL_ACCEL_X to (%f,%f,%f)",
+                        mpu6050_results.accel[0],mpu6050_results.accel[1],mpu6050_results.accel[2]);
                 }
-                else if (heart_rate_handle_table[MPU6050_CHAR_VAL_ACCEL_Y] == param->write.handle){
-                    mpu6050_results.accel[1] = *(float*)param->write.value;
-                    ESP_LOGI(GATTS_TABLE_TAG, "Updated MPU6050_CHAR_VAL_ACCEL_Y to %f", mpu6050_results.accel[1]);
-                }
-                else if (heart_rate_handle_table[MPU6050_CHAR_VAL_ACCEL_Z] == param->write.handle){
-                    mpu6050_results.accel[2] = *(float*)param->write.value;
-                    ESP_LOGI(GATTS_TABLE_TAG, "Updated MPU6050_CHAR_VAL_ACCEL_Z to %f", mpu6050_results.accel[2]);
-                }
-                if (heart_rate_handle_table[MPU6050_CHAR_VAL_EULER_X] == param->write.handle){
-                    mpu6050_results.euler[0] = *(float*)param->write.value;
-                    ESP_LOGI(GATTS_TABLE_TAG, "Updated MPU6050_CHAR_VAL_EULER_X to %f", mpu6050_results.euler[0]);
-                }
-                else if (heart_rate_handle_table[MPU6050_CHAR_VAL_EULER_Y] == param->write.handle){
-                    mpu6050_results.euler[1] = *(float*)param->write.value;
-                    ESP_LOGI(GATTS_TABLE_TAG, "Updated MPU6050_CHAR_VAL_EULER_Y to %f", mpu6050_results.euler[1]);
-                }
-                else if (heart_rate_handle_table[MPU6050_CHAR_VAL_EULER_Z] == param->write.handle){
-                    mpu6050_results.euler[2] = *(float*)param->write.value;
-                    ESP_LOGI(GATTS_TABLE_TAG, "Updated MPU6050_CHAR_VAL_EULER_Z to %f", mpu6050_results.euler[2]);
+                if (heart_rate_handle_table[MPU6050_CHAR_VAL_EULER] == param->write.handle){
+                    memcpy(mpu6050_results.euler,param->write.value,sizeof(float) * 3);
+                    ESP_LOGI(GATTS_TABLE_TAG, "Updated MPU6050_CHAR_VAL_EULER_X to (%f,%f,%f)",
+                        mpu6050_results.euler[0],mpu6050_results.euler[1],mpu6050_results.euler[2]);
                 }
                 else if (heart_rate_handle_table[MPU6050_CHAR_VAL_TEMPERATURE] == param->write.handle){
                     mpu6050_results.temperature = *(float*)param->write.value;
@@ -594,12 +546,8 @@ void ble_gatts_main(void)
     }
 
     while(true) {
-        esp_ble_gatts_set_attr_value(heart_rate_handle_table[MPU6050_CHAR_VAL_ACCEL_X], sizeof(float), (uint8_t*)&mpu6050_results.accel[0]);
-        esp_ble_gatts_set_attr_value(heart_rate_handle_table[MPU6050_CHAR_VAL_ACCEL_Y], sizeof(float), (uint8_t*)&mpu6050_results.accel[1]);
-        esp_ble_gatts_set_attr_value(heart_rate_handle_table[MPU6050_CHAR_VAL_ACCEL_Z], sizeof(float), (uint8_t*)&mpu6050_results.accel[2]);
-        esp_ble_gatts_set_attr_value(heart_rate_handle_table[MPU6050_CHAR_VAL_EULER_X], sizeof(float), (uint8_t*)&mpu6050_results.euler[0]);
-        esp_ble_gatts_set_attr_value(heart_rate_handle_table[MPU6050_CHAR_VAL_EULER_Y], sizeof(float), (uint8_t*)&mpu6050_results.euler[1]);
-        esp_ble_gatts_set_attr_value(heart_rate_handle_table[MPU6050_CHAR_VAL_EULER_Z], sizeof(float), (uint8_t*)&mpu6050_results.euler[2]);
+        esp_ble_gatts_set_attr_value(heart_rate_handle_table[MPU6050_CHAR_VAL_ACCEL], sizeof(float) * 3, (uint8_t*)&mpu6050_results.accel);
+        esp_ble_gatts_set_attr_value(heart_rate_handle_table[MPU6050_CHAR_VAL_EULER], sizeof(float) * 3, (uint8_t*)&mpu6050_results.euler);
         esp_ble_gatts_set_attr_value(heart_rate_handle_table[MPU6050_CHAR_VAL_TEMPERATURE], sizeof(float), (uint8_t*)&mpu6050_results.temperature);
 
         vTaskDelay(pdMS_TO_TICKS(10));

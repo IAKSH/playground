@@ -152,7 +152,7 @@ void mpu6050_kalman_update(i2c_port_t i2c_num, Mpu6050KalmanState* kalman_state,
     // 计算欧拉角
     float roll = atan2(accel_value[1], accel_value[2]) * 180 / M_PI;
     float pitch = atan2(-accel_value[0], sqrt(accel_value[1] * accel_value[1] + accel_value[2] * accel_value[2])) * 180 / M_PI;
-    float yaw = 0;  // Yaw角度需要磁力计数据来计算，这里暂时设为0
+    float yaw = 0; //yaw值需要用磁力计测量，暂时置0
 
     // 使用卡尔曼滤波器更新欧拉角
     euler[0] = kalman_update(&kalman_state->kalman_roll, roll);

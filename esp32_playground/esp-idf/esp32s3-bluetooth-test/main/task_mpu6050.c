@@ -49,9 +49,9 @@ void mpu6050_main(void) {
         //mpu6050_get_temperature(I2C_MASTER_NUM,&temperature);
         mpu6050_kalman_update(I2C_MASTER_NUM,&mpu6050_kalman,mpu6050_results.euler,mpu6050_results.accel,&mpu6050_results.temperature);
 
-        printf("accel: x=%.2f\ty=%.2f\tz=%.2f\n",mpu6050_results.accel[0],mpu6050_results.accel[1],mpu6050_results.accel[2]);
-        printf("euler: x=%.2f\ty=%.2f\tz=%.2f\n",mpu6050_results.euler[0],mpu6050_results.euler[1],mpu6050_results.euler[2]);
-        printf("temperature: %.2f\n",mpu6050_results.temperature);
+        //printf("accel: x=%.2f\ty=%.2f\tz=%.2f\n",mpu6050_results.accel[0],mpu6050_results.accel[1],mpu6050_results.accel[2]);
+        //printf("euler: x=%.2f\ty=%.2f\tz=%.2f\n",mpu6050_results.euler[0],mpu6050_results.euler[1],mpu6050_results.euler[2]);
+        //printf("temperature: %.2f\n",mpu6050_results.temperature);
 
         vTaskDelay(pdMS_TO_TICKS(10));
     }
