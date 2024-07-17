@@ -6,4 +6,4 @@ typedef struct {
 
 extern Mpu6050Results mpu6050_results;
 
-void mpu6050_main(void);
+void posture_main(void);

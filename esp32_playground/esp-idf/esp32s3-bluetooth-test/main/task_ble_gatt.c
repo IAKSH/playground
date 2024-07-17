@@ -18,7 +18,7 @@
 #include "esp_bt_device.h"
 #include "esp_gatt_common_api.h"
 
-#include "task_mpu6050.h"
+#include "task_posture.h"
 
 #define GATTS_TABLE_TAG "GATTS_TABLE_DEMO"
 

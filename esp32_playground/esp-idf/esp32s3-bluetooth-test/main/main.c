@@ -1,5 +1,6 @@
 #include "task_ble_gatt.h"
-#include "task_mpu6050.h"
+#include "task_posture.h"
+#include "task_pwm_test.h"
 
 #include <stdlib.h>
 #include "freertos/FreeRTOS.h"
@@ -7,7 +8,8 @@
 
 void app_main(void) {
     xTaskCreate(ble_gatts_main,"ble_gatts",8192,NULL,1,NULL);
-    xTaskCreate(mpu6050_main,"mpu6050",8192,NULL,1,NULL);
+    xTaskCreate(posture_main,"posture",8192,NULL,1,NULL);
+    xTaskCreate(pwm_test_main,"pwm_test",8192,NULL,1,NULL);
 
     //xTaskCreate(TaskFun,TaskName,StackSize,Param,Priority,*Task)
     //1:TaskFun 任务函数

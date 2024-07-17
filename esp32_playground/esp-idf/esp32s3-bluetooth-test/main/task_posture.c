@@ -1,9 +1,11 @@
-#include "task_mpu6050.h"
+#include "task_posture.h"
 
 #include <stdio.h>
 #include "driver/i2c.h"
 
 #include "mpu6050.h"
+#include "mt9101et.h"
+#include "bmp280.h"
 
 #define I2C_MASTER_SCL_IO 1               /*!< gpio number for I2C master clock */
 #define I2C_MASTER_SDA_IO 2               /*!< gpio number for I2C master data  */
@@ -27,32 +29,36 @@ static void initialize_i2c(void) {
     i2c_driver_install(I2C_MASTER_NUM, conf.mode, I2C_MASTER_RX_BUF_DISABLE, I2C_MASTER_TX_BUF_DISABLE, 0);
 }
 
-void mpu6050_main(void) {
+void posture_main(void) {
     initialize_i2c();
-    mpu6050_init(I2C_MASTER_NUM);
 
-    uint8_t id = mpu6050_get_id(I2C_MASTER_NUM);
-    if(id != 0x68) {
-        printf("can't find mpu6050\n");
-        exit(1);
-    }
-    else {
-        printf("found mpu6050, id = %d\n",id);
-    }
-    
+    mpu6050_init(I2C_MASTER_NUM);
     Mpu6050KalmanState mpu6050_kalman;
     mpu6050_kalman_init(&mpu6050_kalman);
 
+    mt9101et_init();
+    Mt9101etKalmanState mt9101et_kalman;
+    mt9101et_kalman_init(&mt9101et_kalman);
+    uint32_t mt9101et_raw,mt9101et_volt;
+
+    if(!bmp280_init(I2C_MASTER_NUM)) {
+        exit(1);
+    }
+    BMP280KalmanState bmp280_kalman;
+    bmp280_kalman_init(&bmp280_kalman);
+    float bmp280_press,bmp280_temperature,bmp280_altitude;
+
     while(true) {
-        //mpu6050_get_accel_val(I2C_MASTER_NUM,accel);
-        //mpu6050_get_gryo_val(I2C_MASTER_NUM,gryo);
-        //mpu6050_get_temperature(I2C_MASTER_NUM,&temperature);
         mpu6050_kalman_update(I2C_MASTER_NUM,&mpu6050_kalman,mpu6050_results.euler,mpu6050_results.accel,&mpu6050_results.temperature);
+        mt9101et_kalman_update(&mt9101et_kalman,&mt9101et_raw,&mt9101et_volt);
+        bmp280_kalman_update(I2C_MASTER_NUM,&bmp280_kalman,&bmp280_temperature,&bmp280_press,&bmp280_altitude);
 
-        //printf("accel: x=%.2f\ty=%.2f\tz=%.2f\n",mpu6050_results.accel[0],mpu6050_results.accel[1],mpu6050_results.accel[2]);
-        //printf("euler: x=%.2f\ty=%.2f\tz=%.2f\n",mpu6050_results.euler[0],mpu6050_results.euler[1],mpu6050_results.euler[2]);
-        //printf("temperature: %.2f\n",mpu6050_results.temperature);
+        printf("raw=%lu\nvolt=%lu\n",mt9101et_raw,mt9101et_volt);
+        mpu6050_results.euler[2] = mt9101et_raw;
 
+        printf("mpu6050's temp = %.2f\n",mpu6050_results.temperature);
+        printf("bmp280:\t temp=%.2f\tpress=%.2f\taltitude=%.2f\n",bmp280_temperature,bmp280_press,bmp280_altitude);
+        
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
