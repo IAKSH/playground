@@ -159,10 +159,14 @@ void mqtt_main() {
             std::cout << "[client] contents: " << contents << std::endl;
             
             if(topic_name == "/drone/gryo/euler") {
-                for(int i = 0;i < 3;i++) {
-                    std::istringstream(contents.to_string().substr(i * 5,5)) >> euler[i];
-                    std::cout << euler[0] << '\t' << euler[1] << '\t' << euler[2] << '\n';
+                std::string token;
+                std::stringstream ss(contents.to_string());
+                int i = 0;
+                while(std::getline(ss, token, ',')) {
+                    euler[i] = std::stof(token);
+                    i++;
                 }
+                std::cout << euler[0] << '\t' << euler[1] << '\t' << euler[2] << '\n';
             }
             
             //disconnect();
