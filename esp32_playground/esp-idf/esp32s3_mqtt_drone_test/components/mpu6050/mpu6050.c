@@ -122,7 +122,7 @@ void mpu6050_get_accel(i2c_port_t i2c_num,int16_t* accel_array) {
     accel_array[2] = BYTE_TO_HALFWORD(data_h,data_l);
 }
 
-void mpu6050_get_gryo(i2c_port_t i2c_num,int16_t* gryo_array) {
+void mpu6050_get_gyro(i2c_port_t i2c_num,int16_t* gyro_array) {
     // 高低8位
     uint8_t data_l;
     uint8_t data_h;
@@ -130,17 +130,17 @@ void mpu6050_get_gryo(i2c_port_t i2c_num,int16_t* gryo_array) {
     // 读X轴高低两位
     mpu6050_read(i2c_num,MPU6050_GYRO_XOUT_L,&data_l,sizeof(uint8_t));
     mpu6050_read(i2c_num,MPU6050_GYRO_XOUT_H,&data_h,sizeof(uint8_t));
-    gryo_array[0] = BYTE_TO_HALFWORD(data_h,data_l);
+    gyro_array[0] = BYTE_TO_HALFWORD(data_h,data_l);
 
     // 读Y轴高低两位
     mpu6050_read(i2c_num,MPU6050_GYRO_YOUT_L,&data_l,sizeof(uint8_t));
     mpu6050_read(i2c_num,MPU6050_GYRO_YOUT_H,&data_h,sizeof(uint8_t));
-    gryo_array[0] = BYTE_TO_HALFWORD(data_h,data_l);
+    gyro_array[0] = BYTE_TO_HALFWORD(data_h,data_l);
 
     // 读Z轴高低两位
     mpu6050_read(i2c_num,MPU6050_GYRO_ZOUT_L,&data_l,sizeof(uint8_t));
     mpu6050_read(i2c_num,MPU6050_GYRO_ZOUT_H,&data_h,sizeof(uint8_t));
-    gryo_array[0] = BYTE_TO_HALFWORD(data_h,data_l);
+    gyro_array[0] = BYTE_TO_HALFWORD(data_h,data_l);
 }
 
 void mpu6050_get_accel_val(i2c_port_t i2c_num,float* accel_value) {
@@ -152,14 +152,14 @@ void mpu6050_get_accel_val(i2c_port_t i2c_num,float* accel_value) {
     accel_value[2] = scale_transform( (float)accel_array[2], 16.0, -16.0);  //转换Z轴
 }
 
-void mpu6050_get_gryo_val(i2c_port_t i2c_num,float* gyro_value) {
-    int16_t gryo_array[3];        
-    mpu6050_get_gryo(i2c_num,gryo_array);  
+void mpu6050_get_gyro_val(i2c_port_t i2c_num,float* gyro_value) {
+    int16_t gyro_array[3];        
+    mpu6050_get_gyro(i2c_num,gyro_array);  
     
     /*开始转换陀螺仪值*/
-    gyro_value[0] = scale_transform( (float)gryo_array[0], 2000.0, -2000.0);  //转换X轴
-    gyro_value[1] = scale_transform( (float)gryo_array[1], 2000.0, -2000.0);  //转换Y轴
-    gyro_value[2] = scale_transform( (float)gryo_array[2], 2000.0, -2000.0);  //转换Z轴
+    gyro_value[0] = scale_transform( (float)gyro_array[0], 2000.0, -2000.0);  //转换X轴
+    gyro_value[1] = scale_transform( (float)gyro_array[1], 2000.0, -2000.0);  //转换Y轴
+    gyro_value[2] = scale_transform( (float)gyro_array[2], 2000.0, -2000.0);  //转换Z轴
 }
 
 void mpu6050_get_temperature(i2c_port_t i2c_num,float* temperature) {
@@ -168,40 +168,44 @@ void mpu6050_get_temperature(i2c_port_t i2c_num,float* temperature) {
     *temperature = BYTE_TO_HALFWORD(buffer[0],buffer[1]) / 340.0 + 36.53;;
 }
 
-void mpu6050_kalman_init(Mpu6050KalmanState* kalman_state) {
-    kalman_init(&kalman_state->kalman_pitch, 0.1, 0.1, 0.1, 0);
-    kalman_init(&kalman_state->kalman_roll, 0.1, 0.1, 0.1, 0);
-    kalman_init(&kalman_state->kalman_yaw, 0.1, 0.1, 0.1, 0);
-    kalman_init(&kalman_state->accel_x, 0.1, 0.1, 0.1, 0);
-    kalman_init(&kalman_state->accel_y, 0.1, 0.1, 0.1, 0);
-    kalman_init(&kalman_state->accel_z, 0.1, 0.1, 0.1, 0);
-    kalman_init(&kalman_state->temperature, 0.1, 0.1, 0.1, 0);
+void mpu6050_kalman_init(mpu6050_kalman_state_t* state, float angle, float bias, float rate) {
+    state->angle = angle;
+    state->bias = bias;
+    state->rate = rate;
+    state->P[0][0] = 0.0;
+    state->P[0][1] = 0.0;
+    state->P[1][0] = 0.0;
+    state->P[1][1] = 0.0;
 }
 
-void mpu6050_kalman_update(i2c_port_t i2c_num, Mpu6050KalmanState* kalman_state, float* euler, float* accel, float* temperature) {
-    float accel_value[3];
-    float gyro_value[3];
-    float temperature_value;
+static const float Q_gyro = 0.5;
+static const float Q_angle = 0.5;
+static const float R_angle = 0.5;
 
-    mpu6050_get_accel_val(i2c_num, accel_value);
-    mpu6050_get_gryo_val(i2c_num, gyro_value);
+void mpu6050_kalman_update(mpu6050_kalman_state_t* state, float gyro_rate, float accel_angle, float dt) {
+    // 预测步骤
+    state->rate = gyro_rate - state->bias;
+    state->angle += dt * state->rate;
 
-    // 计算欧拉角
-    float roll = atan2(accel_value[1], accel_value[2]) * 180 / M_PI;
-    float pitch = atan2(-accel_value[0], sqrt(accel_value[1] * accel_value[1] + accel_value[2] * accel_value[2])) * 180 / M_PI;
-    float yaw = 0; //yaw值需要用磁力计测量，暂时置0
+    state->P[0][0] += dt * (dt*state->P[1][1] - state->P[0][1] - state->P[1][0] + Q_angle);
+    state->P[0][1] -= dt * state->P[1][1];
+    state->P[1][0] -= dt * state->P[1][1];
+    state->P[1][1] += Q_gyro * dt;
 
-    // 使用卡尔曼滤波器更新欧拉角
-    euler[0] = kalman_update(&kalman_state->kalman_roll, roll);
-    euler[1] = kalman_update(&kalman_state->kalman_pitch, pitch);
-    euler[2] = kalman_update(&kalman_state->kalman_yaw, yaw);
+    // 更新步骤
+    float y = accel_angle - state->angle;  // 角度误差
+    float S = state->P[0][0] + R_angle;  // 误差协方差
+    float K[2];  // 卡尔曼增益
+    K[0] = state->P[0][0] / S;
+    K[1] = state->P[1][0] / S;
 
-    // 获取xyz轴上的加速度
-    accel[0] = kalman_update(&kalman_state->accel_x, accel_value[0]);
-    accel[1] = kalman_update(&kalman_state->accel_y, accel_value[1]);
-    accel[2] = kalman_update(&kalman_state->accel_z, accel_value[2]);
+    state->angle += K[0] * y;
+    state->bias += K[1] * y;
+    float P00_temp = state->P[0][0];
+    float P01_temp = state->P[0][1];
 
-    // 获取温度
-    mpu6050_get_temperature(i2c_num, &temperature_value);
-    *temperature = kalman_update(&kalman_state->temperature, temperature_value);
+    state->P[0][0] -= K[0] * P00_temp;
+    state->P[0][1] -= K[0] * P01_temp;
+    state->P[1][0] -= K[1] * P00_temp;
+    state->P[1][1] -= K[1] * P01_temp;
 }

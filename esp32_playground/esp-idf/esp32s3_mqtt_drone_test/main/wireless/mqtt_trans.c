@@ -44,7 +44,7 @@ static void task_mqtt_publish() {
         sprintf(mqtt_str,"%.2f",drone_barometer_altitude);
         msg_id_barometer_altitude = esp_mqtt_client_publish(client, "/drone/barometer/altitude",mqtt_str,  0, 1, 1);
 
-        vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(50));
     }
 }
 
