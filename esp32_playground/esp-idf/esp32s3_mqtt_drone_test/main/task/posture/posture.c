@@ -7,6 +7,8 @@
 #include "bmp280.h"
 #include "drone_status.h"
 
+#include <math.h>
+
 #define I2C_MASTER_SCL_IO 1               /*!< gpio number for I2C master clock */
 #define I2C_MASTER_SDA_IO 2               /*!< gpio number for I2C master data  */
 #define I2C_MASTER_NUM I2C_NUM_0          /*!< I2C port number for master dev */
@@ -67,7 +69,5 @@ void task_posture(void) {
         //    &drone_barometer_pressure,&drone_barometer_altitude,&drone_barometer_temperature);
 
         //printf("euler: %.2f,%.2f,%.2f\n",drone_gryo_euler[0],drone_gryo_euler[1],drone_gryo_euler[2]);
-
-        //vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
