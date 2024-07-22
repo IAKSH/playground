@@ -32,18 +32,18 @@ static void initialize_i2c(void) {
 void task_posture(void) {
     initialize_i2c();
 
-    mpu6050_kalman_state_t mpu6050_kalman_state[2];
-    //BMP280KalmanState bmp280_kalman;
+    //mpu6050_kalman_state_t mpu6050_kalman_state[2];
+    bmp280_kalman_state_t bmp280_kalman_state;
 
-    if(!mpu6050_init(I2C_MASTER_NUM)) {
-        exit(1);
-    }
-    mpu6050_kalman_init(&mpu6050_kalman_state,0,0,0);
-    
-    //if(!bmp280_init(I2C_MASTER_NUM)) {
+    //if(!mpu6050_init(I2C_MASTER_NUM)) {
     //    exit(1);
     //}
-    //bmp280_kalman_init(&bmp280_kalman);
+    //mpu6050_kalman_init(&mpu6050_kalman_state,0,0,0);
+    
+    if(!bmp280_init(I2C_MASTER_NUM)) {
+        exit(1);
+    }
+    bmp280_kalman_init(&bmp280_kalman_state);
 
     while(true) {
         static int64_t last_time = 0;
@@ -51,23 +51,18 @@ void task_posture(void) {
         float dt = (current_time - last_time) / 1000000.0;
         last_time = current_time;
 
-        float accel[3],gyro[3];
-        mpu6050_get_accel_val(I2C_MASTER_NUM,accel);
-        mpu6050_get_gyro_val(I2C_MASTER_NUM,gyro);
+        //float accel[3],gyro[3];
+        //mpu6050_get_accel_val(I2C_MASTER_NUM,accel);
+        //mpu6050_get_gyro_val(I2C_MASTER_NUM,gyro);
+        //float accel_angle[2] = {atan2(accel[1], accel[2]) * 180 / M_PI,atan2(-accel[0], sqrt(accel[1] * accel[1] + accel[2] * accel[2])) * 180 / M_PI};
+        //for(int i = 0;i < 2;i++) {
+        //    mpu6050_kalman_update(&mpu6050_kalman_state[i],gyro[i],accel_angle[i],dt);
+        //    drone_gryo_euler[i] = mpu6050_kalman_state[i].angle;
+        //}
 
-        float accel_angle[2] = {atan2(accel[1], accel[2]) * 180 / M_PI,atan2(-accel[0], sqrt(accel[1] * accel[1] + accel[2] * accel[2])) * 180 / M_PI};
-        
-        for(int i = 0;i < 2;i++) {
-            mpu6050_kalman_update(&mpu6050_kalman_state[i],gyro[i],accel_angle[i],dt);
-            drone_gryo_euler[i] = mpu6050_kalman_state[i].angle;
-        }
+        bmp280_kalman_update(I2C_MASTER_NUM,&bmp280_kalman_state,                                                                         
+            &drone_barometer_pressure,&drone_barometer_altitude,&drone_barometer_temperature);
 
-        //drone_gryo_euler[0] = atan2(-drone_gryo_accel[0], sqrt(drone_gryo_accel[1] * drone_gryo_accel[1] + drone_gryo_accel[2] * drone_gryo_accel[2])) * 180 / M_PI;
-        //drone_gryo_euler[1] = atan2(drone_gryo_accel[1], drone_gryo_accel[2]) * 180 / M_PI;
-
-        //bmp280_kalman_update(I2C_MASTER_NUM,&bmp280_kalman,                                                                         
-        //    &drone_barometer_pressure,&drone_barometer_altitude,&drone_barometer_temperature);
-
-        //printf("euler: %.2f,%.2f,%.2f\n",drone_gryo_euler[0],drone_gryo_euler[1],drone_gryo_euler[2]);
+        printf("pressure: %.2f\taltitude: %.2f\ttemperature: %.2f\n",drone_barometer_pressure,drone_barometer_altitude,drone_barometer_temperature);
     }
 }

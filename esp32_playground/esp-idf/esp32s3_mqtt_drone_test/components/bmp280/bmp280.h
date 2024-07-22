@@ -13,7 +13,7 @@ void bmp280_press_temp_to_altitude(uint32_t press,int32_t temperature,float* alt
 
 typedef struct {
     KalmanState temperature,press,altitude;
-} BMP280KalmanState;
+} bmp280_kalman_state_t;
 
-void bmp280_kalman_init(BMP280KalmanState* kalman_state);
-void bmp280_kalman_update(i2c_port_t i2c_num,BMP280KalmanState* kalman_state,float* press,float* altitude,float* temperature);
+void bmp280_kalman_init(bmp280_kalman_state_t* kalman_state);
+void bmp280_kalman_update(i2c_port_t i2c_num,bmp280_kalman_state_t* kalman_state,float* press,float* altitude,float* temperature);

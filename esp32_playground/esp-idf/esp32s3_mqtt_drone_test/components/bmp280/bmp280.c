@@ -216,13 +216,13 @@ void bmp280_get_altitude(i2c_port_t i2c_num, float *altitude) {
     bmp280_press_temp_to_altitude(press,temp,altitude);
 }
 
-void bmp280_kalman_init(BMP280KalmanState* kalman_state) {
+void bmp280_kalman_init(bmp280_kalman_state_t* kalman_state) {
     kalman_init(&kalman_state->altitude, 0.1, 0.1, 0.1, 0);
     kalman_init(&kalman_state->press, 0.1, 0.1, 0.1, 0);
     kalman_init(&kalman_state->temperature, 0.1, 0.1, 0.1, 0);
 }
 
-void bmp280_kalman_update(i2c_port_t i2c_num,BMP280KalmanState* kalman_state,float* press,float* altitude,float* temperature) {
+void bmp280_kalman_update(i2c_port_t i2c_num,bmp280_kalman_state_t* kalman_state,float* press,float* altitude,float* temperature) {
     int32_t mesure_temperature;
     uint32_t mesure_press;
     float mesure_altitude;
