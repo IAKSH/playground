@@ -1,10 +1,14 @@
 #include <iostream>
 #include <algorithm>
+#include <opencv2/core/mat.hpp>
 #include <opencv2/opencv.hpp>
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
 
 #define PRINT_AVERAGE_PIXEL_LENGTH
 
-cv::Mat graylize(const cv::Mat& img) {
+static cv::Mat graylize(const cv::Mat& img) {
     cv::Mat gray = img;
     for (int i = 0; i < gray.rows; i++) {
         for (int j = 0; j < gray.cols; j++) {
@@ -20,7 +24,7 @@ cv::Mat graylize(const cv::Mat& img) {
     return gray;
 }
 
-cv::Mat enhance(const cv::Mat& img) {
+static cv::Mat enhance(const cv::Mat& img) {
     cv::Mat enhanced = img;
     // 原论文似乎有这俩完全是magic number的意思，可能需要通过某种算法（或者手动）对每一张图片特化
     // 手动调了几张图，对最终结果的影响确实很大
@@ -34,14 +38,14 @@ cv::Mat enhance(const cv::Mat& img) {
     return enhanced;
 }
 
-cv::Mat gaussian_filter(const cv::Mat& img) {
+static cv::Mat gaussian_filter(const cv::Mat& img) {
     cv::Mat blur_img;
     cv::GaussianBlur(img, blur_img, cv::Size(9, 9), 1000000000.0);
     return blur_img;
 }
 
 // 计算图像的灰度直方图
-std::vector<int> calcHist(const cv::Mat& img) {
+static std::vector<int> calcHist(const cv::Mat& img) {
     std::vector<int> histogram(256, 0);
     for(int i = 0; i < img.rows; i++) {
         for(int j = 0; j < img.cols; j++) {
@@ -51,13 +55,13 @@ std::vector<int> calcHist(const cv::Mat& img) {
     return histogram;
 }
 
-cv::Mat apply_threshold(const cv::Mat& img, double thresh) {
+static cv::Mat apply_threshold(const cv::Mat& img, double thresh) {
     cv::Mat result;
     cv::threshold(img, result, thresh, 255, cv::THRESH_BINARY);
     return result;
 }
 
-cv::Mat improved_otsu(const cv::Mat _img) {
+static cv::Mat improved_otsu(const cv::Mat _img) {
     // 将图像转换为灰度图像
     cv::Mat img = _img;
     cv::cvtColor(img, img, cv::COLOR_BGR2GRAY);
@@ -126,7 +130,7 @@ cv::Mat improved_otsu(const cv::Mat _img) {
     return apply_threshold(img,best_thresh_val / 2);
 }
 
-cv::Mat otsu(const cv::Mat& img) {
+static cv::Mat otsu(const cv::Mat& img) {
     cv::Mat out_img;
     cv::cvtColor(img, out_img, cv::COLOR_BGR2GRAY);
     double otsu_thresh_val = cv::threshold(
@@ -136,13 +140,15 @@ cv::Mat otsu(const cv::Mat& img) {
     return out_img;
 }
 
-cv::Mat edge(const cv::Mat& img) {
+static cv::Mat edge(const cv::Mat& img) {
     cv::Mat edge;
     cv::Canny(img, edge, 50, 150);
     return edge;
 }
 
-cv::Mat mark_part(const cv::Mat& img,const cv::Rect& max_rect,float p,float l,float h) {
+static json output;
+
+static cv::Mat mark_part(const cv::Mat& img,std::string part_name,const cv::Rect& max_rect,float p,float l,float h) {
     /*
          女                     男
     裆部 0.444（0.407-0.481）   0.441（0.401-0.481）
@@ -194,16 +200,25 @@ cv::Mat mark_part(const cv::Mat& img,const cv::Rect& max_rect,float p,float l,fl
     }
 
     // 计算并打印所有行加起来的平均像素长度
+    static int json_count = 0;
     if (count > 0) {
+        //float average_pixel_length = static_cast<float>(total_pixel_length) / count;
+        //std::cout << "average pixel length: " << average_pixel_length << '\t' << "converted (160cm): " << 160.0 / max_rect.width * average_pixel_length << "cm" << '\n';
         float average_pixel_length = static_cast<float>(total_pixel_length) / count;
-        std::cout << "average pixel length: " << average_pixel_length << '\t' << "converted (160cm): " << 160.0 / max_rect.width * average_pixel_length << "cm" << '\n';
+        json node;
+        node["part"] = part_name;
+        node["pixel"] = average_pixel_length;
+        node["converted"] = 160.0 / max_rect.width * average_pixel_length;
+        output[json_count++] = node;
     }
+
+    return out;
 #endif
 
     return out;
 }
 
-cv::Mat mark_point(const cv::Mat& img,const cv::Rect& max_rect,float p,float l,float h) {
+static cv::Mat mark_point(const cv::Mat& img,const cv::Rect& max_rect,float p,float l,float h) {
     cv::Mat with_point;
     img.copyTo(with_point);
     cv::Rect rect = max_rect;
@@ -238,25 +253,57 @@ cv::Mat mark_point(const cv::Mat& img,const cv::Rect& max_rect,float p,float l,f
     return dst_norm_scaled;
 }
 
-int main() {
-    cv::Mat img = cv::imread("/home/lain/Desktop/a.png");
+std::string base64_chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    "abcdefghijklmnopqrstuvwxyz"
+    "0123456789+/";
+
+std::string base64_decode(const std::string &in) {
+    std::string out;
+
+    std::vector<int> T(256, -1);
+    for (int i = 0; i < 64; i++) T[base64_chars[i]] = i;
+
+    int val = 0, valb = -8;
+    for (uchar c : in) {
+        if (T[c] == -1) break;
+        val = (val << 6) + T[c];
+        valb += 6;
+        if (valb >= 0) {
+            out.push_back(char((val >> valb) & 0xFF));
+            valb -= 8;
+        }
+    }
+    return out;
+}
+
+std::string body_estimate_demo(const std::string& base64_img) {
+
+    std::cout << "C++ received base64:\n" << base64_img << '\n';
+
+    // Decode the base64 image
+    std::string decoded_img = base64_decode(base64_img);
+    std::vector<uchar> img_data(decoded_img.begin(), decoded_img.end());
+
+    // Convert the data to cv::Mat
+    cv::Mat img = cv::imdecode(img_data, cv::IMREAD_COLOR);
     if (img.empty()) {
         std::cout << "can't read" << std::endl;
-        return -1;
+        exit(1);
     }
 
     auto gray = graylize(img);
-    cv::imwrite("/home/lain/Desktop/gray.jpg", gray);
+    cv::imwrite("./out/gray.jpg", gray);
     auto enhanced1 = enhance(gray);
     auto guassian = gaussian_filter(enhanced1);
     //auto enhanced2 = enhance(enhanced1);
     //cv::imwrite("/home/lain/Desktop/enhanced2.jpg", enhanced2);
     //auto guassian = gaussian_filter(enhanced2);
-    cv::imwrite("/home/lain/Desktop/guassian.jpg", guassian);
+    cv::imwrite("./out/guassian.jpg", guassian);
     auto otsu = improved_otsu(guassian);
-    cv::imwrite("/home/lain/Desktop/otsu.jpg", otsu);
+    cv::imwrite("./out/otsu.jpg", otsu);
     auto edged = edge(otsu);
-    cv::imwrite("/home/lain/Desktop/edged.jpg", edged);
+    cv::imwrite("./out/edged.jpg", edged);
 
     // 找到轮廓
     std::vector<std::vector<cv::Point>> contours;
@@ -276,37 +323,37 @@ int main() {
     cv::cvtColor(edged, edged_rgb, cv::COLOR_GRAY2BGR);
     edged_rgb.copyTo(with_rect);
     cv::rectangle(with_rect, max_rect, cv::Scalar(0, 255, 0), 2);
-    cv::imwrite("/home/lain/Desktop/with_rect.jpg", with_rect);
+    cv::imwrite("./out/with_rect.jpg", with_rect);
 
     cv::Mat parts;
     edged_rgb.copyTo(parts);
 
-    auto crotch = mark_part(parts,max_rect,0.441,0.401,0.481);
-    cv::imwrite("/home/lain/Desktop/crotch.jpg", crotch);
+    auto crotch = mark_part(parts,"crotch",max_rect,0.441,0.401,0.481);
+    cv::imwrite("./out/crotch.jpg", crotch);
     edged_rgb.copyTo(parts);
 
     //auto neck = mark_part(parts,max_rect,0.815,0.793,0.835);
     //cv::imwrite("/home/lain/Desktop/neck.jpg", neck);
     //edged_rgb.copyTo(parts);
 
-    auto shoulders = mark_part(parts,max_rect,0.808,0.781,0.836);
-    cv::imwrite("/home/lain/Desktop/shoulders.jpg", shoulders);
+    auto shoulder = mark_part(parts,"shoulder",max_rect,0.808,0.781,0.836);
+    cv::imwrite("./out/shoulder.jpg", shoulder);
     edged_rgb.copyTo(parts);
 
-    auto chest = mark_part(parts,max_rect,0.716,0.688,0.745);
-    cv::imwrite("/home/lain/Desktop/chest.jpg", chest);
+    auto chest = mark_part(parts,"chest",max_rect,0.716,0.688,0.745);
+    cv::imwrite("./out/chest.jpg", chest);
     edged_rgb.copyTo(parts);
 
-    auto waist = mark_part(parts,max_rect,0.612,0.575,0.649);
-    cv::imwrite("/home/lain/Desktop/waist.jpg", waist);
+    auto waist = mark_part(parts,"waist",max_rect,0.612,0.575,0.649);
+    cv::imwrite("./out/waist.jpg", waist);
     edged_rgb.copyTo(parts);
 
-    auto buttocks = mark_part(parts,max_rect,0.567,0.510,0.624);
-    cv::imwrite("/home/lain/Desktop/buttocks.jpg", buttocks);
+    auto buttocks = mark_part(parts,"buttocks",max_rect,0.567,0.510,0.624);
+    cv::imwrite("./out/buttocks.jpg", buttocks);
     edged_rgb.copyTo(parts);
 
     //auto waist_with_points = mark_point(edged,max_rect,0.567,0.510,0.624);
     //cv::imwrite("/home/lain/Desktop/waist_with_points.jpg", waist_with_points);
 
-    return 0;
+    return output.dump();
 }
