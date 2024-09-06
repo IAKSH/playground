@@ -36,6 +36,79 @@ struct Ball : public gameobject::GameObject {
 		: GameObject(ball_ren_pipe,ball_ren_obj)
 	{
 	}
+
+	void onTick(float dt) noexcept override {}
+};
+
+class PID {
+public:
+	PID(float kp, float ki, float kd) noexcept
+		: KP(kp), KI(ki), KD(kd)
+	{
+		target = pid_error = integral = previous_error = 0.0f;
+	}
+
+	void set_target(float target) {
+		this->target = target;
+	}
+
+	float get_pid_output(float measured, float dt_sec) {
+		// PID error
+		float pid_error = target - measured;
+
+		// Proportional term
+		float P = pid_error * KP;
+
+		// Integral term
+		integral += pid_error * dt_sec;
+		float I = integral * KI;
+
+		// Derivative term
+		float derivative = (pid_error - previous_error) / dt_sec;
+		float D = derivative * KD;
+
+		// PID output
+		float pid_output = P + I + D;
+
+		// Update previous error
+		previous_error = pid_error;
+
+		return pid_output;
+	}
+
+private:
+	float target, pid_error, integral, previous_error;
+	const float KP, KI, KD;
+};
+
+static glm::vec2 pid_target(0.0f, 0.0f);
+
+struct PIDBall : public Ball {
+public:
+	PIDBall() noexcept
+		: pid_x(0.025f, 0.01f, 0.0075f), pid_y(0.025f, 0.01f, 0.0075f), pid_z(0.025f, 0.01f, 0.0075f)
+	{
+	}
+
+	void onTick(float dt) noexcept override final {
+		body->activate(true);
+		glm::vec3 vec = getVelocity();
+		glm::vec3 pos = getPosition();
+		float dt_sec = dt * 0.001f;
+
+		pid_x.set_target(pid_target.x);
+		pid_y.set_target(pid_target.y);
+
+		vec.x += pid_x.get_pid_output(pos.x, dt_sec);
+		vec.y += pid_y.get_pid_output(pos.y, dt_sec);
+		vec.z += pid_z.get_pid_output(pos.z, dt_sec);
+		
+		body->setLinearVelocity(btVector3(vec.x, vec.y, vec.z));
+	}
+
+private:
+	// PID constants
+	PID pid_x, pid_y, pid_z;
 };
 
 static std::vector<std::unique_ptr<Ball>> balls;
@@ -95,6 +168,7 @@ void processInput() noexcept {
 		// 加上camera后好像被镜像了，懒得调，暂时先取反下
 		mouse_x = -mouse_x;
 
+		/*
 		for (auto& ball : balls) {
 			// 对小球施加速度
 			glm::vec3 ball_position = ball->getPosition();
@@ -114,6 +188,10 @@ void processInput() noexcept {
 			ball->body->activate(true);
 			ball->body->setLinearVelocity(btVector3(velocity.x, velocity.y, velocity.z));
 		}
+		*/
+
+		pid_target.y = mouse_y;
+		pid_target.x = mouse_x;
 	}
 
 	/*
@@ -187,8 +265,10 @@ void try_play_ball_hit_sound(gameobject::GameObject& go) noexcept {
 
 void processTick() noexcept {
 	physics::processStepSimulation(delta_time);
-	for (auto& ball : balls)
+	for (auto& ball : balls) {
 		ball->checkCollision();
+		ball->onTick(delta_time);
+	}
 }
 
 void draw() noexcept {
@@ -211,8 +291,14 @@ void mainLoop() noexcept {
 	camera->rotatable_point.z = -2.5f;
 	ball_ren_pipe->setCamera(camera);
 
-	for (int i = 0; i < 40; i++) {
+	for (int i = 0; i < 31; i++) {
 		auto ball = std::make_unique<Ball>();
+		ball->setCollisionCallback(try_play_ball_hit_sound);
+		balls.emplace_back(std::move(ball));
+	}
+
+	{
+		auto ball = std::make_unique<PIDBall>();
 		ball->setCollisionCallback(try_play_ball_hit_sound);
 		balls.emplace_back(std::move(ball));
 	}
@@ -223,6 +309,7 @@ void mainLoop() noexcept {
 
 	//physics::createHullFront();
 	//physics::createHullBack();
+
 	physics::createHullLeft();
 	physics::createHullRight();
 	physics::createHullUp();

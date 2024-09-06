@@ -46,6 +46,8 @@ namespace jumping_ball::gameobject {
         void checkCollision() noexcept;
         void draw() noexcept;
 
+        virtual void onTick(float dt) noexcept = 0;
+
     private:
         std::unique_ptr<CollisionCallback<GameObject>> collision_callback;
     };
