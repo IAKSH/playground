@@ -4,12 +4,14 @@ from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 import torch.optim as optim
 import matplotlib.pyplot as plt
+from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix, roc_auc_score
+import seaborn as sns
 
 
 def get_data_loader():
     transform = transforms.Compose([transforms.ToTensor(),transforms.Normalize(mean=[0.5], std=[0.5])])
-    train_set = datasets.MNIST("../data", train=True, download=True, transform=transform)
-    test_set = datasets.MNIST("../data", train=False, download=True, transform=transform)
+    train_set = datasets.MNIST('../data', train=True, download=True, transform=transform)
+    test_set = datasets.MNIST('../data', train=False, download=True, transform=transform)
 
     train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
     test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False)
@@ -57,6 +59,10 @@ if __name__ == '__main__':
     train_losses = []
     test_accuracies = []
 
+    best_acc = 0
+    all_labels = []
+    all_predictions = []
+
     for epoch in range(num_epochs):
         train_loss = 0.0
         model.train()
@@ -78,12 +84,18 @@ if __name__ == '__main__':
                 images, labels = images.to(device), labels.to(device)
                 outputs = model(images)
                 _, predicted = torch.max(outputs.data, 1)
+                all_labels.extend(labels.cpu().numpy())
+                all_predictions.extend(predicted.cpu().numpy())
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
         accuracy = 100 * correct / total
         test_accuracies.append(accuracy)
 
-        print(f"Epoch {epoch + 1}/{num_epochs}, Loss: {train_loss / len(train_loader)}, Accuracy: {accuracy}%")
+        if accuracy > best_acc:
+            best_acc = accuracy
+            torch.save(model.state_dict(), 'best_acc.pt')
+
+        print(f'Epoch {epoch + 1}/{num_epochs}, Loss: {train_loss / len(train_loader)}, Accuracy: {accuracy}%')
 
     plt.figure(figsize=(10, 5))
     plt.plot(train_losses, label='Training Loss')
@@ -92,7 +104,6 @@ if __name__ == '__main__':
     plt.title('Training Loss over Epochs')
     plt.legend()
     plt.savefig('training_loss.png')
-    plt.show()
 
     plt.figure(figsize=(10, 5))
     plt.plot(test_accuracies, label='Test Accuracy')
@@ -101,6 +112,31 @@ if __name__ == '__main__':
     plt.title('Test Accuracy over Epochs')
     plt.legend()
     plt.savefig('test_accuracy.png')
-    plt.show()
 
-    torch.save(model.state_dict(), "mnist_cnn.pth")
+    precision = precision_score(all_labels, all_predictions, average='macro')
+    recall = recall_score(all_labels, all_predictions, average='macro')
+    f1 = f1_score(all_labels, all_predictions, average='macro')
+
+    metrics = {'Precision': precision, 'Recall': recall, 'F1 Score': f1}
+    names = list(metrics.keys())
+    values = list(metrics.values())
+
+    plt.figure(figsize=(10, 5))
+    plt.bar(names, values)
+    plt.xlabel('Metrics')
+    plt.ylabel('Values')
+    plt.title('Model Performance Metrics')
+    plt.savefig('model_performance_metrics.png')
+
+    conf_matrix = confusion_matrix(all_labels, all_predictions)
+
+    plt.figure(figsize=(10, 7))
+    sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues')
+    plt.xlabel('Predicted Labels')
+    plt.ylabel('True Labels')
+    plt.title('Confusion Matrix')
+    plt.savefig('confusion_matrix.png')
+
+    torch.save(model.state_dict(), 'last.pt')
+
+    print(f'best accuracy: {best_acc}')
