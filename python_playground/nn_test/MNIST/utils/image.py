@@ -1,5 +1,3 @@
-import torch
-from train import CNNModel
 from PIL import Image
 from torchvision import transforms
 import matplotlib.pyplot as plt
@@ -28,18 +26,3 @@ def load_image(path):
     show_img_from_2d_array(transformed_img)
     img = transformed_img.unsqueeze(0)
     return img
-
-
-if __name__ == '__main__':
-    device = torch.device('cpu')
-    model = CNNModel().to(device)
-    model.load_state_dict(torch.load('mnist_cnn.pth'))
-
-    model.eval()
-    with torch.no_grad():
-        while True:
-            img_path = input('path:')
-            img = load_image(img_path).to(device)
-            output = model(img)
-            score, predicted = torch.max(output.data, 1)
-            print(f'score: {score.item()}\tpredict: {predicted.item()}')
