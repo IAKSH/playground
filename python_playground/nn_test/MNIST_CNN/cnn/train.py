@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
-import torch.nn.functional as F
 import torch.optim as optim
 import matplotlib.pyplot as plt
 
@@ -21,27 +20,33 @@ def get_data_loader():
 class CNNModel(nn.Module):
     def __init__(self):
         super(CNNModel, self).__init__()
-        self.conv1 = nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1)
-        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
-        self.pool = nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
-        self.fc1 = nn.Linear(64 * 7 * 7, 128)
-        self.fc2 = nn.Linear(128, 10)
+        self.conv1 = nn.Sequential(
+            nn.Conv2d(in_channels=1, out_channels=16, kernel_size=5, stride=1, padding=2),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2)
+        )
+        self.conv2 = nn.Sequential(
+            nn.Conv2d(in_channels=16,out_channels=32,kernel_size=5,stride=1,padding=2),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2)
+        )
+        self.out = nn.Linear(32 * 7 * 7,10)
 
     def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x)))
-        x = self.pool(F.relu(self.conv2(x)))
-        x = x.view(-1, 64 * 7 * 7)
-        x = F.relu(self.fc1(x))
-        x = self.fc2(x)
-        return x
+        x = self.conv1(x)
+        x = self.conv2(x)
+        x = x.view(x.size(0),-1)
+        output = self.out(x)
+        return output
 
 
 if __name__ == '__main__':
-    batch_size = 32
-    lr = 0.001
+    batch_size = 64
+    lr = 0.0001
     num_epochs = 10
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    #device = torch.device('cpu')
 
     model = CNNModel().to(device)
     criterion = nn.CrossEntropyLoss()
