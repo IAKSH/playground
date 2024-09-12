@@ -9,10 +9,11 @@ import os
 
 
 class GCN(nn.Module):
-    def __init__(self, in_channels, out_channels, hidden_channels):
+    def __init__(self, in_channels, out_channels, hidden_channels1, hidden_channels2):
         super(GCN, self).__init__()
-        self.conv1 = GCNConv(in_channels, hidden_channels)
-        self.conv2 = GCNConv(hidden_channels, out_channels)
+        self.conv1 = GCNConv(in_channels, hidden_channels1)
+        self.conv2 = GCNConv(hidden_channels1, hidden_channels2)
+        self.conv3 = GCNConv(hidden_channels2, out_channels)
 
     def forward(self, data):
         x, edge_index, batch = data.x, data.edge_index, data.batch
@@ -20,6 +21,9 @@ class GCN(nn.Module):
         x = F.relu(x)
         x = F.dropout(x, training=self.training)
         x = self.conv2(x, edge_index)
+        x = F.relu(x)
+        x = F.dropout(x, training=self.training)
+        x = self.conv3(x, edge_index)
         return F.log_softmax(x, dim=1)
 
 
@@ -28,7 +32,7 @@ def train():
     loader = DataLoader(dataset, batch_size=32, shuffle=True)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = GCN(dataset.num_node_features, dataset.num_classes, 16).to(device)
+    model = GCN(dataset.num_node_features, dataset.num_classes, 64,128).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=5e-4)
 
     losses = []
@@ -38,7 +42,7 @@ def train():
     val_mask = dataset[0].val_mask
     test_mask = dataset[0].test_mask
 
-    for epoch in range(400):
+    for epoch in range(100):
         total_loss = 0
         for data in loader:
             data = data.to(device)
