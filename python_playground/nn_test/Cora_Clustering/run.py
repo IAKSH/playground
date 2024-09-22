@@ -65,7 +65,7 @@ def train():
 
         epoch_loss = total_loss / len(loader)
         losses.append(epoch_loss)
-        print(f"Epoch {epoch+1}, Loss: {epoch_loss}, accuracy: {val_acc}")\
+        print(f"Epoch {epoch+1}, Loss: {epoch_loss}, accuracy: {val_acc}")
 
     # 测试
     test_data = dataset[0].to(device)
