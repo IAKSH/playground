@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  recom:
+    build: ./recom
+    container_name: recom
+    env_file:
+      - envs/db.env
+
+  frpc:
+    image: snowdreamtech/frpc
+    container_name: frpc
+    volumes:
+      - ./frpc/frpc.ini:/frpc.ini
+    command: -c /frpc.ini
+    env_file:
+      - .envs/frp.env

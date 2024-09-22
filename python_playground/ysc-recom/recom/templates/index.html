@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test</title>
+    <script>
+        async function getRecommendations() {
+            const info = document.getElementById('info').value;
+            const response = await fetch('/api/recom', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ info: info })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                document.getElementById('result').innerText = JSON.stringify(result, null, 2);
+            } else {
+                document.getElementById('result').innerText = 'Error: ' + response.statusText;
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>API Test</h1>
+    <label for="info">Info:</label>
+    <input type="text" id="info" name="info" placeholder="输入商品信息">
+    <button onclick="getRecommendations()">Get Recommendations</button>
+    <h2>Result:</h2>
+    <pre id="result"></pre>
+</body>
+</html>
