@@ -7,22 +7,19 @@ using namespace std;
 class Solution {
 public:
     vector<vector<int>> merge(vector<vector<int>>& intervals) {
+        vector<vector<int>> res;
         sort(intervals.begin(),intervals.end());
-        for(int i = 0;i < intervals.size() - 1;i++) {
-            auto it = intervals.begin() + i;
-            int val = it->back();
-            auto j = it + 1;
-            while(i < intervals.size() - 1 && j->front() <= val) {
-                if(j->back() <= val) {
-                    intervals.erase(j);
-                }
-                else {
-                    val = it->back() = j->back();
-                    intervals.erase(j);
-                }
+        for(int i = 0;i < intervals.size();) {
+            int val = intervals[i][1];
+            int j = i + 1;
+            while (j < intervals.size() && intervals[j][0] <= val) {
+                val = max(val, intervals[j][1]);
+                j++;
             }
+            res.emplace_back(vector<int>{intervals[i][0],val});
+            i = j;
         }
-        return intervals;
+        return res;
     }
 };
 
