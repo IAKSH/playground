@@ -7,25 +7,21 @@ using namespace std;
 class Solution {
 public:
     vector<vector<int>> merge(vector<vector<int>>& intervals) {
-        sort(intervals.begin(),intervals.end(),[](const vector<int>& a,const vector<int>& b){
-            return a[0] < b[0];
-        });
-
-        for(auto i = intervals.begin();i != intervals.end();) {
-            bool go = true;
-            for(auto j = i + 1;j != intervals.end();j++) {
-                if(i->back() >= j->front()) {
-                    j->front() = i->front();
-                    j->back() = max(j->back(),i->back());
-                    intervals.erase(i);
-                    go = false;
-                    break;
+        sort(intervals.begin(),intervals.end());
+        for(int i = 0;i < intervals.size() - 1;i++) {
+            auto it = intervals.begin() + i;
+            int val = it->back();
+            auto j = it + 1;
+            while(i < intervals.size() - 1 && j->front() <= val) {
+                if(j->back() <= val) {
+                    intervals.erase(j);
+                }
+                else {
+                    val = it->back() = j->back();
+                    intervals.erase(j);
                 }
             }
-            if(go)
-                ++i;
         }
-
         return intervals;
     }
 };
@@ -44,7 +40,8 @@ void test(vector<vector<int>>&& intervals) {
 int main() {
     test(vector<vector<int>>{{1,2},{2,6},{8,10},{15,18}});
     test(vector<vector<int>>{{1,4},{2,3}});
-    test(vector<vector<int>>{{2,3},{4,5},{6,7},{8,9},{1,10}});
+    test(vector<vector<int>>{{2,3},{4,5},{6,7},{8,9},{1,10}});//{1,10},{2,3},{4,5},{6,7},{8,9}
     test(vector<vector<int>>{{1,4},{0,0}});
+    test(vector<vector<int>>{{1,4},{0,2},{3,5}});
     return 0;
 }
