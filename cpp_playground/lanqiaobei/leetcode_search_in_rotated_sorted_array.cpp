@@ -7,51 +7,50 @@ using namespace std;
 class Solution {
 public:
     int search(vector<int>& nums, int target) {
-        if(nums.size() == 1)
+        int l = 0, r = nums.size() - 1, m = 0;
+        if(nums[l] == nums[r])
             return (nums[0] == target ? 0 : -1);
-        return locate_broke_point(nums,target,0,nums.size() - 1);
+        if(nums[l] < nums[r])
+            return bin_search(nums,target,0,nums.size());
+        
+        while(l < r) {
+            if(nums[l] > nums[r]) {
+                m = (l + r) / 2;
+                if(nums[m] == target)
+                    return m;
+                if(nums[m] < nums[l]) {
+                    if(m + 1 < nums.size() && nums[m + 1] < nums[m]) {
+                        ++m;
+                        break;
+                    }
+                    if(m > 0 && nums[m - 1] > nums[m]) {
+                        --m;
+                        break;
+                    }
+                    r = m;
+                }
+                else {
+                    if(m + 1 < nums.size() && nums[m + 1] < nums[m]) {
+                        ++m;
+                        break;
+                    }
+                    if(m > 0 && nums[m - 1] > nums[m]) {
+                        --m;
+                        break;
+                    }
+                    l = m + 1;
+                }
+            }
+        }
+        
+        int result_l = bin_search(nums,target,0,m);
+        int result_r = bin_search(nums,target,m,nums.size());
+        return (result_l == -1 ? result_r : result_l);
     }
 
 private:
-    int locate_broke_point(vector<int>& nums,int target,int l,int r) {
-        if(r - l > 1) {
-            int m = (l + r) / 2;
-            if(nums[m] == target) {
-                return m;
-            }
-            if(nums[m] > nums[m + 1]) {
-                // find
-                return search_both_side(nums,target,m);
-            }
-            else {
-                int a = locate_broke_point(nums,target,0,m - 1);
-                int b = locate_broke_point(nums,target,m + 1,r);
-                return (a == -1 ? b : a);
-            }
-        }
-        else {
-            for(;l <= r;l++) {
-                if(nums[l] == target)
-                    return l;
-            }
-            return -1;
-        }
-    }
-
-    int search_both_side(vector<int>& nums, int target,int m) {
-        int result_l = bin_search(nums,target,0,m);
-        int result_r = bin_search(nums,target,m + 1,nums.size() - 1);
-        if(result_l != -1)
-            return result_l;
-        else
-            return result_r;
-    }
-
     int bin_search(vector<int>& nums,int target,int l ,int r) {
-        //cout << "request bin search in (" << l << ',' << r << "}\n";
-        while(l <= r) {
-            if(l == r)
-                return (nums[l] == target ? l : -1);
+        while(l < r) {
             int m = (r + l) / 2;
             if(nums[m] == target)
                 return m;
@@ -60,13 +59,13 @@ private:
             else
                 r = m;
         }
-        return -1;
+        return (l < nums.size() && nums[l] == target ? l : -1);
     }
 };
 
 int main() {
-    vector<int> nums{1,3,5};
-    std::cout << Solution().search(nums,5) << '\n';
+    vector<int> nums{1,3};
+    cout << Solution().search(nums,4) << '\n';
     return 0;
 }
 
