@@ -13,14 +13,23 @@ struct ListNode {
 class Solution {
 public:
     ListNode *detectCycle(ListNode *head) {
-        unordered_set<ListNode*> mem;
-        ListNode* node = head;
-        while(node) {
-            if(mem.count(node))
-                return node;
-            mem.emplace(node);
-            node = node->next;
+        ListNode *f,*s;
+        int i;
+        f = s = head;
+
+        while(f && f->next) {
+            f = f->next->next;
+            s = s->next;
+            if(s == f) {
+                f = head;
+                while(f != s) {
+                    f = f->next;
+                    s = s->next;
+                }
+                return f;
+            }
         }
+
         return NULL;
     }
 };
