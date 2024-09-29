@@ -11,9 +11,7 @@ public:
         stack<pair<int,int>> s;
         vector<int> result(temperatures.size(),0);
         for(int i = 0;i < temperatures.size();i++) {
-            while(!s.empty()) {
-                if(temperatures[i] <= s.top().first)
-                    break;
+            while(!s.empty() && temperatures[i] > s.top().first) {
                 result[s.top().second] = i - s.top().second;
                 s.pop();
             }
