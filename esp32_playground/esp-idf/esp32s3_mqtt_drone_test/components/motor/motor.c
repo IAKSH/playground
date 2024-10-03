@@ -19,8 +19,10 @@
 #define MOTOR_LEDC_HS_CH4_GPIO       (7)
 #define MOTOR_LEDC_HS_CH4_CHANNEL    LEDC_CHANNEL_4
 
+uint16_t motor_test_duty;
+
 #define MOTOR_TEST_CH_NUM       (5)
-#define MOTOR_TEST_DUTY         (4000)    // 渐变的变大最终目标占空比
+#define MOTOR_TEST_DUTY         (motor_test_duty)
 #define MOTOR_TEST_FADE_TIME    (3000)    // 变化时长
 
 static ledc_channel_config_t ledc_channel[MOTOR_TEST_CH_NUM] =
@@ -106,10 +108,19 @@ void motor_ledc_initialize(void) {
 }
 
 void motor_ledc_test(int count) {
+    count = 114514;
+    MOTOR_TEST_DUTY = 0;
+
     // 初始化淡入淡出服务
     ledc_fade_func_install(0);    // 注册LEDC服务，在调用前使用，参数是作为是否允许中断
  
     for(int i = 0;i < count;i++) {
+
+        if(MOTOR_TEST_DUTY < 8192) {
+            MOTOR_TEST_DUTY += 1024;
+            //printf("current MOTOR_TEST_DUTY = %d\n",MOTOR_TEST_DUTY);
+        }
+
         printf("1. LEDC fade up to duty = %d\n", MOTOR_TEST_DUTY);
         for (int ch = 0; ch < MOTOR_TEST_CH_NUM; ch++) {
             // 配置LEDC定时器
@@ -135,4 +146,9 @@ void motor_ledc_test(int count) {
     }
 
     ledc_fade_func_uninstall();
+}
+
+void set_motor_duty(uint8_t channel,uint16_t duty) {
+    ledc_set_duty(ledc_channel[channel].speed_mode, ledc_channel[channel].channel, duty);
+    ledc_update_duty(ledc_channel[channel].speed_mode, ledc_channel[channel].channel);
 }

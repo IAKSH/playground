@@ -6,7 +6,9 @@ set(__PROJECT_GROUP_LINK_COMPONENTS ON)
 
 set(PLANE_COMPONENT_DIRS "./components/mpu6050"
                         "./components/bmp280" 
-                        "./components/kalman")
+                        "./components/kalman"
+                        "./components/motor"
+                        )
 
 set(EXTRA_COMPONENT_DIRS "${EXTRA_COMPONENT_DIRS} ${PLANE_COMPONENT_DIRS}")
 

@@ -14,6 +14,8 @@
 
 #include "../drone_status.h"
 
+#include <motor.h>
+
 static const char *TAG = "mqtt5_example";
 
 static void log_error_if_nonzero(const char *message, int error_code) {
@@ -23,7 +25,7 @@ static void log_error_if_nonzero(const char *message, int error_code) {
 }
 
 static int msg_id_gryo_euler,msg_id_gryo_accel,msg_id_gryo_temperature,
-    msg_id_barometer_pressure,msg_id_barometer_temperature,msg_id_barometer_altitude;
+    msg_id_barometer_pressure,msg_id_barometer_temperature,msg_id_barometer_altitude,msg_id_motor_duty;
 
 static esp_mqtt_client_handle_t client;
 
@@ -43,6 +45,10 @@ static void task_mqtt_publish() {
         msg_id_barometer_temperature = esp_mqtt_client_publish(client, "/drone/barometer/temperature",mqtt_str,  0, 1, 1);
         sprintf(mqtt_str,"%.2f",drone_barometer_altitude);
         msg_id_barometer_altitude = esp_mqtt_client_publish(client, "/drone/barometer/altitude",mqtt_str,  0, 1, 1);
+        
+        // motor pwm test
+        sprintf(mqtt_str,"%d",motor_test_duty);
+        msg_id_motor_duty = esp_mqtt_client_publish(client, "/drone/motor/duty",mqtt_str,  0, 1, 1);
 
         vTaskDelay(pdMS_TO_TICKS(50));
     }
