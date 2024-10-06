@@ -4,6 +4,7 @@
 
 using namespace std;
 
+/*
 class Solution {
 public:
     void setZeroes(vector<vector<int>>& matrix) {
@@ -27,6 +28,29 @@ public:
         }
     }
 };
+*/
+
+class Solution {
+public:
+    void setZeroes(vector<vector<int>>& matrix) {
+        stack<pair<int,int>> s;
+        for(int i = 0;i < matrix.size();i++) {
+            for(int j = 0;j < matrix[0].size();j++) {
+                if(matrix[i][j] == 0) {
+                    s.emplace(make_pair(i,j));
+                }
+            }
+        }
+
+        while(!s.empty()) {
+            auto& l = matrix[s.top().first];
+            fill(l.begin(),l.end(),0);
+            for(int i = 0;i < matrix.size();i++)
+                matrix[i][s.top().second] = 0;
+            s.pop();
+        }
+    }
+};
 
 void print_matrix(const vector<vector<int>>& matrix) {
     for(const auto& line : matrix) {
@@ -37,7 +61,6 @@ void print_matrix(const vector<vector<int>>& matrix) {
 }
 
 int main() {
-    //[[0,1,2,0],[3,4,5,2],[1,3,1,5]]
     vector<vector<int>> matrix{{0,1,2,0},{3,4,5,2},{1,3,1,5}};
     print_matrix(matrix);
     Solution().setZeroes(matrix);
