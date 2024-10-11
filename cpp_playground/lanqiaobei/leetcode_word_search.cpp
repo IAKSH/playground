@@ -17,7 +17,7 @@ public:
     }
 
 private:
-    bool dfs(const vector<vector<char>>& board,vector<vector<bool>> mark,const string& word,int i,int j,int cnt) {
+    bool dfs(const vector<vector<char>>& board,vector<vector<bool>>& mark,const string& word,int i,int j,int cnt) {
         if(!mark[i][j] && cnt < word.size() && board[i][j] == word[cnt]) {
             mark[i][j] = true;
             if(cnt == word.size() - 1 ||
