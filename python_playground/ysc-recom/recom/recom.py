@@ -141,22 +141,58 @@ def train():
     combined_embeddings = create_embeddings(item_pic_urls, item_titles)
     combined_embeddings_tensor = torch.cat(combined_embeddings).to(device)
     edge_index = edge_index.to(device)
-    batch_size = 32
-    num_heads = 8
-    num_epoch = 5
-    lr = 0.00001
+
     data_list = []
     for sub_edge_index in get_subgraph(edge_index, batch_size):
         data = Data(x=combined_embeddings_tensor, edge_index=sub_edge_index)
         data_list.append(data)
     dataloader = DataLoader(data_list, batch_size=batch_size, shuffle=True)
-    model = Autoencoder(input_dim=combined_embeddings_tensor.size(1),
-                        hidden_dim=256, num_heads=num_heads, num_layers=2, fc_hidden_dim=128, dropout_rate=0.2).to(
-        device)
+    # input_dim = combined_embeddings_tensor.size(1)
+    model = Autoencoder(input_dim=input_dim,hidden_dim=hidden_dim, num_heads=num_heads, num_layers=num_layers,
+                        fc_hidden_dim=fc_hidden_dim, dropout_rate=dropout_rate).to(device)
     optimizer = optim.Adam(model.parameters(), lr=lr)
     criterion = nn.MSELoss()
     train_model(model, dataloader, optimizer, criterion, device, num_epoch)
 
 
+def test_encode(model_path, image_path, text):
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model = Autoencoder(input_dim=input_dim, hidden_dim=hidden_dim, num_heads=num_heads, num_layers=num_layers, fc_hidden_dim=fc_hidden_dim,
+                        dropout_rate=dropout_rate)
+    model.load_state_dict(torch.load(model_path))
+    model.to(device)
+    model.eval()
+
+    bert_model = BertModel.from_pretrained('bert-base-uncased')
+    bert_tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+    resnet_model = models.resnet50(pretrained=True)
+    resnet_model.eval()
+    resnet_model.fc = nn.Identity()  # 去掉分类层
+
+    # 获取嵌入
+    text_embedding = embed_text(bert_tokenizer, bert_model, text).to(device)
+    image_embedding = embed_image(resnet_model, image_path).to(device)
+    # 合并嵌入
+    combined_embedding = torch.cat((text_embedding, image_embedding), dim=1)
+    # 创建一个测试用的dummy edge_index
+    edge_index = torch.tensor([[], []], dtype=torch.long).to(device)
+    # 获取编码器输出的低维特征向量
+    with torch.no_grad():
+        for layer in model.encoder:
+            combined_embedding = layer(combined_embedding, edge_index)
+    return combined_embedding
+
+
 if __name__ == '__main__':
-    train()
+    batch_size = 32
+    num_heads = 8
+    num_epoch = 5
+    lr = 0.00001
+    hidden_dim = 256
+    num_layers = 2
+    fc_hidden_dim = 128
+    dropout_rate = 0.2
+    input_dim = 2816
+
+    #train()
+    print(test_encode('autoencoder.pth', 'C:\\Users\\lain\\Pictures\\wallhaven-x6m7dl_2560x1440.png', '衣服'))
