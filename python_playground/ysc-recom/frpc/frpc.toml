@@ -1,10 +1,10 @@
-serverAddr = {{ .Envs.FRP_SERVER_ADDR }}
+serverAddr = "{{ .Envs.FRP_SERVER_ADDR }}"
 serverPort = {{ .Envs.FRP_SERVER_PORT }}
+auth.token = "{{ .Envs.FRP_SERVER_TOKEN }}"
 
-[[web]]
+[[proxies]]
 name = "web"
-type = "http"
+type = "tcp"
 localIP = "recom"
 localPort = 5000
 remotePort = {{ .Envs.FRP_WEB_REMOTE_PORT }}
-customDomains = {{ .Envs.FRP_WEB_CUSTOM_DOMAINS }}
