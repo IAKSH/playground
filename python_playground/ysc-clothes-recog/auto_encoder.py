@@ -150,10 +150,6 @@ def load_all_encoded_from_db(db_conn):
     return data
 
 
-def euclidean_distance(vec1, vec2):
-    return np.linalg.norm(vec1 - vec2)
-
-
 def find_closest_encoded(device, model, image_path, db_conn):
     model.eval()
     image = load_image(image_path).to(device)
