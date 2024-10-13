@@ -9,6 +9,7 @@ from tqdm import tqdm
 from PIL import Image
 import sqlite3
 import numpy as np
+import annoy
 
 
 class CAE(nn.Module):
@@ -26,7 +27,6 @@ class CAE(nn.Module):
             nn.ReLU(),
             nn.Linear(hidden_dim, bottleneck_dim)
         )
-
         self.decoder = nn.Sequential(
             nn.Linear(bottleneck_dim, hidden_dim),
             nn.ReLU(),
@@ -160,17 +160,23 @@ def find_closest_encoded(device, model, image_path, db_conn):
     with torch.no_grad():
         encoded, _ = model(image)
     encoded = encoded.cpu().numpy()
+
+    # Load data from the database
     data = load_all_encoded_from_db(db_conn)
-    min_distance = float('inf')
-    closest_record = None
-    for record in tqdm(data):
+    index = annoy.AnnoyIndex(encoded.shape[1], 'euclidean')  # Create Annoy index
+
+    # Add data to Annoy index
+    for i, record in enumerate(data):
         id, name, encoded_blob = record
         encoded_db = np.frombuffer(encoded_blob, dtype=np.float32)
-        distance = euclidean_distance(encoded, encoded_db)
-        if distance < min_distance:
-            min_distance = distance
-            closest_record = (id, name)
-    return closest_record
+        index.add_item(i, encoded_db)
+
+    index.build(10)  # Build the tree with 10 trees
+
+    # Query the index for the nearest neighbor
+    nearest = index.get_nns_by_vector(encoded.flatten(), 1)[0]
+    closest_record = data[nearest]
+    return closest_record[0], closest_record[1]
 
 
 def load_test_data_to_db():
