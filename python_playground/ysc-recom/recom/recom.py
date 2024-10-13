@@ -11,6 +11,10 @@ import matplotlib.pyplot as plt
 from torch_geometric.nn import GATConv
 from torch_geometric.data import Data, DataLoader
 from tqdm import tqdm
+from sklearn.cluster import DBSCAN
+import numpy as np
+import sqlite3
+
 
 class Autoencoder(nn.Module):
     def __init__(self, input_dim, hidden_dim, num_heads, num_layers, fc_hidden_dim, dropout_rate):
@@ -183,6 +187,133 @@ def test_encode(model_path, image_path, text):
     return combined_embedding
 
 
+def open_sqlite3(sqlite3_db_path):
+    conn = sqlite3.connect(sqlite3_db_path)
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS EncodedData (
+            id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL,
+            encoded BLOB NOT NULL
+        )
+    ''')
+    conn.commit()
+    return conn
+
+
+def load_data_to_sqlite3(device, sqlite3_conn):
+    # Retrieve data from the cloud database
+    item_pic_urls, item_titles, item_ids_dict, edge_index = get_data_from_db()
+
+    # Load models
+    bert_model = BertModel.from_pretrained('bert-base-uncased')
+    bert_tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+    resnet_model = models.resnet50(pretrained=True)
+    resnet_model.eval()
+    resnet_model.fc = nn.Identity()  # Remove the classification layer
+
+    # Initialize the autoencoder
+    model = Autoencoder(input_dim=input_dim, hidden_dim=hidden_dim, num_heads=num_heads, num_layers=num_layers,
+                        fc_hidden_dim=fc_hidden_dim, dropout_rate=dropout_rate).to(device)
+    model.load_state_dict(torch.load('autoencoder.pth'))
+    model.eval()
+
+    # Encode data using BERT and ResNet, and then use the autoencoder
+    text_embeddings = [embed_text(bert_tokenizer, bert_model, text) for text in item_titles]
+    image_embeddings = [embed_image(resnet_model, img_path) for img_path in item_pic_urls]
+    combined_embeddings = [torch.cat((text_emb, img_emb), dim=1).to(device) for text_emb, img_emb in
+                           zip(text_embeddings, image_embeddings)]
+
+    autoencoded_embeddings = []
+    for emb in combined_embeddings:
+        with torch.no_grad():
+            # Create a dummy edge_index for encoding
+            dummy_edge_index = torch.tensor([[], []], dtype=torch.long).to(device)
+            for layer in model.encoder:
+                emb = layer(emb, dummy_edge_index)
+            autoencoded_embeddings.append(emb.cpu().numpy())
+
+    # Store in SQLite
+    cursor = sqlite3_conn.cursor()
+    for idx, embedding in enumerate(autoencoded_embeddings):
+        # Convert tensor to bytes
+        encoded_data = embedding.tobytes()
+        cursor.execute("INSERT INTO EncodedData (id, name, encoded) VALUES (?, ?, ?)",
+                       (idx, item_titles[idx], encoded_data))
+
+    sqlite3_conn.commit()
+
+
+def load_all_encoded_from_sqlite3(sqlite3_conn):
+    cursor = sqlite3_conn.cursor()
+    cursor.execute("SELECT id, name, encoded FROM EncodedData")
+    data = cursor.fetchall()
+    return data
+
+
+def recom(device, sqlite3_conn, item_info, item_image):
+    # Encode the input item
+    bert_model = BertModel.from_pretrained('bert-base-uncased')
+    bert_tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+    resnet_model = models.resnet50(pretrained=True)
+    resnet_model.eval()
+    resnet_model.fc = nn.Identity()  # Remove the classification layer
+
+    text_embedding = embed_text(bert_tokenizer, bert_model, item_info).to(device)
+    image_embedding = embed_image(resnet_model, item_image).to(device)
+    combined_embedding = torch.cat((text_embedding, image_embedding), dim=1)
+
+    # Load the autoencoder model
+    model = Autoencoder(input_dim=input_dim, hidden_dim=hidden_dim, num_heads=num_heads, num_layers=num_layers,
+                        fc_hidden_dim=fc_hidden_dim, dropout_rate=dropout_rate).to(device)
+    model.load_state_dict(torch.load('autoencoder.pth'))
+    model.eval()
+
+    # Encode using the autoencoder
+    with torch.no_grad():
+        dummy_edge_index = torch.tensor([[], []], dtype=torch.long).to(device)
+        for layer in model.encoder:
+            combined_embedding = layer(combined_embedding, dummy_edge_index)
+        combined_embedding = combined_embedding.cpu().numpy()
+
+    # Flatten the embedding
+    combined_embedding = combined_embedding.flatten()
+
+    # Load all encoded items from SQLite
+    all_encoded = load_all_encoded_from_sqlite3(sqlite3_conn)
+
+    # Convert stored BLOBs back to numpy arrays and flatten them
+    encoded_items = [np.frombuffer(row[2], dtype=np.float32).flatten() for row in all_encoded]
+    item_names = [row[1] for row in all_encoded]
+
+    # Append the input item embedding
+    encoded_items.append(combined_embedding)
+
+    # Cluster using DBSCAN
+    dbscan = DBSCAN(eps=0.5, min_samples=2, metric='euclidean')
+    labels = dbscan.fit_predict(encoded_items)
+
+    # Identify the cluster of the input item
+    input_item_cluster = labels[-1]
+
+    # Get recommendations from the same cluster
+    recommendations = []
+    for idx, label in enumerate(labels[:-1]):
+        if label == input_item_cluster:
+            recommendations.append((idx,item_names[idx]))
+
+    return recommendations
+
+
+def test_recom(gen_sqlite3=False):
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    sqlite3_conn = open_sqlite3('encoded.db')
+    if gen_sqlite3:
+        load_data_to_sqlite3(device,sqlite3_conn)
+    print(recom(device, sqlite3_conn, '衣服', 'C:\\Users\\lain\\Pictures\\wallhaven-x6m7dl_2560x1440.png'))
+    sqlite3_conn.close()
+
+
 if __name__ == '__main__':
     batch_size = 32
     num_heads = 8
@@ -195,4 +326,5 @@ if __name__ == '__main__':
     input_dim = 2816
 
     #train()
-    print(test_encode('autoencoder.pth', 'C:\\Users\\lain\\Pictures\\wallhaven-x6m7dl_2560x1440.png', '衣服'))
+    #print(test_encode('autoencoder.pth', 'C:\\Users\\lain\\Pictures\\wallhaven-x6m7dl_2560x1440.png', '衣服'))
+    test_recom()
