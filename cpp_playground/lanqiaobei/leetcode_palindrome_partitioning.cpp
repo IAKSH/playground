@@ -16,20 +16,15 @@ private:
     void dfs(const string& s,vector<vector<string>>& results,vector<string> v,int l,int len) {
         v.emplace_back(s.substr(l,len));
         if(l + len == s.size()) {
-            bool b = true;
-            for(const auto& i : v) {
-                if(!check(i)) {
-                    b = false;
-                    break;
-                }
-            }
-            if(b)
+            if(check(v.back()))
                 results.emplace_back(v);
         }
         for(int i = 1;i < s.size() - l;i++) {
             auto new_v = v;
             new_v.pop_back();
             new_v.emplace_back(s.substr(l,i));
+            if(!check(new_v.back()))
+                continue;
             dfs(s,results,new_v,l + i,s.size() - l - i);
         }
     }
