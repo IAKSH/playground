@@ -81,17 +81,20 @@ def embed_text(bert_tokenizer,bert_model,text):
     return outputs.last_hidden_state.mean(dim=1)
 
 
-def embed_image(resnet_model,image_path):
-    #input_image = Image.open(image_path).convert('RGB')
-    # for test only
-    input_image = Image.open("C:\\Users\\lain\\Pictures\\wallhaven-x6m7dl_2560x1440.png").convert('RGB')
+def generate_random_image():
+    random_image = np.random.randint(0, 256, (224, 224, 3), dtype=np.uint8)
+    return Image.fromarray(random_image)
+
+
+def embed_image(resnet_model, image_url=None):
+    input_image = generate_random_image().convert('RGB')
     preprocess = transforms.Compose([
         transforms.Resize(256),
         transforms.CenterCrop(224),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
-    input_tensor = preprocess(input_image).unsqueeze(0)  # create a mini-batch as expected by the model
+    input_tensor = preprocess(input_image).unsqueeze(0)  # 创建一个 mini-batch
     with torch.no_grad():
         embedding = resnet_model(input_tensor)
     return embedding
@@ -111,28 +114,14 @@ def pre_embedding(item_pic_urls, item_titles):
     return combined_embeddings
 
 
-def get_subgraph(edge_index, batch_size):
+def get_subgraph(edge_index):
     num_edges = edge_index.size(1)
     for i in range(0, num_edges, batch_size):
         sub_edge_index = edge_index[:, i:i + batch_size]
         yield sub_edge_index
 
 
-def train(item_pic_urls, item_titles, item_ids_dict, edge_index):
-    combined_embeddings = pre_embedding(item_pic_urls, item_titles)
-    combined_embeddings_tensor = torch.cat(combined_embeddings).to(device)
-    edge_index = edge_index.to(device)
-
-    data_list = []
-    for sub_edge_index in get_subgraph(edge_index, batch_size):
-        data = Data(x=combined_embeddings_tensor, edge_index=sub_edge_index)
-        data_list.append(data)
-    dataloader = DataLoader(data_list, batch_size=batch_size, shuffle=True)
-    # input_dim = combined_embeddings_tensor.size(1)
-
-    optimizer = optim.Adam(model.parameters(), lr=lr)
-    criterion = nn.MSELoss()
-
+def train_model(dataloader, optimizer, criterion):
     model.to(device)
     training_losses = []
     for epoch in range(num_epoch):
@@ -144,7 +133,7 @@ def train(item_pic_urls, item_titles, item_ids_dict, edge_index):
             x, edge_index = x.to(device), edge_index.to(device)
             output = model(x, edge_index)
             loss = criterion(output, x)
-            # loss.backward()
+            #loss.backward()
             loss.backward(retain_graph=True)
             optimizer.step()
             total_loss += loss.item()
@@ -157,6 +146,24 @@ def train(item_pic_urls, item_titles, item_ids_dict, edge_index):
     plt.ylabel('Loss')
     plt.title('Training Loss')
     plt.savefig('train.jpg')
+
+
+def train(item_pic_urls, item_titles, edge_index):
+    combined_embeddings = pre_embedding(item_pic_urls, item_titles)
+    combined_embeddings_tensor = torch.cat(combined_embeddings).to(device)
+    edge_index = edge_index.to(device)
+
+    data_list = []
+    for sub_edge_index in get_subgraph(edge_index):
+        data = Data(x=combined_embeddings_tensor, edge_index=sub_edge_index)
+        data_list.append(data)
+    dataloader = DataLoader(data_list, batch_size=batch_size, shuffle=True)
+    # input_dim = combined_embeddings_tensor.size(1)
+    model = Autoencoder(input_dim=input_dim,hidden_dim=hidden_dim, num_heads=num_heads, num_layers=num_layers,
+                        fc_hidden_dim=fc_hidden_dim, dropout_rate=dropout_rate).to(device)
+    optimizer = optim.Adam(model.parameters(), lr=lr)
+    criterion = nn.MSELoss()
+    train_model(dataloader, optimizer, criterion)
 
 
 def encode(item_title, item_pic_url):
@@ -247,7 +254,7 @@ def ann_recom(db_path, input_item_title, input_item_pic_url, n):
 def demo():
     item_ids, item_pic_urls, item_titles, item_ids_dict, edge_index = get_data_from_db()
 
-    train(item_pic_urls, item_titles, item_ids_dict, edge_index)
+    train(item_pic_urls, item_titles, edge_index)
 
     # a = encode("autoencoder.pth","某种衣服","a.jpg")
     # print(a.shape)
@@ -260,12 +267,12 @@ def demo():
 
 if __name__ == '__main__':
     batch_size = 32
-    num_heads = 4
+    num_heads = 8
     num_epoch = 5
-    lr = 0.000001
-    hidden_dim = 128
-    num_layers = 1
-    fc_hidden_dim = 64
+    lr = 0.00001
+    hidden_dim = 512
+    num_layers = 2
+    fc_hidden_dim = 256
     dropout_rate = 0.2
     input_dim = 2816
 
