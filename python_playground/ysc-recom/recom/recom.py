@@ -11,11 +11,9 @@ import matplotlib.pyplot as plt
 from torch_geometric.nn import GATConv
 from torch_geometric.data import Data, DataLoader
 from tqdm import tqdm
-from sklearn.cluster import DBSCAN
-import numpy as np
 import sqlite3
-from flask import Flask, jsonify, request, render_template
 import faiss
+import numpy as np
 
 
 class Autoencoder(nn.Module):
@@ -120,9 +118,7 @@ def get_subgraph(edge_index, batch_size):
         yield sub_edge_index
 
 
-def train():
-    _, item_pic_urls, item_titles, item_ids_dict, edge_index = get_data_from_db()
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+def train(item_pic_urls, item_titles, item_ids_dict, edge_index):
     combined_embeddings = pre_embedding(item_pic_urls, item_titles)
     combined_embeddings_tensor = torch.cat(combined_embeddings).to(device)
     edge_index = edge_index.to(device)
@@ -133,8 +129,7 @@ def train():
         data_list.append(data)
     dataloader = DataLoader(data_list, batch_size=batch_size, shuffle=True)
     # input_dim = combined_embeddings_tensor.size(1)
-    model = Autoencoder(input_dim=input_dim,hidden_dim=hidden_dim, num_heads=num_heads, num_layers=num_layers,
-                        fc_hidden_dim=fc_hidden_dim, dropout_rate=dropout_rate).to(device)
+
     optimizer = optim.Adam(model.parameters(), lr=lr)
     criterion = nn.MSELoss()
 
@@ -180,16 +175,6 @@ def encode(item_title, item_pic_url):
     return encoded
 
 
-def dbscan(encoded_items, item_ids, eps=0.5, min_samples=2):
-    # Convert encoded items to numpy array for DBSCAN
-    X = np.vstack([item.cpu().detach().numpy() for item in encoded_items])
-    # Perform DBSCAN clustering
-    clustering = DBSCAN(eps=eps, min_samples=min_samples).fit(X)
-    # Create a dictionary to hold the item IDs and their cluster labels
-    cluster_results = {item_id: cluster_label for item_id, cluster_label in zip(item_ids, clustering.labels_)}
-    return cluster_results
-
-
 def init_encoded_item_db(db_path, item_ids, item_ids_dict, item_titles, item_pic_urls):
     # Open a connection to the local SQLite3 database
     connection = sqlite3.connect(db_path)
@@ -220,8 +205,10 @@ def init_encoded_item_db(db_path, item_ids, item_ids_dict, item_titles, item_pic
     connection.close()
 
 
-# UNUSABLE!!!
-def recom_using_dbscan(db_path, item_title, item_pic_url):
+def ann_recom(db_path, input_item_title, input_item_pic_url, n):
+    # Encode the input item
+    encoded_input = encode(input_item_title, input_item_pic_url).cpu().numpy().astype('float32').reshape(1, -1)
+
     # Open a connection to the local SQLite3 database
     connection = sqlite3.connect(db_path)
     cursor = connection.cursor()
@@ -230,7 +217,7 @@ def recom_using_dbscan(db_path, item_title, item_pic_url):
     cursor.execute('SELECT item_id, item_title, encoded FROM encoded_items')
     items = cursor.fetchall()
 
-    # Convert fetched items to a suitable format for DBSCAN
+    # Convert fetched items to a suitable format for ANN
     item_ids = []
     item_titles = []
     encoded_items = []
@@ -239,33 +226,28 @@ def recom_using_dbscan(db_path, item_title, item_pic_url):
         item_id, item_title, encoded_blob = item
         item_ids.append(item_id)
         item_titles.append(item_title)
-        encoded_items.append(torch.tensor(np.frombuffer(encoded_blob, dtype=np.float32)))
+        encoded_items.append(np.frombuffer(encoded_blob, dtype=np.float32))
 
-    # Encode the input item
-    encoded_input = encode(item_title, item_pic_url)
+    encoded_items = np.vstack(encoded_items).astype('float32')
 
-    # Append the encoded input item to the list with a unique temporary ID
-    temp_id = max(item_ids) + 1 if item_ids else 0
-    item_ids.append(temp_id)
-    item_titles.append(item_title)
-    encoded_items.append(encoded_input)
+    # Initialize FAISS index
+    dimension = encoded_items.shape[1]
+    index = faiss.IndexFlatL2(dimension)  # Use L2 distance
+    index.add(encoded_items)
 
-    # Perform DBSCAN on the combined items
-    cluster_results = dbscan(encoded_items, item_ids)
+    # Perform the ANN search
+    distances, indices = index.search(encoded_input, n if n != -1 else len(item_ids))
 
-    # Get the cluster label of the input item
-    input_cluster_label = cluster_results[temp_id]
+    # Extract the nearest items
+    nearest_items = [(item_ids[i], item_titles[i]) for i in indices[0]]
 
-    # Find all items in the same cluster as the input item
-    same_cluster_items = [(item_ids[i], item_titles[i]) for i in range(len(item_ids)) if cluster_results[item_ids[i]] == input_cluster_label and item_ids[i] != temp_id]
-
-    return same_cluster_items
+    return nearest_items
 
 
 def demo():
     item_ids, item_pic_urls, item_titles, item_ids_dict, edge_index = get_data_from_db()
 
-    # train()
+    train(item_pic_urls, item_titles, item_ids_dict, edge_index)
 
     # a = encode("autoencoder.pth","某种衣服","a.jpg")
     # print(a.shape)
@@ -273,28 +255,25 @@ def demo():
 
     #init_encoded_item_db("encoded.db",item_ids,item_ids_dict,item_titles,item_pic_urls)
 
-    print(recom_using_dbscan("encoded.db","无贰集原创设计 明制 黛山清游 绣花立领斜襟长衫429、无绣花立领斜襟长衫369、定织缎面仿妆花马面裙299、绣花云肩329、背云49","a.jpg"))
+    #print(ann_recom("encoded.db","秦汉","a.jpg",3))
 
 
 if __name__ == '__main__':
     batch_size = 32
-    num_heads = 8
+    num_heads = 4
     num_epoch = 5
-    lr = 0.00001
-    hidden_dim = 256
-    num_layers = 2
-    fc_hidden_dim = 128
+    lr = 0.000001
+    hidden_dim = 128
+    num_layers = 1
+    fc_hidden_dim = 64
     dropout_rate = 0.2
     input_dim = 2816
 
-    dbscan_eps = 0.9
-    dbscan_min_samples = 2
-
-    #device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    device = torch.device('cpu')
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    #device = torch.device('cpu')
     model = Autoencoder(input_dim=input_dim, hidden_dim=hidden_dim, num_heads=num_heads, num_layers=num_layers,
                         fc_hidden_dim=fc_hidden_dim, dropout_rate=dropout_rate).to(device)
-    model.load_state_dict(torch.load("autoencoder.pth"))
-    model.eval()
+    #model.load_state_dict(torch.load("autoencoder.pth"))
+    #model.eval()
 
     demo()
