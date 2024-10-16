@@ -15,6 +15,7 @@ from sklearn.cluster import DBSCAN
 import numpy as np
 import sqlite3
 from flask import Flask, jsonify, request, render_template
+import faiss
 
 
 class Autoencoder(nn.Module):
@@ -189,14 +190,90 @@ def dbscan(encoded_items, item_ids, eps=0.5, min_samples=2):
     return cluster_results
 
 
-def dbscan_all():
-    # Pull all data from the database
-    item_ids, item_pic_urls, item_titles, item_ids_dict, edge_index = get_data_from_db()
-    # Encode each item using the encode function
+def init_encoded_item_db(db_path, item_ids, item_ids_dict, item_titles, item_pic_urls):
+    # Open a connection to the local SQLite3 database
+    connection = sqlite3.connect(db_path)
+    cursor = connection.cursor()
+
+    # Create a table to store the encoded results
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS encoded_items (
+        item_id INTEGER PRIMARY KEY,
+        item_title TEXT,
+        encoded BLOB
+    )
+    ''')
+
     encoded_results = [encode(title, img_url) for title, img_url in zip(item_titles, item_pic_urls)]
-    # Perform DBSCAN on the encoded items
-    cluster_results = dbscan(encoded_results, item_ids)
-    return cluster_results
+
+    # Insert the results into the database
+    for item_id, encoded_result in zip(item_ids, encoded_results):
+        encoded_blob = sqlite3.Binary(encoded_result.cpu().numpy().tobytes())
+
+        cursor.execute('''
+        INSERT INTO encoded_items (item_id, item_title, encoded)
+        VALUES (?, ?, ?)
+        ''', (item_id, item_titles[item_ids_dict[item_id]], encoded_blob))
+
+    # Commit the transaction and close the connection
+    connection.commit()
+    connection.close()
+
+
+# UNUSABLE!!!
+def recom_using_dbscan(db_path, item_title, item_pic_url):
+    # Open a connection to the local SQLite3 database
+    connection = sqlite3.connect(db_path)
+    cursor = connection.cursor()
+
+    # Fetch all encoded items from the database
+    cursor.execute('SELECT item_id, item_title, encoded FROM encoded_items')
+    items = cursor.fetchall()
+
+    # Convert fetched items to a suitable format for DBSCAN
+    item_ids = []
+    item_titles = []
+    encoded_items = []
+
+    for item in items:
+        item_id, item_title, encoded_blob = item
+        item_ids.append(item_id)
+        item_titles.append(item_title)
+        encoded_items.append(torch.tensor(np.frombuffer(encoded_blob, dtype=np.float32)))
+
+    # Encode the input item
+    encoded_input = encode(item_title, item_pic_url)
+
+    # Append the encoded input item to the list with a unique temporary ID
+    temp_id = max(item_ids) + 1 if item_ids else 0
+    item_ids.append(temp_id)
+    item_titles.append(item_title)
+    encoded_items.append(encoded_input)
+
+    # Perform DBSCAN on the combined items
+    cluster_results = dbscan(encoded_items, item_ids)
+
+    # Get the cluster label of the input item
+    input_cluster_label = cluster_results[temp_id]
+
+    # Find all items in the same cluster as the input item
+    same_cluster_items = [(item_ids[i], item_titles[i]) for i in range(len(item_ids)) if cluster_results[item_ids[i]] == input_cluster_label and item_ids[i] != temp_id]
+
+    return same_cluster_items
+
+
+def demo():
+    item_ids, item_pic_urls, item_titles, item_ids_dict, edge_index = get_data_from_db()
+
+    # train()
+
+    # a = encode("autoencoder.pth","某种衣服","a.jpg")
+    # print(a.shape)
+    # print(a)
+
+    #init_encoded_item_db("encoded.db",item_ids,item_ids_dict,item_titles,item_pic_urls)
+
+    print(recom_using_dbscan("encoded.db","无贰集原创设计 明制 黛山清游 绣花立领斜襟长衫429、无绣花立领斜襟长衫369、定织缎面仿妆花马面裙299、绣花云肩329、背云49","a.jpg"))
 
 
 if __name__ == '__main__':
@@ -213,22 +290,11 @@ if __name__ == '__main__':
     dbscan_eps = 0.9
     dbscan_min_samples = 2
 
-    #device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\
+    #device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     device = torch.device('cpu')
     model = Autoencoder(input_dim=input_dim, hidden_dim=hidden_dim, num_heads=num_heads, num_layers=num_layers,
                         fc_hidden_dim=fc_hidden_dim, dropout_rate=dropout_rate).to(device)
     model.load_state_dict(torch.load("autoencoder.pth"))
     model.eval()
 
-    dbscan_all()
-
-    #train()
-
-    #a = encode("autoencoder.pth","某种衣服","a.jpg")
-    #print(a.shape)
-    #print(a)
-
-
-
-
-
+    demo()
