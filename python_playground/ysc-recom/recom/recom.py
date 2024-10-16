@@ -73,7 +73,7 @@ def get_data_from_db():
             row.append(j)
             col.append(i)
     edge_index = torch.tensor([row, col], dtype=torch.long)
-    return item_pic_urls, item_titles, item_ids_dict, edge_index
+    return item_ids,item_pic_urls, item_titles, item_ids_dict, edge_index
 
 
 def embed_text(bert_tokenizer,bert_model,text):
@@ -120,7 +120,7 @@ def get_subgraph(edge_index, batch_size):
 
 
 def train():
-    item_pic_urls, item_titles, item_ids_dict, edge_index = get_data_from_db()
+    _, item_pic_urls, item_titles, item_ids_dict, edge_index = get_data_from_db()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     combined_embeddings = pre_embedding(item_pic_urls, item_titles)
     combined_embeddings_tensor = torch.cat(combined_embeddings).to(device)
@@ -163,12 +163,7 @@ def train():
     plt.savefig('train.jpg')
 
 
-def encode(model_path, item_title, item_pic_url):
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = Autoencoder(input_dim=input_dim, hidden_dim=hidden_dim, num_heads=num_heads, num_layers=num_layers,
-                        fc_hidden_dim=fc_hidden_dim, dropout_rate=dropout_rate).to(device)
-    model.load_state_dict(torch.load(model_path))
-    model.eval()
+def encode(item_title, item_pic_url):
     combined_embed = pre_embedding([item_pic_url], [item_title])
     combined_embed_tensor = torch.cat(combined_embed).to(device)
 
@@ -182,6 +177,26 @@ def encode(model_path, item_title, item_pic_url):
         encoded = torch.relu(model.fc2(x))
 
     return encoded
+
+
+def dbscan(encoded_items, item_ids, eps=0.5, min_samples=2):
+    # Convert encoded items to numpy array for DBSCAN
+    X = np.vstack([item.cpu().detach().numpy() for item in encoded_items])
+    # Perform DBSCAN clustering
+    clustering = DBSCAN(eps=eps, min_samples=min_samples).fit(X)
+    # Create a dictionary to hold the item IDs and their cluster labels
+    cluster_results = {item_id: cluster_label for item_id, cluster_label in zip(item_ids, clustering.labels_)}
+    return cluster_results
+
+
+def dbscan_all():
+    # Pull all data from the database
+    item_ids, item_pic_urls, item_titles, item_ids_dict, edge_index = get_data_from_db()
+    # Encode each item using the encode function
+    encoded_results = [encode(title, img_url) for title, img_url in zip(item_titles, item_pic_urls)]
+    # Perform DBSCAN on the encoded items
+    cluster_results = dbscan(encoded_results, item_ids)
+    return cluster_results
 
 
 if __name__ == '__main__':
@@ -198,9 +213,22 @@ if __name__ == '__main__':
     dbscan_eps = 0.9
     dbscan_min_samples = 2
 
+    #device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\
+    device = torch.device('cpu')
+    model = Autoencoder(input_dim=input_dim, hidden_dim=hidden_dim, num_heads=num_heads, num_layers=num_layers,
+                        fc_hidden_dim=fc_hidden_dim, dropout_rate=dropout_rate).to(device)
+    model.load_state_dict(torch.load("autoencoder.pth"))
+    model.eval()
+
+    dbscan_all()
+
     #train()
 
     #a = encode("autoencoder.pth","某种衣服","a.jpg")
     #print(a.shape)
     #print(a)
+
+
+
+
 
