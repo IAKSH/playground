@@ -1,6 +1,7 @@
 import pandas as pd
 from collections import defaultdict
 
+
 def preprocess_inter_file(inter_file, output_file, n_lines):
     user_items = defaultdict(list)
 
@@ -14,7 +15,7 @@ def preprocess_inter_file(inter_file, output_file, n_lines):
 
     # 写入输出文件，包括格式说明的第一行
     with open(output_file, 'w', encoding='utf-8', newline='') as f:
-        f.write("item_id:token\titem_id:token\n")  # 写入第一行
+        f.write("item_a_id:token\titem_b_id:token\n")  # 写入第一行
         for items in user_items.values():
             unique_pairs = set()
             for i in range(len(items)):
@@ -22,6 +23,7 @@ def preprocess_inter_file(inter_file, output_file, n_lines):
                     if (items[i], items[j]) not in unique_pairs and (items[j], items[i]) not in unique_pairs:
                         f.write(f"{items[i]}\t{items[j]}\n")
                         unique_pairs.add((items[i], items[j]))
+
 
 def process_item_file(item_file, output_file, inter_file):
     inter_items = set()
@@ -46,6 +48,7 @@ def process_item_file(item_file, output_file, inter_file):
     # 合并所有筛选后的块并写入文件
     result = pd.concat(filtered_chunks).drop_duplicates()
     result.to_csv(output_file, sep='\t', index=False, header=True, mode='w', encoding='utf-8')
+
 
 if __name__ == "__main__":
     inter_file = '../data/Alibaba-iFashion/Alibaba-iFashion.inter'
