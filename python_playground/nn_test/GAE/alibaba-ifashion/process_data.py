@@ -55,7 +55,7 @@ if __name__ == "__main__":
     item_file = '../data/Alibaba-iFashion/Alibaba-iFashion.item'
     inter_output_file = '../data/Alibaba-iFashion/Alibaba-iFashion-pairs.inter'
     item_output_file = '../data/Alibaba-iFashion/Alibaba-iFashion-trimmed.item'
-    n_lines = 1000  # 设定需要读取的inter文件的前N行
+    n_lines = 10000  # 设定需要读取的inter文件的前N行
 
     preprocess_inter_file(inter_file, inter_output_file, n_lines)
     process_item_file(item_file, item_output_file, inter_output_file)
