@@ -1,14 +1,12 @@
 import torch
-from transformers import BertTokenizer, BertModel
-from gcn_ae import GAE
-from hyperparameters import *
 import faiss
 import encode
+from model_loader import ModelLoader
 
 
-def ann_recom(n):
+def ann_recom(model_loader, n):
     item_title = input("请输入item_title: ")
-    encoded_item, encoded_others = encode.demo(item_title)
+    encoded_item, encoded_others = encode.demo(model_loader, item_title)
 
     # 从encoded_others中提取特征向量和item_id
     other_features = torch.stack([item[0] for item in encoded_others]).cpu().numpy()
@@ -25,14 +23,13 @@ def ann_recom(n):
     return similar_items
 
 
-if __name__ == "__main__":
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-    bert_model = BertModel.from_pretrained('bert-base-uncased').to(device)
-    model = GAE(input_dim, hidden_dim, latent_dim).to(device)
-    model.load_state_dict(torch.load("gae_model.pth"))
+def main():
+    model_loader = ModelLoader('gae_model.pth')
 
-    # 示例调用
-    n = 5  # 设定要找的最近邻数量
-    similar_items = ann_recom(n)
+    n = 5
+    similar_items = ann_recom(model_loader, n)
     print(f"最相近的 {n} 个 item_id: {similar_items}")
+
+
+if __name__ == "__main__":
+    main()

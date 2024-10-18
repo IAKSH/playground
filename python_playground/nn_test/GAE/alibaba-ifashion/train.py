@@ -1,15 +1,13 @@
 import pandas as pd
-from transformers import BertTokenizer, BertModel
 import torch
 from torch.utils.data import Dataset, DataLoader
 from torch_geometric.data import Data
-import torch.nn as nn
 import torch.nn.functional as F
-from torch_geometric.nn import GATConv
 import matplotlib.pyplot as plt
 import time
 from tqdm import tqdm
-from hyperparameters import *
+from model_loader import ModelLoader
+from bert_utils import get_bert_embedding
 
 
 class AlibabaDataset(Dataset):
@@ -42,37 +40,16 @@ def custom_collate(batch):
     return item_ids, inputs
 
 
-def get_bert_embedding(inputs):
-    with torch.no_grad():
-        outputs = bert_model(**inputs)
-    return outputs.last_hidden_state.mean(dim=1)
-
-
-class GAE(nn.Module):
-    def __init__(self, input_dim, hidden_dim, latent_dim):
-        super(GAE, self).__init__()
-        self.encoder1 = GATConv(input_dim, hidden_dim, heads=8, concat=True)
-        self.encoder2 = GATConv(hidden_dim * 8, latent_dim, heads=1, concat=True)
-        self.decoder = nn.Linear(latent_dim, input_dim)
-
-    def encode(self, x, edge_index):
-        x = F.relu(self.encoder1(x, edge_index))
-        return self.encoder2(x, edge_index)
-
-    def decode(self, z):
-        return self.decoder(z)
-
-    def forward(self, x, edge_index):
-        z = self.encode(x, edge_index)
-        return self.decode(z)
-
-
 def filter_edges(edge_index, batch_node_idx):
     mask = (torch.isin(edge_index[0], batch_node_idx) & torch.isin(edge_index[1], batch_node_idx))
     return edge_index[:, mask]
 
 
-def train():
+def train(model_loader, optimizer, dataloader, edge_index):
+    model = model_loader.model
+    device = model_loader.device
+    bert_model = model_loader.bert_model
+
     model.train()
     epoch_losses = []  # 记录每个epoch的损失
     for epoch in range(epochs):
@@ -81,7 +58,7 @@ def train():
         for batch in tqdm(dataloader, desc=f"Epoch {epoch + 1}/{epochs}"):
             item_ids, inputs = batch
             inputs = {k: v.to(device) for k, v in inputs.items()}
-            embeddings = get_bert_embedding(inputs).to(device)
+            embeddings = get_bert_embedding(bert_model, inputs).to(device)
             batch_node_idx = torch.tensor([int(item) for item in item_ids], dtype=torch.long)
             batch_edge_index = filter_edges(edge_index, batch_node_idx).to(device)
             batch_edge_index = batch_edge_index.type(torch.long)
@@ -105,24 +82,20 @@ def train():
     return epoch_losses
 
 
-if __name__ == "__main__":
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-    bert_model = BertModel.from_pretrained('bert-base-uncased').to(device)
+def main():
+    model_loader = ModelLoader()
 
     inter_file = '../data/Alibaba-iFashion/Alibaba-iFashion-pairs.inter'
     item_file = '../data/Alibaba-iFashion/Alibaba-iFashion-trimmed.item'
-    dataset = AlibabaDataset(inter_file, item_file, tokenizer)
+    dataset = AlibabaDataset(inter_file, item_file, model_loader.tokenizer)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, collate_fn=custom_collate)
     edge_index = dataset.edge_index
 
-    model = GAE(input_dim, hidden_dim, latent_dim).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    optimizer = torch.optim.Adam(model_loader.model.parameters(), lr=lr)
 
-    epoch_losses = train()
+    epoch_losses = train(model_loader, optimizer, dataloader, edge_index)
 
-    torch.save(model.state_dict(), 'gae_model.pth')
+    torch.save(model_loader.model.state_dict(), 'gae_model.pth')
     plt.figure()
     plt.plot(range(1, epochs + 1), epoch_losses)  # 绘制epoch损失
     plt.xlabel('Epoch')
@@ -131,3 +104,11 @@ if __name__ == "__main__":
     plt.grid(True)
     plt.savefig("train.png")
     plt.show()
+
+
+if __name__ == "__main__":
+    batch_size = 32
+    lr = 0.001
+    epochs = 5
+
+    main()
