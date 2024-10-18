@@ -9,6 +9,7 @@ from torch_geometric.nn import GATConv
 import matplotlib.pyplot as plt
 import time
 from tqdm import tqdm
+from hyperparameters import *
 
 
 class AlibabaDataset(Dataset):
@@ -105,23 +106,22 @@ def train():
 
 
 if __name__ == "__main__":
-    batch_size = 32
-    input_dim = 768
-    hidden_dim = 32
-    latent_dim = 16
-    epochs = 5
-    lr = 0.001
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
     bert_model = BertModel.from_pretrained('bert-base-uncased').to(device)
+
     inter_file = '../data/Alibaba-iFashion/Alibaba-iFashion-pairs.inter'
     item_file = '../data/Alibaba-iFashion/Alibaba-iFashion-trimmed.item'
     dataset = AlibabaDataset(inter_file, item_file, tokenizer)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, collate_fn=custom_collate)
     edge_index = dataset.edge_index
+
     model = GAE(input_dim, hidden_dim, latent_dim).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+
     epoch_losses = train()
+
     torch.save(model.state_dict(), 'gae_model.pth')
     plt.figure()
     plt.plot(range(1, epochs + 1), epoch_losses)  # 绘制epoch损失
@@ -129,5 +129,5 @@ if __name__ == "__main__":
     plt.ylabel('Loss')
     plt.title('Training Loss per Epoch')
     plt.grid(True)
-    plt.show()
     plt.savefig("train.png")
+    plt.show()
