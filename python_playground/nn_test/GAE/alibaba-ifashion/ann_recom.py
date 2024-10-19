@@ -4,8 +4,7 @@ import encode
 from model_loader import ModelLoader
 
 
-def ann_recom(model_loader, n):
-    item_title = input("请输入item_title: ")
+def ann_recom(model_loader, item_title, n):
     encoded_item, encoded_others = encode.demo(model_loader, item_title)
 
     # 从encoded_others中提取特征向量和item_id
@@ -26,9 +25,11 @@ def ann_recom(model_loader, n):
 def main():
     model_loader = ModelLoader('gae_model.pth')
 
-    n = 5
-    similar_items = ann_recom(model_loader, n)
-    print(f"最相近的 {n} 个 item_id: {similar_items}")
+    while True:
+        n = 5
+        item_title = input("请输入item_title: ")
+        similar_items = ann_recom(model_loader, item_title, n)
+        print(f"最相近的 {n} 个 item_id: {similar_items}")
 
 
 if __name__ == "__main__":

@@ -11,14 +11,13 @@ def encode(model_loader, item_titles, edge_index):
     tokenizer = model_loader.tokenizer
     device = model_loader.device
     bert_model = model_loader.bert_model
-
     model.eval()
     with torch.no_grad():
         inputs = tokenizer(item_titles, return_tensors="pt", padding='max_length', truncation=True, max_length=512)
         inputs = {k: v.to(device) for k, v in inputs.items()}
         embeddings = get_bert_embedding(bert_model, inputs).to(device)
         data = Data(x=embeddings, edge_index=edge_index.to(device))
-        encoded_features = model.encode(data.x, data.edge_index)
+        encoded_features, _, _ = model.encode(data.x, data.edge_index)
     return encoded_features
 
 
@@ -55,18 +54,14 @@ def demo(model_loader, item_title):
     item_titles = [item_title] + [item['info'] for item in items_from_db]
     item_ids = [None] + [item['hanfu_id'] for item in items_from_db]
     edge_index = generate_full_edge_index(len(item_titles))
-
     encoded_features = encode(model_loader, item_titles, edge_index)
-
     encoded_item = (encoded_features[0], item_ids[0])
     encoded_others = [(encoded_features[i+1], item_ids[i+1]) for i in range(len(items_from_db))]
-
     return encoded_item, encoded_others
 
 
 def main():
     model_loader = ModelLoader('gae_model.pth')
-
     item_title = '可能是某种衣服'
     encoded_item, encoded_others = demo(model_loader, item_title)
     print(f"Encoded item: {encoded_item}")

@@ -49,7 +49,6 @@ def train(model_loader, optimizer, dataloader, edge_index):
     model = model_loader.model
     device = model_loader.device
     bert_model = model_loader.bert_model
-
     model.train()
     epoch_losses = []  # 记录每个epoch的损失
     for epoch in range(epochs):
@@ -69,8 +68,15 @@ def train(model_loader, optimizer, dataloader, edge_index):
             ], dim=0)
             data = Data(x=embeddings, edge_index=reindexed_edge_index).to(device)
             optimizer.zero_grad()
-            recon = model(data.x, data.edge_index)
-            loss = F.mse_loss(recon, data.x)
+            recon, mu, logvar = model(data.x, data.edge_index)
+
+            # 重建损失
+            recon_loss = F.mse_loss(recon, data.x)
+            # KL 散度损失
+            kl_loss = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+            # 总损失
+            loss = recon_loss + kl_loss
+
             loss.backward()
             optimizer.step()
             epoch_loss += loss.item()
@@ -84,17 +90,13 @@ def train(model_loader, optimizer, dataloader, edge_index):
 
 def main():
     model_loader = ModelLoader()
-
     inter_file = '../data/Alibaba-iFashion/Alibaba-iFashion-pairs.inter'
     item_file = '../data/Alibaba-iFashion/Alibaba-iFashion-trimmed.item'
     dataset = AlibabaDataset(inter_file, item_file, model_loader.tokenizer)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, collate_fn=custom_collate)
     edge_index = dataset.edge_index
-
     optimizer = torch.optim.Adam(model_loader.model.parameters(), lr=lr)
-
     epoch_losses = train(model_loader, optimizer, dataloader, edge_index)
-
     torch.save(model_loader.model.state_dict(), 'gae_model.pth')
     plt.figure()
     plt.plot(range(1, epochs + 1), epoch_losses)  # 绘制epoch损失
@@ -110,5 +112,4 @@ if __name__ == "__main__":
     batch_size = 32
     lr = 0.001
     epochs = 5
-
     main()
