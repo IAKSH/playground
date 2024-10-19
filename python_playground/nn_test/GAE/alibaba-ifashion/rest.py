@@ -30,5 +30,5 @@ def get_recom_multi():
 
 
 if __name__ == '__main__':
-    model_loader = ModelLoader("gae_model.pth")
+    model_loader = ModelLoader("train/gae_model.pth")
     app.run(debug=False, host='0.0.0.0')

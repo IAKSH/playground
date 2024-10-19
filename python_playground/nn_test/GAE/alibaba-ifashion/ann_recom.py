@@ -87,7 +87,7 @@ def ann_recom_multi(model_loader, item_titles, n):
 
 
 def test():
-    model_loader = ModelLoader('gae_model.pth')
+    model_loader = ModelLoader('train/gae_model.pth')
 
     while True:
         n = 5
