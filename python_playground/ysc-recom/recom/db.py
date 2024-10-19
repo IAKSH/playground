@@ -15,7 +15,7 @@ def connect_db():
 
 def get_items_from_db(connection):
     cursor = connection.cursor(dictionary=True)
-    cursor.execute("SELECT hanfu_id, CONCAT(shop_name, ' ' , label , ' ', name, ' ', price) AS info FROM hanfu")
+    cursor.execute("SELECT hanfu_id, CONCAT(shop_name, ' ' , label , ' ', name, ' ', price) AS title FROM hanfu")
     items = cursor.fetchall()
     cursor.close()
     return items
@@ -24,7 +24,7 @@ def get_items_from_db(connection):
 def get_item_titles_from_db_with_ids(connection, item_ids):
     cursor = connection.cursor(dictionary=True)
     format_strings = ','.join(['%s'] * len(item_ids))
-    cursor.execute(f"SELECT CONCAT(shop_name, ' ', label, ' ', name, ' ', price) AS info FROM hanfu WHERE "
+    cursor.execute(f"SELECT CONCAT(shop_name, ' ', label, ' ', name, ' ', price) AS title FROM hanfu WHERE "
                    f"hanfu_id IN ({format_strings})", tuple(item_ids))
     items = cursor.fetchall()
     cursor.close()

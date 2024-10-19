@@ -35,7 +35,7 @@ def get_recom_multi_using_id():
     data = request.json
     item_ids = data['ids']
     n = data.get('n')
-    item_titles = get_item_titles_from_db_with_ids(connection,item_ids)
+    item_titles = [item['title'] for item in get_item_titles_from_db_with_ids(connection,item_ids)]
     result = ann_recom_multi(model_loader, connection, item_titles, n)
     return jsonify(result)
 

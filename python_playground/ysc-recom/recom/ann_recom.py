@@ -19,7 +19,7 @@ def generate_full_edge_index(n):
 
 def ann_recom(model_loader, connection, item_title, n):
     items_from_db = get_items_from_db(connection)
-    item_titles = [item_title] + [item['info'] for item in items_from_db]
+    item_titles = [item_title] + [item['title'] for item in items_from_db]
     item_ids = [None] + [item['hanfu_id'] for item in items_from_db]
     edge_index = generate_full_edge_index(len(item_titles))
     encoded_features = encode(model_loader, item_titles, edge_index)
@@ -45,7 +45,7 @@ def ann_recom_multi(model_loader, connection, item_titles, n):
     items_from_db = get_items_from_db(connection)
 
     # 将输入的item_titles加入到数据库中的商品信息中
-    all_item_titles = item_titles + [item['info'] for item in items_from_db]
+    all_item_titles = item_titles + [item['title'] for item in items_from_db]
     item_ids = [None] * len(item_titles) + [item['hanfu_id'] for item in items_from_db]
 
     edge_index = generate_full_edge_index(len(all_item_titles))
