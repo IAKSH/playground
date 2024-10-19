@@ -142,7 +142,7 @@ def main():
 
     avg_recon_loss, avg_kl_loss = validate(model_loader, val_dataloader, val_edge_index)
 
-    torch.save(model_loader.model.state_dict(), 'gae_model.pth')
+    torch.save(model_loader.model.state_dict(), 'train/gae_model.pth')
 
     plt.figure()
     plt.plot(range(1, epochs + 1), epoch_losses)  # 绘制epoch损失
@@ -150,11 +150,11 @@ def main():
     plt.ylabel('Loss')
     plt.title('Training Loss per Epoch')
     plt.grid(True)
-    plt.savefig("train.png")
+    plt.savefig("train/train.png")
     plt.show()
 
     # 保存验证指标
-    with open("validation_metrics.txt", "w") as f:
+    with open("train/validation_metrics.txt", "w") as f:
         f.write(f'Reconstruction Loss: {avg_recon_loss}\n')
         f.write(f'KL Loss: {avg_kl_loss}\n')
 

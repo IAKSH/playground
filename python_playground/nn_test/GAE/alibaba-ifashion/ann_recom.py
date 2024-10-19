@@ -58,6 +58,34 @@ def ann_recom(model_loader, item_title, n):
     return similar_items
 
 
+def ann_recom_multi(model_loader, item_titles, n):
+    items_from_db = get_data_from_db()
+
+    # 将输入的item_titles加入到数据库中的商品信息中
+    all_item_titles = item_titles + [item['info'] for item in items_from_db]
+    item_ids = [None] * len(item_titles) + [item['hanfu_id'] for item in items_from_db]
+
+    edge_index = generate_full_edge_index(len(all_item_titles))
+    encoded_features = encode(model_loader, all_item_titles, edge_index)
+
+    # 获取输入商品的特征向量
+    encoded_input_items = encoded_features[:len(item_titles)]
+    # 计算输入商品的平均特征向量
+    avg_encoded_item = torch.mean(encoded_input_items, dim=0)
+
+    encoded_others = [(encoded_features[i + len(item_titles)], item_ids[i + len(item_titles)]) for i in
+                      range(len(items_from_db))]
+    other_features = torch.stack([item[0] for item in encoded_others]).cpu().numpy()
+    other_ids = [item[1] for item in encoded_others]
+
+    index = faiss.IndexFlatL2(other_features.shape[1])
+    index.add(other_features)
+    D, I = index.search(avg_encoded_item.cpu().numpy().reshape(1, -1), n)
+
+    similar_items = [other_ids[i] for i in I[0]]
+    return similar_items
+
+
 def test():
     model_loader = ModelLoader('gae_model.pth')
 

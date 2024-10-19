@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f5f5f5;
+        }
+        .container {
+            width: 90%;
+            max-width: 600px;
+        }
+        .card {
+            padding: 20px;
+        }
+    </style>
+    <script>
+        async function getRecommendations() {
+            const info = document.getElementById('info').value;
+            const n = parseInt(document.getElementById('n').value);
+            const response = await fetch('/api/recom', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ info: info, n: n })
+            });
+            if (response.ok) {
+                const result = await response.json();
+                document.getElementById('result').innerText = JSON.stringify(result, null, 2);
+            } else {
+                document.getElementById('result').innerText = 'Error: ' + response.statusText;
+            }
+        }
+
+        async function getMultiRecommendations() {
+            const infoMulti = document.getElementById('infoMulti').value.split(',');
+            const n = parseInt(document.getElementById('nMulti').value);
+            const response = await fetch('/api/recom_multi', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ item_titles: infoMulti, n: n })
+            });
+            if (response.ok) {
+                const result = await response.json();
+                document.getElementById('resultMulti').innerText = JSON.stringify(result, null, 2);
+            } else {
+                document.getElementById('resultMulti').innerText = 'Error: ' + response.statusText;
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <div class="container">
+        <div class="card">
+            <h4 class="center-align">API Test</h4>
+
+            <div class="section">
+                <h5>Single Item Recommendation</h5>
+                <div class="input-field">
+                    <input type="text" id="info" name="info" placeholder="输入商品信息">
+                    <label for="info">Info</label>
+                </div>
+                <div class="input-field">
+                    <input type="number" id="n" name="n" value="5">
+                    <label for="n">Max Recommendations</label>
+                </div>
+                <button class="btn waves-effect waves-light" onclick="getRecommendations()">Get Recommendations</button>
+                <h6>Result:</h6>
+                <pre id="result" class="card-panel grey lighten-5"></pre>
+            </div>
+
+            <div class="section">
+                <h5>Multiple Items Recommendation</h5>
+                <div class="input-field">
+                    <input type="text" id="infoMulti" name="infoMulti" placeholder="输入多个商品信息，用逗号分隔">
+                    <label for="infoMulti">Info</label>
+                </div>
+                <div class="input-field">
+                    <input type="number" id="nMulti" name="nMulti" value="5">
+                    <label for="nMulti">Max Recommendations</label>
+                </div>
+                <button class="btn waves-effect waves-light" onclick="getMultiRecommendations()">Get Multi Recommendations</button>
+                <h6>Result Multi:</h6>
+                <pre id="resultMulti" class="card-panel grey lighten-5"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+</body>
+</html>
