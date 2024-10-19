@@ -49,13 +49,13 @@ def process_item_file(item_file, output_file, inter_file):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='裁剪数据集脚本')
-    parser.add_argument('--inter', type=str, required=True, help='交互文件路径')
-    parser.add_argument('--item', type=str, required=True, help='物品文件路径')
-    parser.add_argument('--inter_out', type=str, required=True, help='裁剪后的交互文件输出路径')
-    parser.add_argument('--item_out', type=str, required=True, help='裁剪后的交互文件输出路径')
-    parser.add_argument('--n', type=int, required=True, help='读取交互文件的前N行')
-    parser.add_argument('--offset', type=int, required=True, help='读取交互文件的偏移量')
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--inter', type=str, required=True)
+    parser.add_argument('--item', type=str, required=True)
+    parser.add_argument('--inter_out', type=str, required=True)
+    parser.add_argument('--item_out', type=str, required=True)
+    parser.add_argument('--n', type=int, required=True)
+    parser.add_argument('--offset', type=int, required=True)
 
     args = parser.parse_args()
 
