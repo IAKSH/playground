@@ -1,8 +1,9 @@
-FROM python:3.9-slim
+FROM bitnami/pytorch:2.3.1
 WORKDIR /app
 COPY requirements.txt .
-RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install faiss-cpu
+RUN pip install faiss-cpu mysql-connector
 COPY . .
+ENV TRANSFORMERS_CACHE /tmp/cache
+RUN mkdir -p /tmp/cache
 CMD ["python", "rest.py"]

@@ -2,9 +2,7 @@ numpy==1.24.3
 swig==4.0.2
 Flask==3.0.3
 matplotlib==3.9.2
-mysql_connector_repackaged==0.3.1
 pandas==2.2.3
-torch==2.4.0
 torch_geometric==2.6.1
 tqdm==4.66.5
 transformers==4.44.2

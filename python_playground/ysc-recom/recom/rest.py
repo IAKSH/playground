@@ -16,8 +16,8 @@ def index():
 def get_recom():
     data = request.json
     input_info = data['titles']
-    n = data.get('n', 5)
-    result = ann_recom(model_loader, input_info, n)
+    n = data.get('n')
+    result = ann_recom(model_loader, connection, input_info, n)
     return jsonify(result)
 
 
@@ -25,8 +25,8 @@ def get_recom():
 def get_recom_multi():
     data = request.json
     item_titles = data['titles']
-    n = data.get('n', 5)
-    result = ann_recom_multi(model_loader, item_titles, n)
+    n = data.get('n')
+    result = ann_recom_multi(model_loader, connection, item_titles, n)
     return jsonify(result)
 
 
@@ -34,9 +34,9 @@ def get_recom_multi():
 def get_recom_multi_using_id():
     data = request.json
     item_ids = data['ids']
-    n = data.get('n', 5)
+    n = data.get('n')
     item_titles = get_item_titles_from_db_with_ids(connection,item_ids)
-    result = ann_recom_multi(model_loader, item_titles, n)
+    result = ann_recom_multi(model_loader, connection, item_titles, n)
     return jsonify(result)
 
 
