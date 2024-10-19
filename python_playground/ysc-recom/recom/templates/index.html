@@ -30,7 +30,7 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ info: info, n: n })
+                body: JSON.stringify({ titles: info, n: n })
             });
             if (response.ok) {
                 const result = await response.json();
@@ -43,12 +43,12 @@
         async function getMultiRecommendations() {
             const infoMulti = document.getElementById('infoMulti').value.split(',');
             const n = parseInt(document.getElementById('nMulti').value);
-            const response = await fetch('/api/recom_multi', {
+            const response = await fetch('/api/recom/multi', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ item_titles: infoMulti, n: n })
+                body: JSON.stringify({ titles: infoMulti, n: n })
             });
             if (response.ok) {
                 const result = await response.json();
@@ -57,14 +57,30 @@
                 document.getElementById('resultMulti').innerText = 'Error: ' + response.statusText;
             }
         }
+
+        async function getMultiRecommendationsById() {
+            const infoMultiId = document.getElementById('infoMultiId').value.split(',').map(id => parseInt(id.trim()));
+            const n = parseInt(document.getElementById('nMultiId').value);
+            const response = await fetch('/api/recom/multi/id', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ ids: infoMultiId, n: n })
+            });
+            if (response.ok) {
+                const result = await response.json();
+                document.getElementById('resultMultiId').innerText = JSON.stringify(result, null, 2);
+            } else {
+                document.getElementById('resultMultiId').innerText = 'Error: ' + response.statusText;
+            }
+        }
     </script>
 </head>
 <body>
-
     <div class="container">
         <div class="card">
             <h4 class="center-align">API Test</h4>
-
             <div class="section">
                 <h5>Single Item Recommendation</h5>
                 <div class="input-field">
@@ -79,7 +95,6 @@
                 <h6>Result:</h6>
                 <pre id="result" class="card-panel grey lighten-5"></pre>
             </div>
-
             <div class="section">
                 <h5>Multiple Items Recommendation</h5>
                 <div class="input-field">
@@ -94,9 +109,22 @@
                 <h6>Result Multi:</h6>
                 <pre id="resultMulti" class="card-panel grey lighten-5"></pre>
             </div>
+            <div class="section">
+                <h5>Multiple Items Recommendation by ID</h5>
+                <div class="input-field">
+                    <input type="text" id="infoMultiId" name="infoMultiId" placeholder="输入多个商品ID，用逗号分隔">
+                    <label for="infoMultiId">Item IDs</label>
+                </div>
+                <div class="input-field">
+                    <input type="number" id="nMultiId" name="nMultiId" value="5">
+                    <label for="nMultiId">Max Recommendations</label>
+                </div>
+                <button class="btn waves-effect waves-light" onclick="getMultiRecommendationsById()">Get Multi Recommendations by ID</button>
+                <h6>Result Multi by ID:</h6>
+                <pre id="resultMultiId" class="card-panel grey lighten-5"></pre>
+            </div>
         </div>
     </div>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 </body>
 </html>

@@ -1,9 +1,8 @@
-import os
 import torch
-import mysql.connector
 import faiss
 from encode import encode
 from model_loader import ModelLoader
+from db import get_items_from_db, connect_db
 
 
 def generate_full_edge_index(n):
@@ -18,24 +17,8 @@ def generate_full_edge_index(n):
     return edge_index
 
 
-def get_data_from_db():
-    db_config = {
-        'user': os.getenv('DB_USER'),
-        'password': os.getenv('DB_PASSWORD'),
-        'host': os.getenv('DB_HOST'),
-        'database': os.getenv('DB_DATABASE')
-    }
-    connection = mysql.connector.connect(**db_config)
-    cursor = connection.cursor(dictionary=True)
-    cursor.execute("SELECT hanfu_id, CONCAT(shop_name, ' ' , label , ' ', name, ' ', price) AS info FROM hanfu")
-    items = cursor.fetchall()
-    cursor.close()
-    connection.close()
-    return items
-
-
-def ann_recom(model_loader, item_title, n):
-    items_from_db = get_data_from_db()
+def ann_recom(model_loader, connection, item_title, n):
+    items_from_db = get_items_from_db(connection)
     item_titles = [item_title] + [item['info'] for item in items_from_db]
     item_ids = [None] + [item['hanfu_id'] for item in items_from_db]
     edge_index = generate_full_edge_index(len(item_titles))
@@ -58,8 +41,8 @@ def ann_recom(model_loader, item_title, n):
     return similar_items
 
 
-def ann_recom_multi(model_loader, item_titles, n):
-    items_from_db = get_data_from_db()
+def ann_recom_multi(model_loader, connection, item_titles, n):
+    items_from_db = get_items_from_db(connection)
 
     # 将输入的item_titles加入到数据库中的商品信息中
     all_item_titles = item_titles + [item['info'] for item in items_from_db]
@@ -88,11 +71,12 @@ def ann_recom_multi(model_loader, item_titles, n):
 
 def test():
     model_loader = ModelLoader('train/gae_model.pth')
+    connection = connect_db()
 
     while True:
         n = 5
         item_title = input("请输入item_title: ")
-        similar_items = ann_recom(model_loader, item_title, n)
+        similar_items = ann_recom(model_loader, connection, item_title, n)
         print(f"最相近的 {n} 个 item_id: {similar_items}")
 
 

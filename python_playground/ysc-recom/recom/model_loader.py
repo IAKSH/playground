@@ -44,10 +44,13 @@ class ModelLoader:
         self.device = torch.device('cuda' if use_gpu and torch.cuda.is_available() else 'cpu')
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
         self.bert_model = BertModel.from_pretrained('bert-base-uncased').to(self.device)
-        self.model = self.__load_model(model_path)
+        self.model = self.__load_model(model_path,use_gpu)
 
-    def __load_model(self, model_path):
+    def __load_model(self, model_path,use_gpu):
         model = GATModelVAE(self.input_dim, self.hidden_dim, self.latent_dim).to(self.device)
         if model_path:
-            model.load_state_dict(torch.load(model_path))
+            if not use_gpu:
+                model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
+            else:
+                model.load_state_dict(torch.load(model_path))
         return model
