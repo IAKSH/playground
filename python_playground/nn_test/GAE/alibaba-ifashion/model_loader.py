@@ -37,11 +37,11 @@ class GATModelVAE(nn.Module):
 
 
 class ModelLoader:
-    def __init__(self, model_path=None):
+    def __init__(self, model_path=None, use_gpu=True):
         self.input_dim = 768
         self.hidden_dim = 512
         self.latent_dim = 256
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.device = torch.device('cuda' if use_gpu and torch.cuda.is_available() else 'cpu')
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
         self.bert_model = BertModel.from_pretrained('bert-base-uncased').to(self.device)
         self.model = self.__load_model(model_path)

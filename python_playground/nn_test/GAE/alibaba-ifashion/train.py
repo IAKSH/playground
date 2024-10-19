@@ -162,5 +162,5 @@ def main():
 if __name__ == "__main__":
     batch_size = 32
     lr = 0.001
-    epochs = 5
+    epochs = 10
     main()
