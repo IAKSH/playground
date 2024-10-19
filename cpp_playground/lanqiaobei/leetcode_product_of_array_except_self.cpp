@@ -8,16 +8,21 @@ class Solution {
 public:
     vector<int> productExceptSelf(vector<int>& nums) {
         vector<int> results;
-        int mul;
-        for(int i = 0;i < nums.size();i++) {
-            mul = 1;
-            for(int j = 0;j < nums.size();j++) {
-                if(i == j)
-                    continue;
-                mul *= nums[j];
-            }
-            results.emplace_back(mul);
-        }
+        array<vector<int>,2> arr{
+            vector<int>(nums.size()),
+            vector<int>(nums.size())
+        };
+
+        int mul = 1;
+        for(int i = 0;i < nums.size();i++)
+            arr[0][i] = (mul *= nums[i]);
+        mul = 1;
+        for(int i = nums.size() - 1;i >= 0;i--)
+            arr[1][i] = (mul *= nums[i]);
+        
+        for(int i = 0;i < nums.size();i++)
+            results.emplace_back((i - 1 >= 0 ? arr[0][i - 1] : 1) * (i + 1 < arr[1].size() ? arr[1][i + 1] : 1));
+
         return results;
     }
 };
