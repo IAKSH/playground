@@ -50,6 +50,7 @@ class ModelLoader:
         model = GATModelVAE(self.input_dim, self.hidden_dim, self.latent_dim).to(self.device)
         if model_path:
             if not use_gpu:
+                self.device = torch.device('cpu')
                 model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
             else:
                 model.load_state_dict(torch.load(model_path))
