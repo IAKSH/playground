@@ -1,18 +1,19 @@
 import pandas as pd
 from collections import defaultdict
+import argparse
 
 
-def preprocess_inter_file(inter_file, output_file, n_lines):
+def preprocess_inter_file(inter_file, output_file, n_lines, offset):
     user_items = defaultdict(list)
-
-    # 读取inter文件的前N行
+    # 读取inter文件的偏移后前N行
     with open(inter_file, 'r', encoding='utf-8') as f:
         for i, line in enumerate(f):
-            if i >= n_lines:
+            if i < offset:
+                continue
+            if i >= offset + n_lines:
                 break
             user_id, item_id = line.strip().split('\t')
             user_items[user_id].append(item_id.strip())
-
     # 写入输出文件，包括格式说明的第一行
     with open(output_file, 'w', encoding='utf-8', newline='') as f:
         f.write("item_a_id:token\titem_b_id:token\n")  # 写入第一行
@@ -27,7 +28,6 @@ def preprocess_inter_file(inter_file, output_file, n_lines):
 
 def process_item_file(item_file, output_file, inter_file):
     inter_items = set()
-
     # 读取inter文件，收集所有涉及的item_id
     with open(inter_file, 'r', encoding='utf-8') as f:
         next(f)  # 跳过第一行
@@ -35,7 +35,6 @@ def process_item_file(item_file, output_file, inter_file):
             item1, item2 = line.strip().split('\t')
             inter_items.add(item1.strip())
             inter_items.add(item2.strip())
-
     # 按块读取item文件，并筛选涉及到的item信息
     chunk_size = 1000
     filtered_chunks = []
@@ -44,20 +43,23 @@ def process_item_file(item_file, output_file, inter_file):
             chunk['item_id:token'] = chunk['item_id:token'].str.strip()  # 去除空格和换行符
             filtered_chunk = chunk[chunk['item_id:token'].isin(inter_items)]
             filtered_chunks.append(filtered_chunk)
-
     # 合并所有筛选后的块并写入文件
     result = pd.concat(filtered_chunks).drop_duplicates()
     result.to_csv(output_file, sep='\t', index=False, header=True, mode='w', encoding='utf-8')
 
 
 if __name__ == "__main__":
-    inter_file = '../data/Alibaba-iFashion/Alibaba-iFashion.inter'
-    item_file = '../data/Alibaba-iFashion/Alibaba-iFashion.item'
-    inter_output_file = '../data/Alibaba-iFashion/Alibaba-iFashion-pairs.inter'
-    item_output_file = '../data/Alibaba-iFashion/Alibaba-iFashion-trimmed.item'
-    n_lines = 1000  # 设定需要读取的inter文件的前N行
+    parser = argparse.ArgumentParser(description='裁剪数据集脚本')
+    parser.add_argument('--inter', type=str, required=True, help='交互文件路径')
+    parser.add_argument('--item', type=str, required=True, help='物品文件路径')
+    parser.add_argument('--inter_out', type=str, required=True, help='裁剪后的交互文件输出路径')
+    parser.add_argument('--item_out', type=str, required=True, help='裁剪后的交互文件输出路径')
+    parser.add_argument('--n', type=int, required=True, help='读取交互文件的前N行')
+    parser.add_argument('--offset', type=int, required=True, help='读取交互文件的偏移量')
 
-    preprocess_inter_file(inter_file, inter_output_file, n_lines)
-    process_item_file(item_file, item_output_file, inter_output_file)
+    args = parser.parse_args()
+
+    preprocess_inter_file(args.inter, args.inter_out, args.n, args.offset)
+    process_item_file(args.item, args.item_out, args.inter_out)
 
     print("数据集裁剪完成！")

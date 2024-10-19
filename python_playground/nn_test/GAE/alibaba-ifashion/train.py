@@ -69,14 +69,12 @@ def train(model_loader, optimizer, dataloader, edge_index):
             data = Data(x=embeddings, edge_index=reindexed_edge_index).to(device)
             optimizer.zero_grad()
             recon, mu, logvar = model(data.x, data.edge_index)
-
             # 重建损失
             recon_loss = F.mse_loss(recon, data.x)
             # KL 散度损失
             kl_loss = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
             # 总损失
             loss = recon_loss + kl_loss
-
             loss.backward()
             optimizer.step()
             epoch_loss += loss.item()
@@ -88,16 +86,64 @@ def train(model_loader, optimizer, dataloader, edge_index):
     return epoch_losses
 
 
+def validate(model_loader, dataloader, edge_index):
+    model = model_loader.model
+    device = model_loader.device
+    bert_model = model_loader.bert_model
+    model.eval()
+    recon_losses = []
+    kl_losses = []
+    with torch.no_grad():
+        for batch in tqdm(dataloader, desc="Validating"):
+            item_ids, inputs = batch
+            inputs = {k: v.to(device) for k, v in inputs.items()}
+            embeddings = get_bert_embedding(bert_model, inputs).to(device)
+            batch_node_idx = torch.tensor([int(item) for item in item_ids], dtype=torch.long)
+            batch_edge_index = filter_edges(edge_index, batch_node_idx).to(device)
+            batch_edge_index = batch_edge_index.type(torch.long)
+            batch_node_idx_map = {idx: i for i, idx in enumerate(batch_node_idx.tolist())}
+            reindexed_edge_index = torch.stack([
+                torch.tensor([batch_node_idx_map[idx.item()] for idx in batch_edge_index[0]], dtype=torch.long),
+                torch.tensor([batch_node_idx_map[idx.item()] for idx in batch_edge_index[1]], dtype=torch.long)
+            ], dim=0)
+            data = Data(x=embeddings, edge_index=reindexed_edge_index).to(device)
+            recon, mu, logvar = model(data.x, data.edge_index)
+            # 重建损失
+            recon_loss = F.mse_loss(recon, data.x)
+            # KL 散度损失
+            kl_loss = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+            recon_losses.append(recon_loss.item())
+            kl_losses.append(kl_loss.item())
+    avg_recon_loss = sum(recon_losses) / len(recon_losses)
+    avg_kl_loss = sum(kl_losses) / len(kl_losses)
+    print(f'Validation, Reconstruction Loss: {avg_recon_loss}, KL Loss: {avg_kl_loss}')
+    return avg_recon_loss, avg_kl_loss
+
+
 def main():
     model_loader = ModelLoader()
     inter_file = '../data/Alibaba-iFashion/Alibaba-iFashion-pairs.inter'
     item_file = '../data/Alibaba-iFashion/Alibaba-iFashion-trimmed.item'
+    val_inter_file = '../data/Alibaba-iFashion/Alibaba-iFashion-pairs-val.inter'
+    val_item_file = '../data/Alibaba-iFashion/Alibaba-iFashion-trimmed-val.item'
+
     dataset = AlibabaDataset(inter_file, item_file, model_loader.tokenizer)
+    val_dataset = AlibabaDataset(val_inter_file, val_item_file, model_loader.tokenizer)
+
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, collate_fn=custom_collate)
+    val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, collate_fn=custom_collate)
+
     edge_index = dataset.edge_index
+    val_edge_index = val_dataset.edge_index
+
     optimizer = torch.optim.Adam(model_loader.model.parameters(), lr=lr)
+
     epoch_losses = train(model_loader, optimizer, dataloader, edge_index)
+
+    avg_recon_loss, avg_kl_loss = validate(model_loader, val_dataloader, val_edge_index)
+
     torch.save(model_loader.model.state_dict(), 'gae_model.pth')
+
     plt.figure()
     plt.plot(range(1, epochs + 1), epoch_losses)  # 绘制epoch损失
     plt.xlabel('Epoch')
@@ -106,6 +152,11 @@ def main():
     plt.grid(True)
     plt.savefig("train.png")
     plt.show()
+
+    # 保存验证指标
+    with open("validation_metrics.txt", "w") as f:
+        f.write(f'Reconstruction Loss: {avg_recon_loss}\n')
+        f.write(f'KL Loss: {avg_kl_loss}\n')
 
 
 if __name__ == "__main__":
