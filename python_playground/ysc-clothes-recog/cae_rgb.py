@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torchvision.transforms as transforms
-from torchvision.datasets import FashionMNIST
+from torchvision.datasets import ImageFolder
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 from tqdm import tqdm
@@ -10,13 +10,14 @@ from PIL import Image
 import sqlite3
 import numpy as np
 import annoy
-
+from torchvision.datasets import ImageFolder
+from torch.utils.data import Subset
 
 class CAE(nn.Module):
-    def __init__(self, initial_channels=32, hidden_dim=128, bottleneck_dim=64, img_size=32):
+    def __init__(self, initial_channels=32, hidden_dim=128, bottleneck_dim=64, img_size=32):  # 修改图像大小为256
         super(CAE, self).__init__()
         self.encoder = nn.Sequential(
-            nn.Conv2d(1, initial_channels, kernel_size=3, stride=2, padding=1),
+            nn.Conv2d(3, initial_channels, kernel_size=3, stride=2, padding=1),  # 输入通道从1改为3
             nn.BatchNorm2d(initial_channels),
             nn.ReLU(),
             nn.Conv2d(initial_channels, initial_channels * 2, kernel_size=3, stride=2, padding=1),
@@ -37,17 +38,15 @@ class CAE(nn.Module):
                                output_padding=1),
             nn.BatchNorm2d(initial_channels),
             nn.ReLU(),
-            nn.ConvTranspose2d(initial_channels, 1, kernel_size=3, stride=2, padding=1, output_padding=1),
+            nn.ConvTranspose2d(initial_channels, 3, kernel_size=3, stride=2, padding=1, output_padding=1),  # 输出通道从1改为3
             nn.Sigmoid()
         )
-
     def forward(self, x):
         encoded = self.encoder(x)
         decoded = self.decoder(encoded)
         return encoded, decoded
 
-
-def prepare_data(batch_size,img_size=32):
+def prepare_data(batch_size, img_size=32):
     transform = transforms.Compose([
         transforms.RandomHorizontalFlip(),
         transforms.RandomRotation(10),
@@ -55,16 +54,14 @@ def prepare_data(batch_size,img_size=32):
         transforms.ToTensor(),
         transforms.Normalize((0.5,), (0.5,))
     ])
-    train_set = FashionMNIST(root='./data', train=True, download=True, transform=transform)
-    test_set = FashionMNIST(root='./data', train=False, download=True, transform=transform)
+    train_set = ImageFolder(root='data/DeepFashion2/train', transform=transform)
+    test_set = ImageFolder(root='data/DeepFashion2/test', transform=transform)
     train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
     test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False)
     return train_loader, test_loader
 
-
 def load_image(image_path,img_size=32):
     transform = transforms.Compose([
-        transforms.Grayscale(),  # 将图片转换为单通道
         transforms.Resize((img_size, img_size)),  # 调整图片大小
         transforms.ToTensor(),
         transforms.Normalize((0.5,), (0.5,))
@@ -74,8 +71,21 @@ def load_image(image_path,img_size=32):
     image = image.unsqueeze(0)  # 增加一个批次维度
     return image
 
+def prepare_data(batch_size, img_size=32):
+    transform = transforms.Compose([
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomRotation(10),
+        transforms.Resize((img_size, img_size)),
+        transforms.ToTensor(),
+        transforms.Normalize((0.5,), (0.5,))
+    ])
+    train_set = ImageFolder(root='data/train', transform=transform)
+    test_set = ImageFolder(root='data/test', transform=transform)
+    train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
+    test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False)
+    return train_loader, test_loader
 
-def train(batch_size,learning_rate,num_epochs):
+def train(batch_size, learning_rate, num_epochs):
     train_loader, test_loader = prepare_data(batch_size)
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     criterion = nn.MSELoss()
@@ -112,15 +122,12 @@ def train(batch_size,learning_rate,num_epochs):
     test_loss /= len(test_loader.dataset)
     print(f"Test Loss: {test_loss:.4f}")
 
-
 def encode(device, model, image_path):
     model.eval()
     image = load_image(image_path).to(device)
     with torch.no_grad():
         encoded, _ = model(image)
-    #print("Encoded feature vector:", encoded.cpu().numpy())
     return encoded
-
 
 def open_db(db_path):
     conn = sqlite3.connect(db_path)
@@ -135,13 +142,11 @@ def open_db(db_path):
     conn.commit()
     return conn
 
-
 def save_encoded_to_db(db_conn, encoded, id, name):
     cursor = db_conn.cursor()
     encoded_blob = np.array(encoded).tobytes()
     cursor.execute("INSERT INTO EncodedData (id, name, encoded) VALUES (?, ?, ?)", (id, name, encoded_blob))
     db_conn.commit()
-
 
 def load_all_encoded_from_db(db_conn):
     cursor = db_conn.cursor()
@@ -149,49 +154,26 @@ def load_all_encoded_from_db(db_conn):
     data = cursor.fetchall()
     return data
 
-
 def find_closest_encoded(device, model, image_path, db_conn):
     model.eval()
     image = load_image(image_path).to(device)
     with torch.no_grad():
         encoded, _ = model(image)
     encoded = encoded.cpu().numpy()
-
-    # Load data from the database
     data = load_all_encoded_from_db(db_conn)
-    index = annoy.AnnoyIndex(encoded.shape[1], 'euclidean')  # Create Annoy index
-
+    index = annoy.AnnoyIndex(encoded.shape[1], 'euclidean')
     distances = []
-
     for i, record in enumerate(data):
         id, name, encoded_blob = record
         encoded_db = np.frombuffer(encoded_blob, dtype=np.float32)
         index.add_item(i, encoded_db)
-
-        # Calculate the distance
         distance = np.linalg.norm(encoded.flatten() - encoded_db)
         distances.append((id, name, distance))
-
-    index.build(10)  # Build the tree with 10 trees
-
-    # Query the index for the nearest neighbor
+    index.build(10)
     nearest = index.get_nns_by_vector(encoded.flatten(), 1)[0]
     closest_record = data[nearest]
-
-    # Get distances for all records
-    distances.sort(key=lambda x: x[2])  # Sort by distance
-
+    distances.sort(key=lambda x: x[2])
     return closest_record[0], closest_record[1], distances
-
-
-def load_test_data_to_db():
-    db_conn = open_db("encoded_data.db")
-    model.load_state_dict(torch.load("cae_epoch_10.pth"))
-    for i,s in enumerate(["a","b"]):
-        encoded = encode(device, model, f"data/{s}1.jpg")
-        save_encoded_to_db(db_conn, encoded, i, s)
-    db_conn.close()
-
 
 def load_ysc_test_data_to_db():
     db_conn = open_db("encoded_data.db")
@@ -201,25 +183,20 @@ def load_ysc_test_data_to_db():
         save_encoded_to_db(db_conn, encoded, i, f"汉服{i}")
     db_conn.close()
 
-
 def predict():
     db_conn = open_db("encoded_data.db")
     model.load_state_dict(torch.load("cae_epoch_20.pth"))
-    while(True):
+    while True:
         img_path = input("img_path: ")
-        a,b,distances = find_closest_encoded(device, model, img_path, db_conn)
+        a, b, distances = find_closest_encoded(device, model, img_path, db_conn)
         print(f"a={a}\nb={b}\ndistances={distances}")
-    #db_conn.close()
-
 
 if __name__ == "__main__":
-    #img_size = 32
+    # img_size = 32
     #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     device = torch.device("cpu")
     model = CAE(initial_channels=256, hidden_dim=1024, bottleneck_dim=512).to(device)
 
-    #train(32,0.001,50)
-    #load_test_data_to_db()
-
+    #train(32,0.01,20)
     #load_ysc_test_data_to_db()
     predict()
