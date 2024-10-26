@@ -7,3 +7,7 @@ float drone_gyro_temperature;
 float drone_barometer_pressure;
 float drone_barometer_temperature;
 float drone_barometer_altitude;
+
+uint16_t drone_motor_duty[5];
+
+uint16_t drone_motor_offset = 2048;
