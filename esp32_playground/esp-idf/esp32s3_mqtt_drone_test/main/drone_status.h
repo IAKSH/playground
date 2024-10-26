@@ -16,3 +16,10 @@ extern uint16_t drone_motor_duty[5];
 
 // for height
 extern uint16_t drone_motor_offset;
+extern float drone_target_euler[3];
+
+extern float drone_motor_kp;
+extern float drone_motor_ki;
+extern float drone_motor_kd;
+
+extern uint8_t drone_motor_emergency_stop;

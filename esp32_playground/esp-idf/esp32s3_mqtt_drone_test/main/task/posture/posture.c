@@ -5,6 +5,7 @@
 
 #include "mpu6050.h"
 #include "bmp280.h"
+#include "qmc5883l.h"
 #include "drone_status.h"
 
 #include <math.h>
@@ -43,13 +44,18 @@ void task_posture(void) {
     if(!mpu6050_init(I2C_MASTER_NUM)) {
         exit(1);
     }
-    mpu6050_kalman_init(&mpu6050_kalman_state,0,0,0);
+    for(int i = 0;i < 2;i++)
+        mpu6050_kalman_init(mpu6050_kalman_state + i,0,0,0);
 #endif
 
     if(!bmp280_init(I2C_MASTER_NUM)) {
         exit(1);
     }
     bmp280_kalman_init(&bmp280_kalman_state);
+
+    if(!qmc5883l_init(I2C_MASTER_NUM)) {
+        exit(1);
+    }
 
     while(true) {
         static int64_t last_time = 0;
@@ -67,6 +73,9 @@ void task_posture(void) {
         }
         drone_gryo_euler[0] = -mpu6050_kalman_state[1].angle;
         drone_gryo_euler[1] = mpu6050_kalman_state[0].angle;
+        //drone_gryo_euler[2] = qmc5883l_get_filted_yaw(I2C_MASTER_NUM);
+        mpu6050_get_temperature(I2C_MASTER_NACK,&drone_gyro_temperature);
+        drone_gryo_euler[2] = qmc5883l_get_yaw(I2C_MASTER_NUM);
 #endif
 
         bmp280_kalman_update(I2C_MASTER_NUM,&bmp280_kalman_state,                                                                         

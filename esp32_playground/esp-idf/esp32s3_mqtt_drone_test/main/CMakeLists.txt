@@ -5,4 +5,4 @@ idf_component_register(SRCS
                         "./task/posture/posture.c"
                         "./task/stabilizer/stabilizer.c"
                     INCLUDE_DIRS "."
-                    REQUIRES mpu6050 bmp280 motor nvs_flash esp_event esp_netif protocol_examples_common mqtt driver)
+                    REQUIRES qmc5883l mpu6050 bmp280 motor nvs_flash esp_event esp_netif protocol_examples_common mqtt driver)
