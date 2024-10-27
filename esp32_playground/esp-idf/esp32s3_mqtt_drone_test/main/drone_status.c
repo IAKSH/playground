@@ -10,11 +10,11 @@ float drone_barometer_altitude;
 
 uint16_t drone_motor_duty[5];
 
-uint16_t drone_motor_offset = 2048;
+uint16_t drone_motor_offset = 1024;
 float drone_target_euler[3] = {0,0,0};
 
 float drone_motor_kp = 5.0f;
 float drone_motor_ki = 0.1f;
 float drone_motor_kd = 1.0f;
 
-uint8_t drone_motor_emergency_stop = 0;
+uint8_t drone_motor_emergency_stop = 1;
