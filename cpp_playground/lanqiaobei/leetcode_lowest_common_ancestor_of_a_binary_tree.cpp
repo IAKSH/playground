@@ -14,6 +14,7 @@ struct TreeNode {
 class Solution {
 public:
     TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
+        cnt = 0;
         result = nullptr;
         val1 = p->val;
         val2 = q->val;
@@ -23,7 +24,7 @@ public:
 
 private:
     bool dfs(TreeNode* node) {
-        if(result)
+        if(result || cnt == 2)
             return false;
 
         bool b1,b2;
@@ -34,6 +35,7 @@ private:
             b2 = dfs(node->right);
     
         if(node->val == val1 || node->val == val2) {
+            ++cnt;
             if(b1 || b2)
                 result = node;
             return true;
@@ -46,6 +48,7 @@ private:
     }
 
     int val1,val2;
+    int cnt;
     TreeNode* result;
 };
 
