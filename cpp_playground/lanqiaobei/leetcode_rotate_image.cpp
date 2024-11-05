@@ -7,13 +7,11 @@ using namespace std;
 class Solution {
 public:
     void rotate(vector<vector<int>>& matrix) {
-        vector<vector<int>> result(matrix.size(),vector<int>(matrix[0].size()));
         for(int i = 0;i < matrix.size();i++) {
-            for(int j = 0;j < matrix[0].size();j++) {
-                result[j][matrix.size() - 1 - i] = matrix[i][j];
-            }
+            for(int j = 0;j < matrix[0].size() - i;j++)
+                swap(matrix[j][i],matrix[matrix.size() - 1 - i][matrix[0].size() - 1 - j]);
         }
-        matrix = result;
+        reverse(matrix.begin(),matrix.end());
     }
 };
 
