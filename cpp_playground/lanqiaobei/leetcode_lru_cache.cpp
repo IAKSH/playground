@@ -59,40 +59,47 @@ private:
     int used_size = 0;
 };
 
-void test1() {
+bool test1() {
+    vector<int> res;
     LRUCache lru(2);
     lru.put(1,1);
     lru.put(2,2);
-    cout << lru.get(1) << '\n';
+    res.emplace_back(lru.get(1));
     lru.put(3,3);
-    cout << lru.get(2) << '\n';
+    res.emplace_back( lru.get(2));
     lru.put(4,4);
-    cout << lru.get(1) << '\n';
-    cout << lru.get(3) << '\n';
-    cout << lru.get(4) << '\n';
+    res.emplace_back(lru.get(1));
+    res.emplace_back(lru.get(3));
+    res.emplace_back(lru.get(4));
+    return res == vector<int>{1,-1,-1,3,4};
 }
 
-void test2() {
+bool test2() {
+    vector<int> res;
     LRUCache lru(2);
     lru.put(2,1);
     lru.put(2,2);
-    cout << lru.get(2) << '\n';
+    res.emplace_back(lru.get(2));
     lru.put(1,1);
     lru.put(4,1);
-    cout << lru.get(2) << '\n';
+    res.emplace_back(lru.get(2));
+    return res == vector<int>{2,-1};
 }
 
-void test3() {
+bool test3() {
+    vector<int> res;
     LRUCache lru(2);
     lru.put(2,1);
     lru.put(1,1);
     lru.put(2,3);
     lru.put(4,1);
-    cout << lru.get(1) << '\n';
-    cout << lru.get(2) << '\n';
+    res.emplace_back(lru.get(1));
+    res.emplace_back(lru.get(2));
+    return res == vector<int>{-1,3};
 }
 
 int main() {
-    test3();
+    for(auto func : {test1,test2,test3})
+        cout << (func() ? "AC" : "WA") << '\n';
     return 0;
 }
