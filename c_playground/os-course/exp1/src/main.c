@@ -96,11 +96,11 @@ int main() {
     queue_init(&block_q);
     queue_init(&run_q);
 
-    PCB p1 = {"P1", 'W', 0, 0, 3, NULL};
-    PCB p2 = {"P2", 'W', 0, 1, 6, NULL};
-    PCB p3 = {"P3", 'B', 0, 2, 4, NULL};
-    PCB p4 = {"P4", 'B', 0, 3, 5, NULL};
-    PCB p5 = {"P5", 'B', 0, 4, 2, NULL};
+    PCB p1 = {"P1", W, 0, 0, 3, NULL};
+    PCB p2 = {"P2", W, 0, 1, 6, NULL};
+    PCB p3 = {"P3", B, 0, 2, 4, NULL};
+    PCB p4 = {"P4", B, 0, 3, 5, NULL};
+    PCB p5 = {"P5", B, 0, 4, 2, NULL};
 
     queue_push_back(&ready_q, p1);
     queue_push_back(&ready_q, p2);
