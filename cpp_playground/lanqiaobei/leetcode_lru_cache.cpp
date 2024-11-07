@@ -6,56 +6,72 @@ using namespace std;
 
 class LRUCache {
 public:
-    LRUCache(int capacity) {
-        caches.resize(capacity);
-    }
-    
+    LRUCache(int capacity) : max_size(capacity) {}
+
     int get(int key) {
-        auto it = find_if(caches.begin(),caches.end(),[&](const CacheBlock& cb){
-            return cb.key == key;
-        });
-        if(it != caches.end()) {
-            for(auto& cb : caches)
-                ++cb.last_update;
-            it->last_update = 0;
-            return it->val;
-        }
-        else
+        if (caches_map.count(key) > 0) {
+            auto ptr = caches_map[key];
+            // 移动ptr到最前
+            move_to_front(ptr);
+            return ptr->value;
+        } else {
             return -1;
+        }
     }
-    
+
     void put(int key, int value) {
-        auto it = find_if(caches.begin(),caches.end(),[&](const CacheBlock& cb){
-            return cb.key == key;
-        });
-        if(it != caches.end()) {
-            for(auto& cb : caches)
-                ++cb.last_update;
-            *it = CacheBlock(key,value);
-        }
-        else if(used_size < caches.size()) {
-            for(auto& cb : caches)
-                ++cb.last_update;
-            caches[used_size++] = CacheBlock(key,value);
-        }
-        else {
-            auto min_it = min_element(caches.begin(),caches.end(),[](const CacheBlock& cb1,const CacheBlock& cb2){
-                return cb1.last_update > cb2.last_update;
-            });
-            for(auto& cb : caches)
-                ++cb.last_update;
-            *min_it = CacheBlock(key,value);
+        if (caches_map.count(key) > 0) {
+            auto ptr = caches_map[key];
+            ptr->value = value;
+            // 移动ptr到最前
+            move_to_front(ptr);
+        } else if (used_size < max_size) {
+            Node* new_node = nullptr;
+            if (!head) {
+                new_node = new Node(key, value, nullptr, nullptr);
+                head = tail = new_node;
+            } else {
+                new_node = new Node(key, value, nullptr, head);
+                head->front = new_node;
+                head = new_node;
+            }
+            ++used_size;
+            caches_map[key] = new_node;
+        } else {
+            // 最后一个节点修改key和value，然后移动到最前，同时更新caches_map中的映射
+            Node* last_node = tail;
+            caches_map.erase(last_node->key);
+            last_node->key = key;
+            last_node->value = value;
+            caches_map[key] = last_node;
+            move_to_front(last_node);
         }
     }
 
 private:
-    struct CacheBlock {
-        int key,val,last_update;
-        CacheBlock() : key(-1),val(-1),last_update(0) {}
-        CacheBlock(int key,int val) : key(key),val(val),last_update(0) {}
+    struct Node {
+        int key, value;
+        Node *front, *next;
+        Node(int key, int value, Node* front, Node* next) : key(key), value(value), front(front), next(next) {}
     };
 
-    vector<CacheBlock> caches;
+    void move_to_front(Node* node) {
+        if (node == head) return;
+        // 断开node
+        if (node->front) node->front->next = node->next;
+        if (node->next) node->next->front = node->front;
+        if (node == tail) tail = node->front;
+        // 将node移动到最前
+        node->next = head;
+        node->front = nullptr;
+        if (head) head->front = node;
+        head = node;
+        if (!tail) tail = node;
+    }
+
+    Node *head = nullptr, *tail = nullptr;
+    unordered_map<int, Node*> caches_map;
+    const int max_size;
     int used_size = 0;
 };
 
