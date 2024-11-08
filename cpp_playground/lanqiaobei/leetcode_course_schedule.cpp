@@ -7,38 +7,44 @@ using namespace std;
 class Solution {
 public:
     bool canFinish(int numCourses, vector<vector<int>>& prerequisites) {
-        if(prerequisites.size() == 0)
-            return true;
         mem.resize(numCourses);
-        marks.resize(numCourses);
-        subtree_mark.resize(numCourses);
+        marks.resize(numCourses, false);
+        subtree_mark.resize(numCourses, false);
 
         for(const auto& v : prerequisites) {
             if(v[0] == v[1])
                 return false;
             mem[v[0]].emplace_back(v[1]);
         }
-        for(const auto& v : prerequisites) {
-            if(!dfs(v[0]))
+
+        // 因为课程记为 0 到 numCourses - 1
+        for(int i = 0; i < numCourses; ++i) {
+            if(!dfs(i))
                 return false;
-            subtree_mark[v[0]] = true;
         }
+
         return true;
     }
 
 private:
     bool dfs(int x) {
+        if(marks[x])
+            return false;
+        if(subtree_mark[x])
+            return true;
+
         marks[x] = true;
         for(const auto& i : mem[x]) {
-            if(!subtree_mark[i] && (marks[i] || !dfs(i)))
+            if(!dfs(i))
                 return false;
         }
         marks[x] = false;
+        subtree_mark[x] = true;
         return true;
     }
 
     vector<vector<int>> mem;
-    vector<bool> marks,subtree_mark;
+    vector<bool> marks, subtree_mark;
 };
 
 int main() {
