@@ -17,17 +17,16 @@ public:
         for(const auto& v : prerequisites) {
             if(!dfs(v[0]))
                 return false;
+            subtree_mark.emplace(v[0]);
         }
         return true;
     }
 
 private:
     bool dfs(int x) {
-        if(marks.count(x) != 0)
-            return false;
         marks.emplace(x);
         for(const auto& i : mem[x]) {
-            if(!dfs(i))
+            if(subtree_mark.count(i) == 0 && (marks.count(i) != 0 || !dfs(i)))
                 return false;
         }
         marks.erase(x);
@@ -35,7 +34,7 @@ private:
     }
 
     unordered_map<int,vector<int>> mem;
-    unordered_set<int> marks;
+    unordered_set<int> marks,subtree_mark;
 };
 
 int main() {
