@@ -7,33 +7,35 @@ using namespace std;
 class Solution {
 public:
     bool canFinish(int numCourses, vector<vector<int>>& prerequisites) {
-        for(const auto& i : prerequisites) {
-            v2.emplace_back(make_pair(i[0],i[1]));
-            while(!v2.empty()) {
-                if(!insert(v2.front().first,v2.front().second))
-                    return false;
-                v2.pop_front();
-            }
+        if(prerequisites.size() == 0)
+            return true;
+        for(const auto& v : prerequisites) {
+            if(v[0] == v[1])
+                return false;
+            mem[v[0]].emplace_back(v[1]);
+        }
+        for(const auto& v : prerequisites) {
+            if(!dfs(v[0]))
+                return false;
         }
         return true;
     }
 
 private:
-    bool insert(int i,int j) {
-        if(i == j)
+    bool dfs(int x) {
+        if(marks.count(x) != 0)
             return false;
-        for(const auto& p : v1) {
-            if(p.second == i) {
-                if(p.first == j)
-                    return false;
-                v2.emplace_back(make_pair(p.first,j));
-            }
+        marks.emplace(x);
+        for(const auto& i : mem[x]) {
+            if(!dfs(i))
+                return false;
         }
-        v1.emplace_back(make_pair(i,j));
+        marks.erase(x);
         return true;
     }
 
-    deque<pair<int,int>> v1,v2;
+    unordered_map<int,vector<int>> mem;
+    unordered_set<int> marks;
 };
 
 int main() {
