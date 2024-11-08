@@ -9,6 +9,10 @@ public:
     bool canFinish(int numCourses, vector<vector<int>>& prerequisites) {
         if(prerequisites.size() == 0)
             return true;
+        mem.resize(numCourses);
+        marks.resize(numCourses);
+        subtree_mark.resize(numCourses);
+
         for(const auto& v : prerequisites) {
             if(v[0] == v[1])
                 return false;
@@ -17,24 +21,24 @@ public:
         for(const auto& v : prerequisites) {
             if(!dfs(v[0]))
                 return false;
-            subtree_mark.emplace(v[0]);
+            subtree_mark[v[0]] = true;
         }
         return true;
     }
 
 private:
     bool dfs(int x) {
-        marks.emplace(x);
+        marks[x] = true;
         for(const auto& i : mem[x]) {
-            if(subtree_mark.count(i) == 0 && (marks.count(i) != 0 || !dfs(i)))
+            if(!subtree_mark[i] && (marks[i] || !dfs(i)))
                 return false;
         }
-        marks.erase(x);
+        marks[x] = false;
         return true;
     }
 
-    unordered_map<int,vector<int>> mem;
-    unordered_set<int> marks,subtree_mark;
+    vector<vector<int>> mem;
+    vector<bool> marks,subtree_mark;
 };
 
 int main() {
