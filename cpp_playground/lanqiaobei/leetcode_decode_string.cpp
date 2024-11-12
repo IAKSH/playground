@@ -7,43 +7,34 @@ using namespace std;
 class Solution {
 public:
     string decodeString(string s) {
-        int l,r;
-        for(l = 0;l < s.size();l++) {
-            if(s[l] == '[')
-                break;
-        }
-        for(r = s.size() - 1;r > l;r--) {
-            if(s[r] == ']')
-                break;
-        }
-        if(l >= r)
-            return s;
-        else {
-            string str = decodeString(s.substr(l + 1,r - l - 1));
-            string res(s.substr(0,l));
-            if(is_num(res.back()))
-                res.pop_back();
-            if(l > 0 && is_num(s[l - 1])) {
-                for(int i = 0;i < to_num(s[l - 1]);i++)
-                    res += str;
+        stack<int> st;
+        for(int i = 0;i < s.size();i++) {
+            if(s[i] == '[')
+                st.emplace(i);
+            else if(s[i] == ']') {
+                int n = 0;
+                int j;
+                for(j = st.top() - 1;j >= 0 && s[j] >= '0' && s[j] <= '9';j--)
+                    n += pow(10,st.top() - 1 - j) * (s[j] - '0');
+
+                string l(s.substr(0,j + 1));
+                string r(s.substr(i + 1));
+                string m(s.substr(st.top() + 1,i - st.top() - 1));
+
+                for(int k = 0;k < n;k++)
+                    l += m;
+                l += r;
+                i = st.top() - 1;
+                s = l;
+                st.pop();
             }
-            res += s.substr(r + 1,s.size() - r);
-            return res;
         }
-    }
-
-private:
-    bool is_num(char c) {
-        return c >= '0' && c <= '9';
-    }
-
-    int to_num(char c) {
-        return c - '0';
+        return s;
     }
 };
 
 int main() {
-    cout << Solution().decodeString("abc3[cd]xyz") << '\n';
+    cout << Solution().decodeString("3[z]2[2[y]pq4[2[jk]e1[f]]]ef") << '\n';
     return 0;
 }
 
@@ -59,5 +50,10 @@ int main() {
 
 "3[z]2[2[y]pq4[2[jk]e1[f]]]ef"
 zzzyypqjkjkefjkjkefjkjkefjkjkefyypqjkjkefjkjkefjkjkefjkjkefef
+zzzyypqjkjkefjkjkefjkjkefjkjkefyypqjkjkefjkjkefjkjkefjkjkefef
+zzzyypqjkjkefjkjkefjkjkefjkjkefyypqjkjkefjkjkefjkjkefjkjkefef
+zzzyypqjkjkefjkjkefjkjkefjkjkefyypqjkjkefjkjkefjkjkefjkjkefef
+
+"100[leetcode]"
 
 */
