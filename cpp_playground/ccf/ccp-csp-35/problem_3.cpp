@@ -1,54 +1,69 @@
 // https://sim.csp.thusaac.com/contest/35/problem/3
-// WA & TLE
+// 10AC 2WA 8TLE
 
 #include <bits/stdc++.h>
 
 using namespace std;
 
 struct Node {
-    int x,y;
-    bool mark = false;
-    unordered_map<Node*,int> nearby;
+    int x, y;
+    unordered_map<Node*, int> nearby;
 };
 
 struct Station {
-    int x,y,r,t;
+    int x, y, r, t;
 };
 
-int n,m,a,b,c,d;
+int n, m, a, b, c, d;
 vector<Node> nodes;
 vector<Station> stations;
 int min_result = INT_MAX;
 
-void dfs(Node* node,int t) {
-    if(node == &nodes.back() && t < min_result)
-        min_result = t;
-    else {
-        for(auto& other : node->nearby) {
-            if(!other.first->mark) {
-                other.first->mark = true;
-                dfs(other.first,t + other.second);
+int dijkstra(Node* start, Node* end) {
+    unordered_map<Node*, int> distances;
+    for(auto& node : nodes) {
+        distances[&node] = INT_MAX;
+    }
+    distances[start] = 0;
+
+    priority_queue<pair<int, Node*>, vector<pair<int, Node*>>, greater<pair<int, Node*>>> pq;
+    pq.push({0, start});
+
+    while(!pq.empty()) {
+        auto [current_dist, current_node] = pq.top();
+        pq.pop();
+
+        if(current_node == end) {
+            return current_dist;
+        }
+
+        for(auto& neighbor : current_node->nearby) {
+            Node* next_node = neighbor.first;
+            int weight = neighbor.second;
+            int new_dist = current_dist + weight;
+
+            if(new_dist < distances[next_node]) {
+                distances[next_node] = new_dist;
+                pq.push({new_dist, next_node});
             }
         }
     }
-    node->mark = false;
+
+    return INT_MAX; // 若未找到路径返回无限大
 }
 
 int main() {
     cin >> n >> m;
 
-    for(int i = 0;i < n;i++) {
+    for(int i = 0; i < n; i++) {
         cin >> a >> b;
-        nodes.emplace_back(Node{a,b});
+        nodes.emplace_back(Node{a, b});
     }
 
-    for(int i = 0;i < m;i++) {
+    for(int i = 0; i < m; i++) {
         cin >> a >> b >> c >> d;
-        stations.emplace_back(Station{a,b,c,d});
+        stations.emplace_back(Station{a, b, c, d});
     }
-
-    // 求第一个节点到最后一个节点的最小延迟
-    // 根据距离建图，然后图中dfs（由于距离不等，不用bfs）
 
     for(const auto& station : stations) {
         vector<Node*> nearby_nodes;
@@ -57,14 +72,14 @@ int main() {
                 nearby_nodes.emplace_back(&node);
         }
         for(auto& node : nearby_nodes) {
-            for(const auto& other : nearby_nodes) {
+            for(auto& other : nearby_nodes) {
                 if(other != node)
-                    node->nearby[other] = min(node->nearby[other] == 0 ? INT_MAX : node->nearby[other],station.t);
+                    node->nearby[other] = min(node->nearby[other] == 0 ? INT_MAX : node->nearby[other], station.t);
             }
         }
     }
 
-    dfs(&nodes.front(),0);
-    cout << min_result << '\n';
+    int result = dijkstra(&nodes.front(), &nodes.back());
+    cout << (result == INT_MAX ? -1 : result) << '\n';
     return 0;
 }
