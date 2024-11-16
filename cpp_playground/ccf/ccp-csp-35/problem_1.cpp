@@ -1,17 +1,17 @@
-#include <bits/stdc++.h>
+// https://sim.csp.thusaac.com/contest/35/problem/1
 // 16AC 4TLE
 
+#include <bits/stdc++.h>
 using namespace std;
 
 int main() {
-    string s,trans_s,tmp;
+    string s,tmp;
     getline(cin,s);
-    s.erase(s.begin());
-    s.erase(s.end() - 1);
+    s = s.substr(1,s.size() - 2);  // 去掉首尾的引号
 
     unordered_map<char,char> trans;
-    stringstream ss;
 
+    stringstream ss;
     int n,m,k;
     getline(cin,tmp);
     ss << tmp;
@@ -25,11 +25,26 @@ int main() {
     cin >> m;
     for(int i = 0;i < m;i++) {
         cin >> k;
-        trans_s = s;
-        for(int j = 0;j < k;j++) {
-            for(auto& c : trans_s) {
-                if(trans.count(c) > 0)
-                    c = trans[c];
+        string trans_s = s;
+
+        // 预计算每个字符在 k 次转换后的结果
+        unordered_map<char,char> final_trans;
+        for(auto& p : trans) {
+            char current = p.first;
+            char next = p.second;
+            for(int j = 1;j < k;j++) {
+                if(trans.count(next) > 0) {
+                    next = trans[next];
+                }
+                else
+                    break;
+            }
+            final_trans[current] = next;
+        }
+
+        for (auto& c : trans_s) {
+            if (final_trans.count(c)) {
+                c = final_trans[c];
             }
         }
         cout << '#' << trans_s << "#\n";
