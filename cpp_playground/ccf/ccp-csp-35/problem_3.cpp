@@ -8,7 +8,7 @@ using namespace std;
 struct Node {
     int x,y;
     bool mark = false;
-    vector<pair<Node*,int>> nearby;
+    unordered_map<Node*,int> nearby;
 };
 
 struct Station {
@@ -59,7 +59,7 @@ int main() {
         for(auto& node : nearby_nodes) {
             for(const auto& other : nearby_nodes) {
                 if(other != node)
-                    node->nearby.emplace_back(make_pair(other,station.t));
+                    node->nearby[other] = min(node->nearby[other] == 0 ? INT_MAX : node->nearby[other],station.t);
             }
         }
     }
