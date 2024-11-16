@@ -1,4 +1,5 @@
 // https://sim.csp.thusaac.com/contest/35/problem/1
+// 16AC 4TLE
 
 #include <bits/stdc++.h>
 
