@@ -14,21 +14,15 @@ public:
 
         sort(nums.begin(),nums.end());
 
-        vector<vector<int>> dp(nums.size() + 1,vector<int>(half + 1,0));
+        vector<vector<bool>> dp(nums.size() + 1,vector<bool>(half + 1,false));
         for(int i = 1;i <= nums.size();i++) {
             for(int j = 1;j <= half;j++) {
-                int new_val;
-                if(nums[i - 1] <= j) {
-                    new_val = nums[i - 1];
-                    new_val += dp[i - 1][j - nums[i - 1]];
-                }
-                dp[i][j] = max(new_val,dp[i - 1][j]);
-                if(dp[i][j] == half)
-                    return true;
+                if(dp[i - 1][j] || nums[i - 1] == j || (j - nums[i - 1] >= 0 && dp[i - 1][j - nums[i - 1]]))
+                    dp[i][j] = true;
             }
         }
         
-        return false;
+        return dp.back().back();
     }
 };
 
