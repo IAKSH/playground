@@ -7,35 +7,29 @@ using namespace std;
 class Solution {
 public:
     bool canPartition(vector<int>& nums) {
-        half = accumulate(nums.begin(),nums.end(),0);
-        half /= 2.0f;
-        if(floorf(half) != half)
+        int sum = accumulate(nums.begin(),nums.end(),0);
+        if(sum & 1 == 1)
             return false;
-        vector<bool> mask(nums.size(),false);
-        for(int i = 0;i < nums.size();i++) {
-            if(dfs(nums,mask,0,0))
-                return true;
-        }
-        return false;
-    }
+        int half = sum / 2;
 
-private:
-    bool dfs(vector<int>& nums,vector<bool>& mask,int acc,int index) {
-        mask[index] = true;
-        acc += nums[index];
-        if(acc == half)
-            return true;
-        for(int i = 0;i < mask.size();i++) {
-            if(!mask[i]) {
-                if(dfs(nums,mask,acc,i))
+        sort(nums.begin(),nums.end());
+
+        vector<vector<int>> dp(nums.size() + 1,vector<int>(half + 1,0));
+        for(int i = 1;i <= nums.size();i++) {
+            for(int j = 1;j <= half;j++) {
+                int new_val;
+                if(nums[i - 1] <= j) {
+                    new_val = nums[i - 1];
+                    new_val += dp[i - 1][j - nums[i - 1]];
+                }
+                dp[i][j] = max(new_val,dp[i - 1][j]);
+                if(dp[i][j] == half)
                     return true;
-             }
+            }
         }
-        mask[index] = false;
+        
         return false;
     }
-
-    float half = 0.0f;
 };
 
 int main() noexcept {
