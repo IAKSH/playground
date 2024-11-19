@@ -51,8 +51,41 @@ Block first_fit(Block* head,int size) {
     return bad_block;
 }
 
-Block best_fit(Block* head,int size) {
-    
+Block best_fit(Block* head, int size) {
+    Block* block = head;
+    Block* best_block = NULL;
+
+    while (block) {
+        if (block->length >= size) {
+            if (!best_block || block->length < best_block->length) {
+                best_block = block;
+            }
+        }
+        block = block->next;
+    }
+
+    if (best_block) {
+        if (best_block->length > size) {
+            Block fit = {best_block->start_address, size, NULL, NULL};
+            best_block->start_address += size;
+            best_block->length -= size;
+            return fit;
+        } else if (best_block->length == size) {
+            Block fit = *best_block;
+            fit.prior = fit.next = NULL;
+            if (best_block->prior) {
+                best_block->prior->next = best_block->next;
+            }
+            if (best_block->next) {
+                best_block->next->prior = best_block->prior;
+            }
+            free(best_block);
+            return fit;
+        }
+    }
+
+    Block bad_block = {-1, -1, NULL, NULL};
+    return bad_block;
 }
 
 Block* free_block(Block* head,Block block) {
@@ -155,26 +188,27 @@ int init_block(Block* head,int length) {
     head->length = length;
 }
 
-void test_first_fit() {
+void test(Block(*method)(Block*,int)) {
     Block* head = (Block*)malloc(sizeof(Block));
     init_block(head,640);
 
-    Block b1 = alloc(first_fit,head,130);
-    Block b2 = alloc(first_fit,head,60);
-    Block b3 = alloc(first_fit,head,100);
+    Block b1 = alloc(method,head,130);
+    Block b2 = alloc(method,head,60);
+    Block b3 = alloc(method,head,100);
     head = free_block(head,b2);
-    Block b4 = alloc(first_fit,head,200);
+    Block b4 = alloc(method,head,200);
     head = free_block(head,b3);
     head = free_block(head,b1);
-    Block b5 = alloc(first_fit,head,140);
-    Block b6 = alloc(first_fit,head,60);
-    Block b7 = alloc(first_fit,head,50);
+    Block b5 = alloc(method,head,140);
+    Block b6 = alloc(method,head,60);
+    Block b7 = alloc(method,head,50);
     head = free_block(head,b6);
 
     show(head);
 }
 
 int main() {
-    test_first_fit();
+    //test(first_fit);
+    test(best_fit);
     return 0;
 }
