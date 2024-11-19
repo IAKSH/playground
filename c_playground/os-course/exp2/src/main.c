@@ -8,8 +8,22 @@ typedef struct __Block {
     struct __Block* next;
 } Block;
 
+void show(Block* head) {
+    printf("------------\n");
+    Block* block = head;
+    while(block) {
+        printf("free block: start at %d, length %d\n",
+            block->start_address,block->length);
+        block = block->next;
+    }
+    printf("------------\n");
+}
+
 Block alloc(Block(*method)(Block*,int),Block* head,int size) {
-    return method(head,size);
+    Block block = method(head,size);
+    printf("allocated block at %d, len %d\n",block.start_address,block.length);
+    show(head);
+    return block;
 }
 
 Block first_fit(Block* head,int size) {
@@ -37,14 +51,8 @@ Block first_fit(Block* head,int size) {
     return bad_block;
 }
 
-/*
-对由小到大的空闲区排列的空闲区，与所申请的内存大小相比，取两者差最小的给予分配，插入。
-初始化最小空间和最佳位置，用ch来记录最小位置。
-*/
 Block best_fit(Block* head,int size) {
-    // TODO
-    Block bad_block = {-1,-1,NULL,NULL};
-    return bad_block;
+    
 }
 
 Block* free_block(Block* head,Block block) {
@@ -65,17 +73,23 @@ Block* free_block(Block* head,Block block) {
                 *new_block = block;
                 ptr->prior->next = new_block;
                 ptr->prior = new_block;
+                printf("free address %d len %d by mid inserting\n",block.start_address,block.length);
+                show(head);
                 return head;
             }
             else if(a < b && c == d) {
                 // 合并到右
                 ptr->start_address = block.start_address;
                 ptr->length += block.length;
+                printf("free address %d len %d by merging to right\n",block.start_address,block.length);
+                show(head);
                 return head;
             }
             else if(a == b && c < d) {
                 // 合并到左
                 ptr->prior->length += block.length;
+                printf("free address %d len %d by merging to left\n",block.start_address,block.length);
+                show(head);
                 return head;
             }
             else if(a == b && c == d) {
@@ -84,6 +98,8 @@ Block* free_block(Block* head,Block block) {
                 ptr->prior->next = ptr->next;
                 ptr->next->prior = ptr->prior;
                 free(ptr);
+                printf("free address %d len %d by merging both sides\n",block.start_address,block.length);
+                show(head);
                 return head;
             }
         }
@@ -95,12 +111,16 @@ Block* free_block(Block* head,Block block) {
                 block.next = ptr;
                 *new_block = block;
                 ptr->prior = new_block;
+                printf("free address %d len %d by creating a new head\n",block.start_address,block.length);
+                show(new_block);
                 return new_block;
             }
             else if(c == d) {
                 // 合并到右
                 ptr->start_address = block.start_address;
                 ptr->length += block.length;
+                printf("free address %d len %d by merging to head\n",block.start_address,block.length);
+                show(head);
                 return head;
             }
         }
@@ -111,6 +131,8 @@ Block* free_block(Block* head,Block block) {
         if(last->start_address + last->length == block.start_address) {
             // 合并到末尾
             last->length += block.length;
+            printf("free address %d len %d by merging to last\n",block.start_address,block.length);
+            show(head);
         }
         else {
             // 添加到末尾
@@ -119,18 +141,11 @@ Block* free_block(Block* head,Block block) {
             block.next = NULL;
             *new_block = block;
             last->next = new_block;
+            printf("free address %d len %d by insert to last\n",block.start_address,block.length);
+            show(head);
         }
     }
     return head;
-}
-
-void show(Block* head) {
-    Block* block = head;
-    while(block) {
-        printf("free block: start at %d, length %d\n",
-            block->start_address,block->length);
-        block = block->next;
-    }
 }
 
 int init_block(Block* head,int length) {
@@ -140,7 +155,7 @@ int init_block(Block* head,int length) {
     head->length = length;
 }
 
-int main() {
+void test_first_fit() {
     Block* head = (Block*)malloc(sizeof(Block));
     init_block(head,640);
 
@@ -157,5 +172,9 @@ int main() {
     head = free_block(head,b6);
 
     show(head);
+}
+
+int main() {
+    test_first_fit();
     return 0;
 }
