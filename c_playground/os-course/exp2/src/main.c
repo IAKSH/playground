@@ -177,8 +177,19 @@ Block* free_block(Block* head,Block block) {
             printf("free address %d len %d by insert to last\n",block.start_address,block.length);
             show(head);
         }
+        return head;
     }
-    return head;
+    else {
+        // 没有空余空间，创建新的head
+        Block* new_block = (Block*)malloc(sizeof(Block));
+        block.prior = last;
+        block.next = NULL;
+        *new_block = block;
+        last->next = new_block;
+        printf("free address %d len %d by recreate a head\n",block.start_address,block.length);
+        show(new_block);
+        return new_block;
+    }
 }
 
 int init_block(Block* head,int length) {
