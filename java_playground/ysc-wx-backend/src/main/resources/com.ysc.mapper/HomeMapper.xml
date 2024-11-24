@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ysc.mapper.HomeMapper">
+
+
+<!--    <select id="selectAllByInfo" resultType="com.ysc.pojo.HanFu">-->
+<!--        select *-->
+<!--        from hanfu-->
+<!--        <where>-->
+<!--            <if test="info!=null and info!=''">-->
+<!--                name like concat('%',#{info},'%') or-->
+<!--                shop_name like concat('%',#{info},'%')-->
+<!--            </if>-->
+<!--        </where>-->
+<!--    </select>-->
+</mapper>
