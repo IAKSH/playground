@@ -5,21 +5,29 @@ import './ReservePage.css';
 function ReservePage() {
   const [items, setItems] = useState([
     {
-      name: '汉服A',
+      name: '凤翅紫金冠',
       size: 'L',
       price: '￥200',
-      borrowedDate: '2024-01-01',
-      returnDate: '2024-01-10',
+      borrowedDate: 'N/A',
+      returnDate: 'N/A',
       imageUrl: 'logo192.png'
     },
     {
-        name: '汉服A',
-        size: 'L',
-        price: '￥200',
-        borrowedDate: '2024-01-01',
-        returnDate: '2024-01-10',
-        imageUrl: 'logo192.png'
-      }
+      name: '锁子黄金甲',
+      size: 'L',
+      price: '￥200',
+      borrowedDate: 'N/A',
+      returnDate: 'N/A',
+      imageUrl: 'logo192.png'
+    },
+    {
+      name: '藕丝步云履',
+      size: 'L',
+      price: '￥200',
+      borrowedDate: 'N/A',
+      returnDate: 'N/A',
+      imageUrl: 'logo192.png'
+    }
     // 添加更多项...
   ]);
 
@@ -33,18 +41,21 @@ function ReservePage() {
     setSelectedItem(null);
   };
 
-  const handleReturn = () => {
-    console.log('立即归还', selectedItem);
-    // 在这里添加处理立即归还的逻辑
+  const handleTakeOut = () => {
+    console.log('立即取衣', selectedItem);
+    if (selectedItem) {
+      const utterance = new SpeechSynthesisUtterance(`请取出 ${selectedItem.name}`);
+      // 列出所有可用的声音
+      const voices = window.speechSynthesis.getVoices();
+      //console.log(voices);
+      // 选择一个声音
+      utterance.voice = voices[0];
+      window.speechSynthesis.speak(utterance);
+    }
+    // TODO
     handleClose();
   };
-
-  const handleDamage = () => {
-    console.log('衣物破损', selectedItem);
-    // 在这里添加处理衣物破损的逻辑
-    handleClose();
-  };
-
+  
   return (
     <div className="return-page">
       <div className="content-container">
@@ -54,7 +65,7 @@ function ReservePage() {
           ))}
         </div>
         <div className="button-container">
-          <p style={{ color:'black' }}>从隔壁复制过来的页面，不知道要显示什么</p>
+          <p style={{ color: 'black' }}>从隔壁复制过来的页面，不知道要显示什么</p>
         </div>
       </div>
 
@@ -70,8 +81,7 @@ function ReservePage() {
               <p><span>归还日期:</span> <span>{selectedItem.returnDate}</span></p>
             </div>
             <div className="modal-actions">
-              <button className="return-button" onClick={handleReturn}>立即归还</button>
-              <button className="damage-button" onClick={handleDamage}>衣物破损</button>
+              <button className="return-button" onClick={handleTakeOut}>立即取衣</button>
             </div>
           </div>
         </div>

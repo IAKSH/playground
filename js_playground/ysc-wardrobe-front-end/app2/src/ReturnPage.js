@@ -13,7 +13,7 @@ function ReturnPage() {
       imageUrl: 'logo192.png'
     },
     {
-        name: '汉服A',
+        name: '汉服B',
         size: 'L',
         price: '￥200',
         borrowedDate: '2024-01-01',
@@ -21,7 +21,7 @@ function ReturnPage() {
         imageUrl: 'logo192.png'
       },
       {
-        name: '汉服A',
+        name: '汉服C',
         size: 'L',
         price: '￥200',
         borrowedDate: '2024-01-01',
@@ -29,7 +29,7 @@ function ReturnPage() {
         imageUrl: 'logo192.png'
       },
       {
-        name: '汉服A',
+        name: '汉服D',
         size: 'L',
         price: '￥200',
         borrowedDate: '2024-01-01',
@@ -37,7 +37,7 @@ function ReturnPage() {
         imageUrl: 'logo192.png'
       },
       {
-        name: '汉服A',
+        name: '汉服E',
         size: 'L',
         price: '￥200',
         borrowedDate: '2024-01-01',
@@ -45,7 +45,7 @@ function ReturnPage() {
         imageUrl: 'logo192.png'
       },
       {
-        name: '汉服A',
+        name: '汉服F',
         size: 'L',
         price: '￥200',
         borrowedDate: '2024-01-01',
@@ -53,7 +53,7 @@ function ReturnPage() {
         imageUrl: 'logo192.png'
       },
       {
-        name: '汉服A',
+        name: '汉服G',
         size: 'L',
         price: '￥200',
         borrowedDate: '2024-01-01',
@@ -61,7 +61,7 @@ function ReturnPage() {
         imageUrl: 'logo192.png'
       },
       {
-        name: '汉服A',
+        name: '汉服H',
         size: 'L',
         price: '￥200',
         borrowedDate: '2024-01-01',
@@ -69,7 +69,7 @@ function ReturnPage() {
         imageUrl: 'logo192.png'
       },
       {
-        name: '汉服A',
+        name: '汉服I',
         size: 'L',
         price: '￥200',
         borrowedDate: '2024-01-01',
@@ -77,7 +77,7 @@ function ReturnPage() {
         imageUrl: 'logo192.png'
       },
       {
-        name: '汉服A',
+        name: '汉服J',
         size: 'L',
         price: '￥200',
         borrowedDate: '2024-01-01',
@@ -99,6 +99,15 @@ function ReturnPage() {
 
   const handleReturn = () => {
     console.log('立即归还', selectedItem);
+    if (selectedItem) {
+      const utterance = new SpeechSynthesisUtterance(`请归还 ${selectedItem.name}`);
+      // 列出所有可用的声音
+      const voices = window.speechSynthesis.getVoices();
+      //console.log(voices);
+      // 选择一个声音
+      utterance.voice = voices[0];
+      window.speechSynthesis.speak(utterance);
+    }
     // 在这里添加处理立即归还的逻辑
     handleClose();
   };
