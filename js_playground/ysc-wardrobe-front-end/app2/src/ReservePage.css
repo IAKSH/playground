@@ -1,0 +1,26 @@
+body,
+html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    /* 确保不会出现滚动条 */
+}
+
+.reserve-page {
+    min-height: 85vh;
+    /* 确保页面最小高度为视口高度 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f5f5f5;
+    /* 示例背景色 */
+    padding: 2rem;
+    box-sizing: border-box;
+    /* 确保 padding 不会导致尺寸问题 */
+}
+
+h2 {
+    font-size: 2rem;
+    color: #333;
+}

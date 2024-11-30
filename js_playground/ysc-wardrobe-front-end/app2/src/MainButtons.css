@@ -1,0 +1,59 @@
+/* src/MainButtons.css */
+.buttons-container {
+  display: flex;
+  justify-content: space-around;
+  padding: 2rem;
+  background-color: #c14545;
+}
+
+.button {
+  background-color: white;
+  border: none;
+  padding: 1rem;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: row; /* 水平排列 */
+  align-items: flex-start; /* 对齐到左上角 */
+  gap: 22.5rem;
+  border-radius: 8px;
+  transition: transform 0.2s, box-shadow 0.2s; /* 添加动效 */
+  text-decoration: none; /* 移除链接下划线 */
+  color: black; /* 设置链接颜色 */
+}
+
+.button:hover {
+  transform: translateY(-3px); /* 悬停效果 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 悬停阴影 */
+}
+
+.button:active {
+  transform: translateY(0); /* 点击效果 */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* 点击阴影 */
+}
+
+.button-logo {
+  width: 40px; /* 设置图标的大小 */
+  height: auto;
+}
+
+.button-text {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-size: 3.5rem;
+  font-family: 'Ma Shan Zheng', cursive; /* 使用马善正字体 */
+  color: black; /* 确保字体颜色一致 */
+}
+
+.button i {
+  font-size: 1.5rem;
+  margin-right: 0.5rem;
+}
+
+.button img {
+  width: 50px; /* 指定图片宽度 */
+  height: auto; /* 自动调整高度以保持比例 */
+  margin-right: 0.5rem; /* 为图片和文本之间添加一些间距 */
+}

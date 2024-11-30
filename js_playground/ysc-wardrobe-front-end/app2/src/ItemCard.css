@@ -1,0 +1,50 @@
+/* src/ItemCard.css */
+.item-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 1.2rem; /* 减小内部填充 */
+    width: calc(25% - 1rem);
+    cursor: pointer;
+    transition: transform 0.2s;
+    display: flex;
+    flex-direction: column; /* 确保图片和文本部分紧密排列 */
+    align-items: center;
+    justify-content: flex-start; /* 顶部对齐 */
+  }
+  
+  .item-card:hover {
+    transform: scale(1.05);
+  }
+  
+  .item-image {
+    width: 100%;
+    border-radius: 8px;
+    margin-bottom: 0.5rem; /* 添加图片与文本之间的间距 */
+  }
+  
+  .item-info {
+    color: black;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+    text-align: left;
+    width: 100%; /* 确保文本部分占满宽度 */
+  }
+  
+  .item-info p {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .item-info p span {
+    flex: 1;
+  }
+  
+  .item-info p span:first-child {
+    text-align: left;
+  }
+  
+  .item-info p span:last-child {
+    text-align: right;
+  }
+  

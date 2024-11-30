@@ -1,0 +1,94 @@
+.recom-page {
+  display: flex;
+  flex-direction: column;
+  height: 85vh; /* 100vh 减去底栏高度 */
+  justify-content: center;
+  align-items: center;
+  background-color: #c14545; /* 示例背景色 */
+  padding: 2rem;
+  box-sizing: border-box; /* 确保 padding 不会导致尺寸问题 */
+}
+
+.content-container {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%; /* 确保内容容器占满可用高度 */
+}
+
+.items-container {
+  flex: 1;
+  min-height: 0; /* 确保内容容器最小高度 */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: flex-start; /* 顶部对齐 */
+  overflow-y: auto; /* 允许纵向滚动 */
+}
+
+.button-container {
+  width: 15%; /* 占据剩余空间 */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* 顶部对齐 */
+  background-color: white; /* 设置背景色 */
+  border-radius: 8px; /* 添加圆角 */
+  margin-left: 1rem; /* 左侧间距 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 添加阴影 */
+  padding: 2rem; /* 添加内部填充 */
+}
+
+.more-recom-button {
+  background-color: #4caf50;
+  color: white;
+  padding: 1rem 2rem;
+  font-size: 1.5rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s; /* 添加动效 */
+}
+
+.more-recom-button:hover {
+  transform: translateY(-3px); /* 悬停效果 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 悬停阴影 */
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center; /* 居中对齐 */
+  align-items: center; /* 居中对齐 */
+  margin-top: 1rem;
+}
+
+.reserve-button {
+  background-color: green;
+  color: white;
+  padding: 1rem 2rem; /* 调整padding来增加按钮尺寸 */
+  font-size: 1.5rem; /* 调整font-size来增加按钮文字的尺寸 */
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.2s; /* 添加动效 */
+}
+
+.reserve-button:hover {
+  transform: scale(1.05); /* 悬停效果 */
+}
+
+.refresh-button {
+  position: fixed;
+  bottom: 20px;
+  right: -60px; /* 初始位置在视窗之外 */
+  padding: 10px 20px;
+  background-color: blue;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: right 0.3s; /* 添加平滑过渡效果 */
+}
+
+.refresh-button.show {
+  right: 20px; /* 在显示时的位置 */
+}
