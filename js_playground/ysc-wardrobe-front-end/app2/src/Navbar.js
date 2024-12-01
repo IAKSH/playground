@@ -6,7 +6,7 @@ function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-left">
-        <img src="logo192.png" alt="logo" className="navbar-logo" />
+        <img src="static/ysc_search.png" alt="logo" className="navbar-left-logo" />
         汉服租赁
       </div>
       <ul className="navbar-center nav-links">
@@ -16,7 +16,7 @@ function Navbar() {
         <li><Link to="/recommendations">智能推荐</Link></li>
       </ul>
       <div className="navbar-right">
-        <img src="logo192.png" alt="logo" className="navbar-logo" />
+        <img src="static/ysc_logo.png" alt="logo" className="navbar-right-logo" />
         <input type="text" className="search-bar" placeholder="搜索..." />
       </div>
     </nav>

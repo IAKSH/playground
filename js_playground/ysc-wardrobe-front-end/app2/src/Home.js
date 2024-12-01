@@ -6,7 +6,7 @@ import './Home.css'
 function Home() {
   return <div class='home-page'>
     <h2>主页</h2>
-    <img src='logo192.png' className='login-qr'/>
+    <img src='static/example_qrcode.svg' className='login-qr'/>
     <p>扫码登陆</p>
     <MainButtons />
   </div>

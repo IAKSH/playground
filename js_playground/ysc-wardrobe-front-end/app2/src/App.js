@@ -27,7 +27,7 @@ function App() {
                 <div className="footer">
                     <div className="user-id">用户ID: {userID}</div>
                     <Link to="/map">
-                        <img src="logo192.png" alt="logo" className="Map-logo" />
+                        <img src="static/ysc_map.png" alt="logo" className="Map-logo" />
                     </Link>
                 </div>
             </div>
