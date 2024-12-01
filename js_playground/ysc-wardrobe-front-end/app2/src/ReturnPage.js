@@ -10,7 +10,7 @@ function ReturnPage() {
       price: '￥200',
       borrowedDate: '2024-01-01',
       returnDate: '2024-01-10',
-      imageUrl: 'logo192.png'
+      imageUrl: 'static/b1.jpg'
     },
     {
         name: '汉服B',
@@ -18,7 +18,7 @@ function ReturnPage() {
         price: '￥200',
         borrowedDate: '2024-01-01',
         returnDate: '2024-01-10',
-        imageUrl: 'logo192.png'
+        imageUrl: 'static/c2.jpg'
       },
       {
         name: '汉服C',
@@ -26,7 +26,7 @@ function ReturnPage() {
         price: '￥200',
         borrowedDate: '2024-01-01',
         returnDate: '2024-01-10',
-        imageUrl: 'logo192.png'
+        imageUrl: 'static/a1.jpg'
       },
       {
         name: '汉服D',
@@ -34,7 +34,7 @@ function ReturnPage() {
         price: '￥200',
         borrowedDate: '2024-01-01',
         returnDate: '2024-01-10',
-        imageUrl: 'logo192.png'
+        imageUrl: 'static/c2.jpg'
       },
       {
         name: '汉服E',
@@ -42,7 +42,7 @@ function ReturnPage() {
         price: '￥200',
         borrowedDate: '2024-01-01',
         returnDate: '2024-01-10',
-        imageUrl: 'logo192.png'
+        imageUrl: 'static/c3.png'
       },
       {
         name: '汉服F',
@@ -50,7 +50,7 @@ function ReturnPage() {
         price: '￥200',
         borrowedDate: '2024-01-01',
         returnDate: '2024-01-10',
-        imageUrl: 'logo192.png'
+        imageUrl: 'static/b3.jpg'
       },
       {
         name: '汉服G',
@@ -58,32 +58,8 @@ function ReturnPage() {
         price: '￥200',
         borrowedDate: '2024-01-01',
         returnDate: '2024-01-10',
-        imageUrl: 'logo192.png'
-      },
-      {
-        name: '汉服H',
-        size: 'L',
-        price: '￥200',
-        borrowedDate: '2024-01-01',
-        returnDate: '2024-01-10',
-        imageUrl: 'logo192.png'
-      },
-      {
-        name: '汉服I',
-        size: 'L',
-        price: '￥200',
-        borrowedDate: '2024-01-01',
-        returnDate: '2024-01-10',
-        imageUrl: 'logo192.png'
-      },
-      {
-        name: '汉服J',
-        size: 'L',
-        price: '￥200',
-        borrowedDate: '2024-01-01',
-        returnDate: '2024-01-10',
-        imageUrl: 'logo192.png'
-      },
+        imageUrl: 'static/b1.jpg'
+      }
     // 添加更多项...
   ]);
 
@@ -125,9 +101,6 @@ function ReturnPage() {
           {items.map((item, index) => (
             <ItemCard key={index} item={item} onClick={handleClick} />
           ))}
-        </div>
-        <div className="button-container">
-          <p style={{ color:'black' }}>不知道要显示什么</p>
         </div>
       </div>
 

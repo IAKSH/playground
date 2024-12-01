@@ -5,28 +5,28 @@ import './ReservePage.css';
 function ReservePage() {
   const [items, setItems] = useState([
     {
-      name: '凤翅紫金冠',
+      name: '汉服A',
       size: 'L',
       price: '￥200',
       borrowedDate: 'N/A',
       returnDate: 'N/A',
-      imageUrl: 'logo192.png'
+      imageUrl: 'static/c1.jpg'
     },
     {
-      name: '锁子黄金甲',
+      name: '汉服B',
       size: 'L',
       price: '￥200',
       borrowedDate: 'N/A',
       returnDate: 'N/A',
-      imageUrl: 'logo192.png'
+      imageUrl: 'static/b3.jpg'
     },
     {
-      name: '藕丝步云履',
+      name: '汉服C',
       size: 'L',
       price: '￥200',
       borrowedDate: 'N/A',
       returnDate: 'N/A',
-      imageUrl: 'logo192.png'
+      imageUrl: 'static/a3.jpg'
     }
     // 添加更多项...
   ]);
@@ -63,9 +63,6 @@ function ReservePage() {
           {items.map((item, index) => (
             <ItemCard key={index} item={item} onClick={handleClick} />
           ))}
-        </div>
-        <div className="button-container">
-          <p style={{ color: 'black' }}>从隔壁复制过来的页面，不知道要显示什么</p>
         </div>
       </div>
 

@@ -10,7 +10,7 @@ function Recommendations() {
       price: '￥200',
       borrowedDate: 'N/A',
       returnDate: 'N/A',
-      imageUrl: 'logo192.png'
+      imageUrl: 'static/a1.jpg'
     },
     {
       name: '汉服A',
@@ -18,14 +18,14 @@ function Recommendations() {
       price: '￥200',
       borrowedDate: 'N/A',
       returnDate: 'N/A',
-      imageUrl: 'logo192.png'
+      imageUrl: 'static/b2.jpg'
     },{
       name: '汉服A',
       size: 'L',
       price: '￥200',
       borrowedDate: 'N/A',
       returnDate: 'N/A',
-      imageUrl: 'logo192.png'
+      imageUrl: 'static/c2.jpg'
     },
     {
       name: '汉服A',
@@ -33,7 +33,23 @@ function Recommendations() {
       price: '￥200',
       borrowedDate: 'N/A',
       returnDate: 'N/A',
-      imageUrl: 'logo192.png'
+      imageUrl: 'static/c1.jpg'
+    },
+    {
+      name: '汉服A',
+      size: 'L',
+      price: '￥200',
+      borrowedDate: 'N/A',
+      returnDate: 'N/A',
+      imageUrl: 'static/a3.jpg'
+    },
+    {
+      name: '汉服A',
+      size: 'L',
+      price: '￥200',
+      borrowedDate: 'N/A',
+      returnDate: 'N/A',
+      imageUrl: 'static/b3.jpg'
     }
     // 添加更多项...
   ]);
@@ -64,9 +80,6 @@ function Recommendations() {
           {items.map((item, index) => (
             <ItemCard key={index} item={item} onClick={handleClick} />
           ))}
-        </div>
-        <div className="button-container">
-          <button className="more-recom-button" onClick={handleNewRecom}>更多推荐</button>
         </div>
       </div>
 
