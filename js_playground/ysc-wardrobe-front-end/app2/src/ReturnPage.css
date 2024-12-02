@@ -1,10 +1,10 @@
 .return-page {
-  height: 85vh; /* 确保页面高度为视口高度 */
+  height: 79vh;
   display: flex;
   flex-direction: column;
-  background-color: #c14545; /* 示例背景色 */
+  background-color: #c14545;
   padding: 2rem;
-  box-sizing: border-box; /* 确保 padding 不会导致尺寸问题 */
+  box-sizing: border-box;
 }
 
 .items-container {
@@ -12,7 +12,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
-  overflow-y: auto; /* 允许纵向滚动 */
+  overflow-y: auto;
 }
 
 .modal-overlay {
@@ -41,8 +41,10 @@
 }
 
 .modal-image {
+  width: 300px;
+  height: 300px;
+  object-fit: cover;
   align-self: center;
-  width: 50%;
   border-radius: 8px;
 }
 
@@ -57,7 +59,7 @@
 .modal-info p {
   display: flex;
   justify-content: space-between;
-  align-items: center; /* 使每一项描述和值在上下对齐 */
+  align-items: center;
 }
 
 .modal-info p span {
@@ -85,7 +87,7 @@
   border-radius: 4px;
   cursor: pointer;
   font-size: 1rem;
-  margin: 0.5rem; /* 添加外边距 */
+  margin: 0.5rem;
 }
 
 .return-button {
@@ -96,4 +98,62 @@
 .damage-button {
   background-color: #f44336;
   color: white;
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.loading-content {
+  color: black;
+  background: white;
+  padding: 20px;
+  border-radius: 5px;
+  font-size: 18px;
+}
+
+.success-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: green;
+  color: white;
+  padding: 20px;
+  border-radius: 5px;
+  z-index: 1000;
+  opacity: 1;
+  animation: fadeOut 3s forwards;
+}
+
+.broken-success-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: red;
+  color: white;
+  padding: 20px;
+  border-radius: 5px;
+  z-index: 1000;
+  opacity: 1;
+  animation: fadeOut 3s forwards;
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }

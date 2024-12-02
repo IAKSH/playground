@@ -1,14 +1,5 @@
-body,
-html {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    overflow: hidden;
-    /* 确保不会出现滚动条 */
-}
-
 .reserve-page {
-    min-height: 85vh;
+    min-height: 79vh;
     /* 确保页面最小高度为视口高度 */
     display: flex;
     justify-content: center;

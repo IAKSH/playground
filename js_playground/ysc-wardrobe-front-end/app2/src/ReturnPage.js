@@ -10,60 +10,23 @@ function ReturnPage() {
       price: '￥200',
       borrowedDate: '2024-01-01',
       returnDate: '2024-01-10',
-      imageUrl: 'static/b1.jpg'
+      image: 'static/b1.jpg'
     },
     {
-        name: '汉服B',
-        size: 'L',
-        price: '￥200',
-        borrowedDate: '2024-01-01',
-        returnDate: '2024-01-10',
-        imageUrl: 'static/c2.jpg'
-      },
-      {
-        name: '汉服C',
-        size: 'L',
-        price: '￥200',
-        borrowedDate: '2024-01-01',
-        returnDate: '2024-01-10',
-        imageUrl: 'static/a1.jpg'
-      },
-      {
-        name: '汉服D',
-        size: 'L',
-        price: '￥200',
-        borrowedDate: '2024-01-01',
-        returnDate: '2024-01-10',
-        imageUrl: 'static/c2.jpg'
-      },
-      {
-        name: '汉服E',
-        size: 'L',
-        price: '￥200',
-        borrowedDate: '2024-01-01',
-        returnDate: '2024-01-10',
-        imageUrl: 'static/c3.png'
-      },
-      {
-        name: '汉服F',
-        size: 'L',
-        price: '￥200',
-        borrowedDate: '2024-01-01',
-        returnDate: '2024-01-10',
-        imageUrl: 'static/b3.jpg'
-      },
-      {
-        name: '汉服G',
-        size: 'L',
-        price: '￥200',
-        borrowedDate: '2024-01-01',
-        returnDate: '2024-01-10',
-        imageUrl: 'static/b1.jpg'
-      }
+      name: '汉服B',
+      size: 'L',
+      price: '￥200',
+      borrowedDate: '2024-01-01',
+      returnDate: '2024-01-10',
+      image: 'static/c2.jpg'
+    }
     // 添加更多项...
   ]);
 
   const [selectedItem, setSelectedItem] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isBrokenSuccess, setIsBrokenSuccess] = useState(false);
 
   const handleClick = (item) => {
     setSelectedItem(item);
@@ -75,22 +38,43 @@ function ReturnPage() {
 
   const handleReturn = () => {
     console.log('立即归还', selectedItem);
-    if (selectedItem) {
-      const utterance = new SpeechSynthesisUtterance(`请归还 ${selectedItem.name}`);
-      // 列出所有可用的声音
-      const voices = window.speechSynthesis.getVoices();
-      //console.log(voices);
-      // 选择一个声音
-      utterance.voice = voices[0];
-      window.speechSynthesis.speak(utterance);
-    }
-    // 在这里添加处理立即归还的逻辑
-    handleClose();
+    setIsLoading(true);
+
+    const loadingTime = Math.floor(Math.random() * 1000) + 500;
+
+    setTimeout(() => {
+      setIsLoading(false);
+      setItems(items.filter(item => item !== selectedItem));
+      setSelectedItem(null);
+      setIsSuccess(true);
+
+      handleClose();
+
+      setTimeout(() => {
+        setIsSuccess(false);
+      }, 1000);
+    }, loadingTime);
   };
 
   const handleDamage = () => {
     console.log('衣物破损', selectedItem);
-    // 在这里添加处理衣物破损的逻辑
+    setIsLoading(true);
+
+    const loadingTime = Math.floor(Math.random() * 1000) + 500;
+
+    setTimeout(() => {
+      setIsLoading(false);
+      setItems(items.filter(item => item !== selectedItem));
+      setSelectedItem(null);
+      setIsBrokenSuccess(true);
+
+      handleClose();
+
+      setTimeout(() => {
+        setIsBrokenSuccess(false);
+      }, 1000);
+    }, loadingTime);
+
     handleClose();
   };
 
@@ -99,7 +83,7 @@ function ReturnPage() {
       <div className="content-container">
         <div className="items-container">
           {items.map((item, index) => (
-            <ItemCard key={index} item={item} onClick={handleClick} />
+            <ItemCard key={index} item={item} onClick={() => handleClick(item)} />
           ))}
         </div>
       </div>
@@ -107,7 +91,7 @@ function ReturnPage() {
       {selectedItem && (
         <div className="modal-overlay" onClick={handleClose}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <img src={selectedItem.imageUrl} alt={selectedItem.name} className="modal-image" />
+            <img src={selectedItem.image} alt={selectedItem.name} className="modal-image" />
             <div className="modal-info">
               <p><span>名称:</span> <span>{selectedItem.name}</span></p>
               <p><span>大小:</span> <span>{selectedItem.size}</span></p>
@@ -120,6 +104,24 @@ function ReturnPage() {
               <button className="damage-button" onClick={handleDamage}>衣物破损</button>
             </div>
           </div>
+        </div>
+      )}
+
+      {isLoading && (
+        <div className="loading-overlay">
+          <div className="loading-content">连接中...</div>
+        </div>
+      )}
+
+      {isSuccess && (
+        <div className="success-dialog">
+          归还成功
+        </div>
+      )}
+
+      {isBrokenSuccess && (
+        <div className="broken-success-dialog">
+          破损已记录
         </div>
       )}
     </div>

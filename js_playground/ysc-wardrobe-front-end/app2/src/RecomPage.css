@@ -1,7 +1,7 @@
 .recom-page {
   display: flex;
   flex-direction: column;
-  height: 85vh; /* 100vh 减去底栏高度 */
+  height: 79vh; /* 100vh 减去底栏高度 */
   justify-content: center;
   align-items: center;
   background-color: #c14545; /* 示例背景色 */

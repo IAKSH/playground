@@ -6,8 +6,8 @@ import './Home.css'
 function Home() {
   return <div class='home-page'>
     <h2>主页</h2>
-    <img src='static/example_qrcode.svg' className='login-qr'/>
-    <p>扫码登陆</p>
+    <img src='static/wechat_app_qrcode.jpg' className='login-qr'/>
+    <p>扫一扫微信小程序</p>
     <MainButtons />
   </div>
 }

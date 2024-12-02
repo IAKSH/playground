@@ -1,0 +1,5 @@
+.Map-image{
+    width: 81.5%;
+    border-radius: 8px;
+    margin-bottom: 0.5rem; /* 添加图片与文本之间的间距 */
+}

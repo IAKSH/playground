@@ -1,9 +1,9 @@
 import React from 'react';
+import './MapPage.css'
 
 function MapPage() {
     return <div>
-        <h2>Map Page</h2>
-        <p>WIP</p>
+        <img src={"static/map.png"} className='Map-image' />
     </div>;
 }
 
