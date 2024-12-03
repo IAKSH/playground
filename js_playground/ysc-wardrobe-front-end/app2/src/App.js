@@ -6,6 +6,7 @@ import ReturnPage from './ReturnPage';
 import ReservePage from './ReservePage';
 import RecomPage from './RecomPage';
 import MapPage from './MapPage';
+import TryOutPage from './TryOutPage'
 import './App.css';
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
                       <Route path="/reserve" element={<ReservePage />} />
                       <Route path="/recommendations" element={<RecomPage />} />
                       <Route path="/map" element={<MapPage />} />
+                      <Route path="/tryout" element={<TryOutPage />} />
                   </Routes>
                 </div>
                 <div className="footer">

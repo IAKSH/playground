@@ -14,6 +14,7 @@ function Navbar() {
         <li><Link to="/return">归还界面</Link></li>
         <li><Link to="/reserve">预定取衣界面</Link></li>
         <li><Link to="/recommendations">智能推荐</Link></li>
+        <li><Link to="/tryout">虚拟试衣</Link></li>
       </ul>
       <div className="navbar-right">
         <img src="static/ysc_logo.png" alt="logo" className="navbar-right-logo" />
