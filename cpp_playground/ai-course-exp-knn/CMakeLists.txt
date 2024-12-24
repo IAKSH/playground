@@ -10,8 +10,10 @@ add_executable(knn
     dataset.cpp
     knn.hpp
     knn.cpp
-    pca.cpp
     pca.hpp
+    pca.cpp
+    akaze.hpp
+    akaze.cpp
 )
 
 target_include_directories(knn PUBLIC ${OpenCV_INCLUDE_DIRS})
