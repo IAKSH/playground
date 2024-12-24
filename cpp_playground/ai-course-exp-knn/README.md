@@ -1,0 +1,2 @@
+令人震惊的是，居然没有人提到OpenCV依赖qt这一问题，导致找了半天才发现需要装qt，才能用cv::imshow以及cv::waitkey，不然就会莫名爆炸，甚至debug都是直接被弹出来。
+msys2的opencv包没有依赖qt，手动装个qt6就好了
