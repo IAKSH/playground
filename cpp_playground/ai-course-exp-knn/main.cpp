@@ -4,20 +4,19 @@
 #include <cstdint>
 #include <spdlog/spdlog.h>
 
+#include <opencv2/ml.hpp>
+
 #include "dataset.hpp"
 #include "akaze.hpp"
 #include "pca.hpp"
 
 using namespace std;
+using namespace cv;
 
 void save_image(const vector<unsigned char>& images, int image_size, int index, const string& filename) {
     cv::Mat img(28, 28, CV_8UC1, (void*)&images[index * image_size]);
     cv::imwrite(filename, img);
 }
-
-#include <opencv2/opencv.hpp>
-
-using namespace cv;
 
 // 定义函数：使用双线性插值放大图像
 void enlarge_image_linear(const Mat& inputImage, Mat& outputImage, double scaleFactor) {
@@ -77,27 +76,42 @@ void test_akaze() {
     cv::waitKey(0);
 }
 
-int main() {
-    FashionMINIST fminist("E:\\repos\\playground\\python_playground\\ai-course-exp-knn\\data\\FashionMNIST");
+std::vector<cv::Mat> extract(const std::vector<std::pair<cv::Mat,int>>& data, double scale = 10.0, int n = 0) {
     vector<cv::Mat> enlarged_train;
-    //for(const auto& p : fminist.get_train()) {
-    //    cv::Mat enlarged;
-    //    enlarge_image_linear(p.first,enlarged,10.0f);
-    //    enlarged_train.emplace_back(enlarged);
-    //}
-    auto& train_data = fminist.get_train();
-    for(int i = 0;i < 100;i++) {
+    if(n == 0)
+        n = data.size();
+    for(int i = 0;i < n;i++) {
         cv::Mat enlarged;
-        enlarge_image_linear(train_data[i].first,enlarged,10.0f);
+        enlarge_image_linear(data[i].first, enlarged, scale);
         enlarged_train.emplace_back(enlarged);
     }
 
     std::vector<Mat> descriptors;
-    extract_akaze_features(enlarged_train,descriptors,0,enlarged_train.size());
+    //extract_akaze_features(enlarged_train,descriptors,0,enlarged_train.size());
+    extract_akaze_features_mt(enlarged_train, descriptors, 8);
 
-    cv::Mat pca_result = pca(descriptors,50);
-    spdlog::info("pca_result size: {}, {}",pca_result.size[0],pca_result.size[1]);
-    cv::imshow("pca_result",pca_result);
-    cv::waitKey(0);
+    return pca(descriptors,16);
+}
+
+static constexpr int TRAIN_LOAD_CNT = 10;
+static constexpr int VAL_LOAD_CNT = 10;
+
+int main() {
+    FashionMINIST fminist("E:\\repos\\playground\\python_playground\\ai-course-exp-knn\\data\\FashionMNIST");
+
+    auto& train_data = fminist.get_train();
+    std::vector<cv::Mat> train_pca = extract(train_data,10.0,TRAIN_LOAD_CNT);
+    cv::Mat train_labels(TRAIN_LOAD_CNT,1,CV_32F);
+    for(int i = 0;i < TRAIN_LOAD_CNT;i++)
+        train_labels.at<float>(i,1) = train_data[i].second;
+
+    auto& val_data = fminist.get_val();
+    std::vector<cv::Mat> val_pca = extract(val_data,10.0,VAL_LOAD_CNT);
+    cv::Mat val_labels(VAL_LOAD_CNT,1,CV_32F);
+    for(int i = 0;i < VAL_LOAD_CNT;i++)
+        val_labels.at<float>(i,1) = val_data[i].second;
+
+    // TODO: KNN
+
     return 0;
 }

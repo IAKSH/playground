@@ -1,26 +1,39 @@
 #include "pca.hpp"
+#include <spdlog/spdlog.h>
 
+/*
 cv::Mat pca(const std::vector<cv::Mat>& descriptors_list, int num_components) {
-    // 确定最大尺寸
-    int max_rows = 0;
-    int max_cols = 0;
-    for (const auto& desc : descriptors_list) {
-        if (desc.rows > max_rows) max_rows = desc.rows;
-        if (desc.cols > max_cols) max_cols = desc.cols;
+    // descriptors_list中的每一项大小为[n,61]，n表示有多少个特征点，可能为0
+    // 对于没有特征点的项，依然要输出一个对应的pca结果行
+    // ...
+}
+*/
+
+std::vector<cv::Mat> pca(const std::vector<cv::Mat>& descriptors_list, int num_components) {
+    // Collect all descriptors into one large matrix
+    cv::Mat all_descriptors;
+    for (const auto& descriptors : descriptors_list) {
+        if (!descriptors.empty()) {
+            all_descriptors.push_back(descriptors);
+        }
     }
 
-    // 调整大小并合并数据
-    cv::Mat data;
-    for (const auto& desc : descriptors_list) {
-        cv::Mat resized_desc;
-        cv::resize(desc, resized_desc, cv::Size(max_cols, max_rows));
-        data.push_back(resized_desc.reshape(1, 1)); // 将每个矩阵转换为一行
+    // Perform PCA on the large matrix
+    cv::PCA pca(all_descriptors, cv::Mat(), cv::PCA::DATA_AS_ROW, num_components);
+    
+    // Project each descriptor list into the PCA space
+    std::vector<cv::Mat> pca_results;
+    for (const auto& descriptors : descriptors_list) {
+        cv::Mat pca_result;
+        if (!descriptors.empty()) {
+            pca_result = pca.project(descriptors);
+        } else {
+            // Handle empty descriptors by providing a zero matrix with the required components
+            pca_result = cv::Mat::zeros(1, num_components, CV_32F);
+        }
+        pca_results.push_back(pca_result);
     }
 
-    // 执行PCA
-    cv::PCA pca(data, cv::Mat(), cv::PCA::DATA_AS_ROW, num_components);
-
-    // 获取降维后的特征
-    cv::Mat projected_data = pca.project(data);
-    return projected_data;
+    // Convert the list of pca_results back to a single matrix if needed
+    return pca_results;
 }
