@@ -81,10 +81,14 @@ void test_akaze() {
 std::pair<cv::Mat, cv::Mat> extract(const std::vector<std::pair<cv::Mat, int>>& data, double scale = 10.0, int n = 0) {
     n = (n == 0 ? data.size() : n);
 
+    spdlog::info("collecting labels");
+
     // 获取label
     cv::Mat labels(n, 1, CV_32F);
     for (int i = 0; i < n; i++)
         labels.at<float>(i, 0) = data[i].second;
+
+    spdlog::info("enlarging images");
 
     // 放大图片
     std::vector<cv::Mat> enlarged_images;
@@ -94,12 +98,16 @@ std::pair<cv::Mat, cv::Mat> extract(const std::vector<std::pair<cv::Mat, int>>& 
         enlarged_images.emplace_back(enlarged);
     }
 
+    spdlog::info("collecting keypoints");
+
     // 提取特征点
     std::vector<std::vector<cv::Mat>> descriptors_per_item(n);
     extract_akaze_features_mt(enlarged_images, descriptors_per_item, 8);
 
     std::vector<cv::Mat> feature_vectors; // 存储每个item的特征向量
     int max_cols = 0;
+
+    spdlog::info("post-processing");
 
     // 计算最大的列数
     for (int i = 0; i < n; i++) {
@@ -124,6 +132,8 @@ std::pair<cv::Mat, cv::Mat> extract(const std::vector<std::pair<cv::Mat, int>>& 
         }
     }
 
+    spdlog::info("filling zero");
+
     // 填充零使得所有特征向量的列数一致
     for (auto& vec : feature_vectors) {
         if (vec.cols < max_cols) {
@@ -131,12 +141,18 @@ std::pair<cv::Mat, cv::Mat> extract(const std::vector<std::pair<cv::Mat, int>>& 
         }
     }
 
+    spdlog::info("concating");
+
     // 将所有特征向量拼接成一个矩阵
     cv::Mat all_feature_vectors;
     cv::vconcat(feature_vectors, all_feature_vectors);
 
+    spdlog::info("doing PCA");
+
     // 最终PCA降维，得到最终特征向量
-    cv::Mat final_features = pca(all_feature_vectors, 128);
+    cv::Mat final_features = pca(all_feature_vectors, 128, 8);
+
+    spdlog::info("extract done");
 
     return std::make_pair(final_features, labels);
 }
