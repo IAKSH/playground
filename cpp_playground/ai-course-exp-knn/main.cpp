@@ -1,9 +1,11 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <thread>
+#include <mutex>
 #include <cstdint>
-#include <spdlog/spdlog.h>
 
+#include <spdlog/spdlog.h>
 #include <opencv2/ml.hpp>
 
 #include "dataset.hpp"
@@ -77,38 +79,64 @@ void test_akaze() {
 }
 
 std::pair<cv::Mat,cv::Mat> extract(const std::vector<std::pair<cv::Mat,int>>& data, double scale = 10.0, int n = 0) {
-    vector<cv::Mat> enlarged_train;
-    if(n == 0)
-        n = data.size();
+    n = (n == 0 ? data.size() : n);
+
+    // 获取label
+    cv::Mat labels(n, 1, CV_32F);
+    for(int i = 0; i < n; i++)
+        labels.at<float>(i, 0) = data[i].second;
+
+    // 放大图片
+    std::vector<cv::Mat> enlarged_images;
     for(int i = 0;i < n;i++) {
         cv::Mat enlarged;
         enlarge_image_linear(data[i].first, enlarged, scale);
-        enlarged_train.emplace_back(enlarged);
+        enlarged_images.emplace_back(enlarged);
     }
 
-    std::vector<Mat> descriptors;
-    //extract_akaze_features(enlarged_train,descriptors,0,enlarged_train.size());
-    extract_akaze_features_mt(enlarged_train, descriptors, 8); 
+    // 提取特征点
+    std::vector<std::vector<cv::Mat>> descriptors_per_item(n);
+    extract_akaze_features_mt(enlarged_images, descriptors_per_item, 8); 
 
-    cv::Mat labels(n,1,CV_32F);
-    for(int i = 0;i < n;i++)
-        labels.at<float>(i,1) = data[i].second;
+    // 对每个项进行初步的PCA降维，然后拼接特征点，再进行最终的PCA降维
+    std::vector<cv::Mat> reduced_descriptors_list;
+    for (int i = 0; i < n; i++) {
+        cv::Mat concatenated_descriptors;
 
-    cv::Mat features(0,16,CV_32F);
-    cv::Mat feature_labels(0,1,CV_32F);
-    for(const auto& mat : pca(descriptors,16)) {
-        features.push_back(mat);
-        for(int i = 0;i < mat.size[0];i++)
-            feature_labels.push_back(labels.at<float>(i,1));
+        cv::vconcat(descriptors_per_item[i], concatenated_descriptors);
+        cv::Mat reduced_descriptors = pca(concatenated_descriptors, 32); // 初步降维
+
+        if(reduced_descriptors.size[1] != 32)
+            spdlog::warn("reduced_descriptors.size[1] = {}, concatenated_descriptors.size[1] = {}",i,reduced_descriptors.size[1],concatenated_descriptors.size[1]);
+
+        reduced_descriptors_list.push_back(reduced_descriptors);
     }
 
-    return make_pair(features,feature_labels);
+    // 最终PCA降维，得到最终特征向量
+    cv::Mat final_descriptors;
+    cv::vconcat(reduced_descriptors_list, final_descriptors);
+    cv::Mat final_features = pca(final_descriptors, 16);
+
+    return std::make_pair(final_features, labels);
 }
 
-static constexpr int TRAIN_LOAD_CNT = 10000;
-static constexpr int VAL_LOAD_CNT = 100;
+static mutex mtx;
 
-int main() {
+void validate(cv::Ptr<cv::ml::KNearest> knn, cv::Mat& val_first, cv::Mat& val_second, int start, int end, int& correct) {
+    for (int i = start; i < end; i++) {
+        cv::Mat response, dists;
+        float prediction = knn->findNearest(val_first.row(i), 3, response, dists);
+        if (prediction == val_second.at<float>(i, 0)) {
+            lock_guard<mutex> lock(mtx);
+            correct++;
+        }
+    }
+}
+
+static constexpr int TRAIN_LOAD_CNT = 100;
+static constexpr int VAL_LOAD_CNT = 10;
+
+void extract_fashion_minist() {
     spdlog::info("loading FashionMinist");
     FashionMINIST fminist("E:\\repos\\playground\\python_playground\\ai-course-exp-knn\\data\\FashionMNIST");
     spdlog::info("extracting");
@@ -117,23 +145,52 @@ int main() {
     auto train = extract(train_data,10.0,TRAIN_LOAD_CNT);
     auto val = extract(val_data,10.0,VAL_LOAD_CNT);
 
+    spdlog::info("saving");
+    cv::FileStorage file("data.yml", cv::FileStorage::WRITE);
+    file << "train_features" << train.first;
+    file << "train_labels" << train.second;
+    file << "val_features" << val.first;
+    file << "val_labels" << val.second;
+    file.release();
+    spdlog::info("done");
+}
+
+void test_knn() {
+    std::pair<cv::Mat,cv::Mat> train,val;
+    cv::FileStorage fileRead("data.yml", cv::FileStorage::READ);
+    fileRead["train_features"] >> train.first;
+    fileRead["train_labels"] >> train.second;
+    fileRead["val_features"] >> val.first;
+    fileRead["val_labels"] >> val.second;
+    fileRead.release();
+
     // KNN
     spdlog::info("training knn");
     cv::Ptr<cv::ml::KNearest> knn = cv::ml::KNearest::create();
     knn->train(train.first, cv::ml::ROW_SAMPLE, train.second);
 
-    // Test accuracy
+    spdlog::info("running multi-thread validation");
+    // Test accuracy with multithreading
     int correct = 0;
-    for (int i = 0; i < val.first.size[0]; i++) {
-        spdlog::info("running validation {}, {}%",i,static_cast<float>(i) / val.first.size[0] * 100);
-        cv::Mat response, dists;
-        float prediction = knn->findNearest(val.first.row(i), 3, response, dists);
-        if (prediction == val.second.at<float>(i, 0))
-            correct++;
+    int num_threads = 8; // Adjust the number of threads as needed
+    vector<thread> threads;
+    int step = val.first.size[0] / num_threads;
+
+    for (int i = 0; i < num_threads; i++) {
+        int start = i * step;
+        int end = (i == num_threads - 1) ? val.first.size[0] : (i + 1) * step;
+        threads.emplace_back(validate, knn, std::ref(val.first), std::ref(val.second), start, end, std::ref(correct));
+    }
+
+    for (auto& t : threads) {
+        t.join();
     }
 
     float accuracy = correct / static_cast<float>(val.first.size[0]);
-    spdlog::info("total: {}\tcorrect: {}\taccuracy: {}%",val.first.size[0],correct,accuracy * 100.0);
+    cout << "Accuracy: " << accuracy * 100.0 << "%" << endl;
+}
 
+int main() {
+    extract_fashion_minist();
     return 0;
 }
