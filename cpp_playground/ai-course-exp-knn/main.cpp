@@ -111,7 +111,7 @@ std::pair<cv::Mat, cv::Mat> extract(const std::vector<std::pair<cv::Mat, int>>& 
         if (b && !descriptors_per_item[i].empty()) {
             cv::Mat descriptors;
             cv::vconcat(descriptors_per_item[i], descriptors);
-            cv::reduce(descriptors, feature_vectors.row(i), 0, cv::REDUCE_AVG);
+            cv::reduce(descriptors, feature_vectors.row(i), 0, cv::REDUCE_SUM2);
         } else {
             spdlog::warn("empty descriptor, using zeros instead");
             feature_vectors.row(i) = cv::Mat::zeros(1, 61, CV_32F); // 若无描述子，则使用零向量
