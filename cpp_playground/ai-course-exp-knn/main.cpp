@@ -90,7 +90,7 @@ std::pair<cv::Mat, cv::Mat> extract(const std::vector<std::pair<cv::Mat, int>>& 
     std::vector<cv::Mat> enlarged_images;
     for (int i = 0; i < n; i++) {
         cv::Mat enlarged;
-        enlarge_image_linear(data[i].first, enlarged, scale);
+        enlarge_image_cubic(data[i].first, enlarged, scale);
         enlarged_images.emplace_back(enlarged);
     }
 
@@ -119,7 +119,7 @@ std::pair<cv::Mat, cv::Mat> extract(const std::vector<std::pair<cv::Mat, int>>& 
     }
 
     // 最终PCA降维，得到最终特征向量
-    cv::Mat final_features = pca(feature_vectors, 16);
+    cv::Mat final_features = pca(feature_vectors, 32);
 
     return std::make_pair(final_features, labels);
 }
@@ -192,7 +192,7 @@ void predict_and_display(const cv::Ptr<cv::ml::KNearest>& knn, const cv::Mat& va
     FashionMINIST fminist("E:\\repos\\playground\\python_playground\\ai-course-exp-knn\\data\\FashionMNIST");
     auto& val_data = fminist.get_val();
 
-    cv::Mat image = val_data[n].first; // 确保你在代码中保留了放大后的图像
+    cv::Mat image = val_data[n].first;
     cv::imshow("Validation Image", image);
     cv::waitKey(0);
 }
@@ -242,7 +242,7 @@ void test_knn(int k, int validation_size) {
     spdlog::info("accuracy: {}%", accuracy * 100.0);
 
     // 选择验证集中的第n个图片进行预测并显示
-    predict_and_display(knn, val_features, 4);
+    //predict_and_display(knn, val_features, 4);
 }
 
 int main() {
