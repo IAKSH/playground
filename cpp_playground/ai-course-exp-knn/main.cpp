@@ -98,28 +98,45 @@ std::pair<cv::Mat, cv::Mat> extract(const std::vector<std::pair<cv::Mat, int>>& 
     std::vector<std::vector<cv::Mat>> descriptors_per_item(n);
     extract_akaze_features_mt(enlarged_images, descriptors_per_item, 8);
 
-    // 从每个item的描述子中提取特征向量
-    cv::Mat feature_vectors(n, 61, CV_32F); // 假设每个描述子的长度为61
+    std::vector<cv::Mat> feature_vectors; // 存储每个item的特征向量
+    int max_cols = 0;
+
+    // 计算最大的列数
     for (int i = 0; i < n; i++) {
         bool b = true;
-        for(const auto& mat : descriptors_per_item[i]) {
-            if(mat.empty()) {
+        for (const auto& mat : descriptors_per_item[i]) {
+            if (mat.empty()) {
                 b = false;
                 break;
             }
         }
         if (b && !descriptors_per_item[i].empty()) {
             cv::Mat descriptors;
-            cv::vconcat(descriptors_per_item[i], descriptors);
-            cv::reduce(descriptors, feature_vectors.row(i), 0, cv::REDUCE_SUM2);
+            cv::vconcat(descriptors_per_item[i], descriptors); // 将所有描述子拼接成一个矩阵
+            descriptors = descriptors.reshape(1, 1); // 将矩阵重新调整为一行
+            if (descriptors.cols > max_cols) {
+                max_cols = descriptors.cols; // 更新最大列数
+            }
+            feature_vectors.push_back(descriptors);
         } else {
             spdlog::warn("empty descriptor, using zeros instead");
-            feature_vectors.row(i) = cv::Mat::zeros(1, 61, CV_32F); // 若无描述子，则使用零向量
+            feature_vectors.push_back(cv::Mat::zeros(1, 61, CV_8U)); // 若无描述子，则使用零向量
         }
     }
 
+    // 填充零使得所有特征向量的列数一致
+    for (auto& vec : feature_vectors) {
+        if (vec.cols < max_cols) {
+            cv::copyMakeBorder(vec, vec, 0, 0, 0, max_cols - vec.cols, cv::BORDER_CONSTANT, cv::Scalar(0));
+        }
+    }
+
+    // 将所有特征向量拼接成一个矩阵
+    cv::Mat all_feature_vectors;
+    cv::vconcat(feature_vectors, all_feature_vectors);
+
     // 最终PCA降维，得到最终特征向量
-    cv::Mat final_features = pca(feature_vectors, 32);
+    cv::Mat final_features = pca(all_feature_vectors, 128);
 
     return std::make_pair(final_features, labels);
 }
@@ -246,7 +263,7 @@ void test_knn(int k, int validation_size) {
 }
 
 int main() {
-    //extract_fashion_minist();
-    test_knn(1,10000);
+    extract_fashion_minist();
+    //test_knn(1,10000);
     return 0;
 }
