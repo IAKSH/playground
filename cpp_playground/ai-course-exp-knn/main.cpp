@@ -78,17 +78,17 @@ void test_akaze() {
     cv::waitKey(0);
 }
 
-std::pair<cv::Mat,cv::Mat> extract(const std::vector<std::pair<cv::Mat,int>>& data, double scale = 10.0, int n = 0) {
+std::pair<cv::Mat, cv::Mat> extract(const std::vector<std::pair<cv::Mat, int>>& data, double scale = 10.0, int n = 0) {
     n = (n == 0 ? data.size() : n);
 
     // 获取label
     cv::Mat labels(n, 1, CV_32F);
-    for(int i = 0; i < n; i++)
+    for (int i = 0; i < n; i++)
         labels.at<float>(i, 0) = data[i].second;
 
     // 放大图片
     std::vector<cv::Mat> enlarged_images;
-    for(int i = 0;i < n;i++) {
+    for (int i = 0; i < n; i++) {
         cv::Mat enlarged;
         enlarge_image_linear(data[i].first, enlarged, scale);
         enlarged_images.emplace_back(enlarged);
@@ -96,26 +96,30 @@ std::pair<cv::Mat,cv::Mat> extract(const std::vector<std::pair<cv::Mat,int>>& da
 
     // 提取特征点
     std::vector<std::vector<cv::Mat>> descriptors_per_item(n);
-    extract_akaze_features_mt(enlarged_images, descriptors_per_item, 8); 
+    extract_akaze_features_mt(enlarged_images, descriptors_per_item, 8);
 
-    // 对每个项进行初步的PCA降维，然后拼接特征点，再进行最终的PCA降维
-    std::vector<cv::Mat> reduced_descriptors_list;
+    // 从每个item的描述子中提取特征向量
+    cv::Mat feature_vectors(n, 61, CV_32F); // 假设每个描述子的长度为61
     for (int i = 0; i < n; i++) {
-        cv::Mat concatenated_descriptors;
-
-        cv::vconcat(descriptors_per_item[i], concatenated_descriptors);
-        cv::Mat reduced_descriptors = pca(concatenated_descriptors, 32); // 初步降维
-
-        if(reduced_descriptors.size[1] != 32)
-            spdlog::warn("reduced_descriptors.size[1] = {}, concatenated_descriptors.size[1] = {}",i,reduced_descriptors.size[1],concatenated_descriptors.size[1]);
-
-        reduced_descriptors_list.push_back(reduced_descriptors);
+        bool b = true;
+        for(const auto& mat : descriptors_per_item[i]) {
+            if(mat.empty()) {
+                b = false;
+                break;
+            }
+        }
+        if (b && !descriptors_per_item[i].empty()) {
+            cv::Mat descriptors;
+            cv::vconcat(descriptors_per_item[i], descriptors);
+            cv::reduce(descriptors, feature_vectors.row(i), 0, cv::REDUCE_AVG);
+        } else {
+            spdlog::warn("empty descriptor, using zeros instead");
+            feature_vectors.row(i) = cv::Mat::zeros(1, 61, CV_32F); // 若无描述子，则使用零向量
+        }
     }
 
     // 最终PCA降维，得到最终特征向量
-    cv::Mat final_descriptors;
-    cv::vconcat(reduced_descriptors_list, final_descriptors);
-    cv::Mat final_features = pca(final_descriptors, 16);
+    cv::Mat final_features = pca(feature_vectors, 16);
 
     return std::make_pair(final_features, labels);
 }
@@ -133,8 +137,8 @@ void validate(cv::Ptr<cv::ml::KNearest> knn, cv::Mat& val_first, cv::Mat& val_se
     }
 }
 
-static constexpr int TRAIN_LOAD_CNT = 100;
-static constexpr int VAL_LOAD_CNT = 10;
+static constexpr int TRAIN_LOAD_CNT = 0;
+static constexpr int VAL_LOAD_CNT = 0;
 
 void extract_fashion_minist() {
     spdlog::info("loading FashionMinist");
@@ -144,6 +148,9 @@ void extract_fashion_minist() {
     auto& val_data = fminist.get_val();
     auto train = extract(train_data,10.0,TRAIN_LOAD_CNT);
     auto val = extract(val_data,10.0,VAL_LOAD_CNT);
+
+    spdlog::info("train_feature_size: {},{}",train.first.size[0],train.first.size[1]);
+    spdlog::info("train_label_size: {},{}",train.second.size[0],train.second.size[1]);
 
     spdlog::info("saving");
     cv::FileStorage file("data.yml", cv::FileStorage::WRITE);
@@ -156,6 +163,7 @@ void extract_fashion_minist() {
 }
 
 void test_knn() {
+    spdlog::info("loading data.yml");
     std::pair<cv::Mat,cv::Mat> train,val;
     cv::FileStorage fileRead("data.yml", cv::FileStorage::READ);
     fileRead["train_features"] >> train.first;
@@ -191,6 +199,7 @@ void test_knn() {
 }
 
 int main() {
-    extract_fashion_minist();
+    //extract_fashion_minist();
+    test_knn();
     return 0;
 }
