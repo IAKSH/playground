@@ -76,7 +76,7 @@ void test_akaze() {
     cv::waitKey(0);
 }
 
-std::vector<cv::Mat> extract(const std::vector<std::pair<cv::Mat,int>>& data, double scale = 10.0, int n = 0) {
+std::pair<cv::Mat,cv::Mat> extract(const std::vector<std::pair<cv::Mat,int>>& data, double scale = 10.0, int n = 0) {
     vector<cv::Mat> enlarged_train;
     if(n == 0)
         n = data.size();
@@ -88,30 +88,52 @@ std::vector<cv::Mat> extract(const std::vector<std::pair<cv::Mat,int>>& data, do
 
     std::vector<Mat> descriptors;
     //extract_akaze_features(enlarged_train,descriptors,0,enlarged_train.size());
-    extract_akaze_features_mt(enlarged_train, descriptors, 8);
+    extract_akaze_features_mt(enlarged_train, descriptors, 8); 
 
-    return pca(descriptors,16);
+    cv::Mat labels(n,1,CV_32F);
+    for(int i = 0;i < n;i++)
+        labels.at<float>(i,1) = data[i].second;
+
+    cv::Mat features(0,16,CV_32F);
+    cv::Mat feature_labels(0,1,CV_32F);
+    for(const auto& mat : pca(descriptors,16)) {
+        features.push_back(mat);
+        for(int i = 0;i < mat.size[0];i++)
+            feature_labels.push_back(labels.at<float>(i,1));
+    }
+
+    return make_pair(features,feature_labels);
 }
 
-static constexpr int TRAIN_LOAD_CNT = 10;
-static constexpr int VAL_LOAD_CNT = 10;
+static constexpr int TRAIN_LOAD_CNT = 10000;
+static constexpr int VAL_LOAD_CNT = 100;
 
 int main() {
+    spdlog::info("loading FashionMinist");
     FashionMINIST fminist("E:\\repos\\playground\\python_playground\\ai-course-exp-knn\\data\\FashionMNIST");
-
+    spdlog::info("extracting");
     auto& train_data = fminist.get_train();
-    std::vector<cv::Mat> train_pca = extract(train_data,10.0,TRAIN_LOAD_CNT);
-    cv::Mat train_labels(TRAIN_LOAD_CNT,1,CV_32F);
-    for(int i = 0;i < TRAIN_LOAD_CNT;i++)
-        train_labels.at<float>(i,1) = train_data[i].second;
-
     auto& val_data = fminist.get_val();
-    std::vector<cv::Mat> val_pca = extract(val_data,10.0,VAL_LOAD_CNT);
-    cv::Mat val_labels(VAL_LOAD_CNT,1,CV_32F);
-    for(int i = 0;i < VAL_LOAD_CNT;i++)
-        val_labels.at<float>(i,1) = val_data[i].second;
+    auto train = extract(train_data,10.0,TRAIN_LOAD_CNT);
+    auto val = extract(val_data,10.0,VAL_LOAD_CNT);
 
-    // TODO: KNN
+    // KNN
+    spdlog::info("training knn");
+    cv::Ptr<cv::ml::KNearest> knn = cv::ml::KNearest::create();
+    knn->train(train.first, cv::ml::ROW_SAMPLE, train.second);
+
+    // Test accuracy
+    int correct = 0;
+    for (int i = 0; i < val.first.size[0]; i++) {
+        spdlog::info("running validation {}, {}%",i,static_cast<float>(i) / val.first.size[0] * 100);
+        cv::Mat response, dists;
+        float prediction = knn->findNearest(val.first.row(i), 3, response, dists);
+        if (prediction == val.second.at<float>(i, 0))
+            correct++;
+    }
+
+    float accuracy = correct / static_cast<float>(val.first.size[0]);
+    spdlog::info("total: {}\tcorrect: {}\taccuracy: {}%",val.first.size[0],correct,accuracy * 100.0);
 
     return 0;
 }
