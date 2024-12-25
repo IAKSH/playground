@@ -5,4 +5,4 @@
 #include <vector>
 
 void extract_akaze_features(const std::vector<std::pair<cv::Mat, int>>& data, std::vector<cv::Mat>& result, int start, int end);
-void extract_akaze_features_mt(const std::vector<std::pair<cv::Mat, int>>& data, std::vector<cv::Mat>& result, int num_threads);
+void extract_akaze_features(const std::vector<cv::Mat>& mats, std::vector<cv::Mat>& result, int start, int end);
