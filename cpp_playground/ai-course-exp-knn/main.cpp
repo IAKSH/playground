@@ -162,9 +162,44 @@ void extract_fashion_minist() {
     spdlog::info("done");
 }
 
-void test_knn() {
+void predict_and_display(const cv::Ptr<cv::ml::KNearest>& knn, const cv::Mat& val_features, int n) {
+    // 确保n在有效范围内
+    if (n < 0 || n >= val_features.rows) {
+        spdlog::error("Index out of range");
+        return;
+    }
+
+    // 对验证集中的第n个图片进行预测
+    cv::Mat sample = val_features.row(n);
+    cv::Mat result;
+    knn->findNearest(sample, knn->getDefaultK(), result);
+    int predicted_label = static_cast<int>(result.at<float>(0, 0));
+
+    // 定义FashionMNIST的标签字符描述
+    std::vector<std::string> fashion_mnist_labels = {
+        "T-shirt/top", "Trouser", "Pullover", "Dress", "Coat", 
+        "Sandal", "Shirt", "Sneaker", "Bag", "Ankle boot"
+    };
+
+    // 输出预测结果对应的类型描述
+    if (predicted_label >= 0 && predicted_label < fashion_mnist_labels.size()) {
+        spdlog::info("Predicted label: {}", fashion_mnist_labels[predicted_label]);
+    } else {
+        spdlog::error("Predicted label out of range!");
+    }
+
+    // 显示验证集中的第n个图片
+    FashionMINIST fminist("E:\\repos\\playground\\python_playground\\ai-course-exp-knn\\data\\FashionMNIST");
+    auto& val_data = fminist.get_val();
+
+    cv::Mat image = val_data[n].first; // 确保你在代码中保留了放大后的图像
+    cv::imshow("Validation Image", image);
+    cv::waitKey(0);
+}
+
+void test_knn(int k, int validation_size) {
     spdlog::info("loading data.yml");
-    std::pair<cv::Mat,cv::Mat> train,val;
+    std::pair<cv::Mat,cv::Mat> train, val;
     cv::FileStorage fileRead("data.yml", cv::FileStorage::READ);
     fileRead["train_features"] >> train.first;
     fileRead["train_labels"] >> train.second;
@@ -172,9 +207,15 @@ void test_knn() {
     fileRead["val_labels"] >> val.second;
     fileRead.release();
 
+    // 调整验证集数据量
+    validation_size = std::min(validation_size, val.first.rows);
+    cv::Mat val_features = val.first.rowRange(0, validation_size);
+    cv::Mat val_labels = val.second.rowRange(0, validation_size);
+
     // KNN
     spdlog::info("training knn");
     cv::Ptr<cv::ml::KNearest> knn = cv::ml::KNearest::create();
+    knn->setDefaultK(k);  // 设置k值
     knn->train(train.first, cv::ml::ROW_SAMPLE, train.second);
 
     spdlog::info("running multi-thread validation");
@@ -182,24 +223,30 @@ void test_knn() {
     int correct = 0;
     int num_threads = 8; // Adjust the number of threads as needed
     vector<thread> threads;
-    int step = val.first.size[0] / num_threads;
+    int step = val_features.rows / num_threads;
 
     for (int i = 0; i < num_threads; i++) {
         int start = i * step;
-        int end = (i == num_threads - 1) ? val.first.size[0] : (i + 1) * step;
-        threads.emplace_back(validate, knn, std::ref(val.first), std::ref(val.second), start, end, std::ref(correct));
+        int end = (i == num_threads - 1) ? val_features.rows : (i + 1) * step;
+        threads.emplace_back(validate, knn, std::ref(val_features), std::ref(val_labels), start, end, std::ref(correct));
     }
 
     for (auto& t : threads) {
         t.join();
     }
 
-    float accuracy = correct / static_cast<float>(val.first.size[0]);
-    cout << "Accuracy: " << accuracy * 100.0 << "%" << endl;
+    float accuracy = correct / static_cast<float>(val_features.rows);
+    
+    spdlog::info("total: {}", val_features.rows);
+    spdlog::info("correct: {}", correct);
+    spdlog::info("accuracy: {}%", accuracy * 100.0);
+
+    // 选择验证集中的第n个图片进行预测并显示
+    predict_and_display(knn, val_features, 4);
 }
 
 int main() {
     //extract_fashion_minist();
-    test_knn();
+    test_knn(1,10000);
     return 0;
 }
