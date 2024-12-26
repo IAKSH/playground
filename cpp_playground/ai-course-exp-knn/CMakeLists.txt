@@ -12,8 +12,6 @@ add_executable(knn
     knn.cpp
     pca.hpp
     pca.cpp
-    akaze.hpp
-    akaze.cpp
 )
 
 target_include_directories(knn PUBLIC ${OpenCV_INCLUDE_DIRS})

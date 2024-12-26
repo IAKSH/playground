@@ -9,8 +9,8 @@
 #include <opencv2/ml.hpp>
 
 #include "dataset.hpp"
-#include "akaze.hpp"
 #include "pca.hpp"
+#include "knn.hpp"
 
 using namespace std;
 using namespace cv;
@@ -215,38 +215,31 @@ void predict_and_display(const cv::Ptr<cv::ml::KNearest>& knn, const cv::Mat& va
     cv::waitKey(0);
 }
 
-void test_knn(int k, int validation_size) {
+void test_knn(int k, int validation_size, double p = 2.0) {
     spdlog::info("loading data.yml");
     std::pair<cv::Mat,cv::Mat> train, val;
-    cv::FileStorage fileRead("data.yml", cv::FileStorage::READ);
-    fileRead["train_features"] >> train.first;
-    fileRead["train_labels"] >> train.second;
-    fileRead["val_features"] >> val.first;
-    fileRead["val_labels"] >> val.second;
-    fileRead.release();
+    cv::FileStorage file_read("data.yml", cv::FileStorage::READ);
+    file_read["train_features"] >> train.first;
+    file_read["train_labels"] >> train.second;
+    file_read["val_features"] >> val.first;
+    file_read["val_labels"] >> val.second;
+    file_read.release();
 
-    // 调整验证集数据量
     validation_size = std::min(validation_size, val.first.rows);
     cv::Mat val_features = val.first.rowRange(0, validation_size);
     cv::Mat val_labels = val.second.rowRange(0, validation_size);
 
-    // KNN
-    spdlog::info("training knn");
-    cv::Ptr<cv::ml::KNearest> knn = cv::ml::KNearest::create();
-    knn->setDefaultK(k);  // 设置k值
-    knn->train(train.first, cv::ml::ROW_SAMPLE, train.second);
-
     spdlog::info("running multi-thread validation");
-    // Test accuracy with multithreading
+
     int correct = 0;
-    int num_threads = 8; // Adjust the number of threads as needed
-    vector<thread> threads;
+    int num_threads = 8; 
+    std::vector<std::thread> threads;
     int step = val_features.rows / num_threads;
 
     for (int i = 0; i < num_threads; i++) {
         int start = i * step;
         int end = (i == num_threads - 1) ? val_features.rows : (i + 1) * step;
-        threads.emplace_back(validate, knn, std::ref(val_features), std::ref(val_labels), start, end, std::ref(correct));
+        threads.emplace_back(knn_validate, std::ref(train.first), std::ref(train.second), std::ref(val_features), std::ref(val_labels), k, start, end, std::ref(correct), p);
     }
 
     for (auto& t : threads) {
@@ -258,16 +251,13 @@ void test_knn(int k, int validation_size) {
     spdlog::info("total: {}", val_features.rows);
     spdlog::info("correct: {}", correct);
     spdlog::info("accuracy: {}%", accuracy * 100.0);
-
-    // 选择验证集中的第n个图片进行预测并显示
-    //predict_and_display(knn, val_features, 4);
 }
 
 int main() {
 #ifdef TRAINNING
     extract_fashion_minist();
 #else
-    test_knn(1,VAL_LOAD_CNT);
+    test_knn(150, VAL_LOAD_CNT, 3.0);  // 使用p=3的闵可夫斯基距离
 #endif
     return 0;
 }
