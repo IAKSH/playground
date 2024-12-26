@@ -45,7 +45,7 @@ void enlarge_image_cubic(const Mat& inputImage, Mat& outputImage, double scaleFa
 void test_akaze() {
     spdlog::info("OpenCV version: {}", CV_VERSION);
 
-    FashionMINIST fminist("E:\\repos\\playground\\python_playground\\ai-course-exp-knn\\data\\FashionMNIST");
+    FashionMINIST fminist("../dataset/FashionMNIST");
     auto& train_data = fminist.get_train();
 
     // 定义存储特征点和描述符的变量
@@ -160,7 +160,7 @@ static constexpr int VAL_LOAD_CNT = 1000;
 
 void extract_fashion_minist() {
     spdlog::info("loading FashionMinist");
-    FashionMINIST fminist("E:\\repos\\playground\\python_playground\\ai-course-exp-knn\\data\\FashionMNIST");
+    FashionMINIST fminist("../dataset/FashionMNIST");
     spdlog::info("extracting");
     auto& train_data = fminist.get_train();
     auto& val_data = fminist.get_val();
@@ -180,42 +180,40 @@ void extract_fashion_minist() {
     spdlog::info("done");
 }
 
-void predict_and_display(const cv::Ptr<cv::ml::KNearest>& knn, const cv::Mat& val_features, int n) {
-    // 确保n在有效范围内
-    if (n < 0 || n >= val_features.rows) {
-        spdlog::error("Index out of range");
+// FashionMNIST labels
+const std::vector<std::string> fashion_mnist_labels = {
+    "T-shirt/top", "Trouser", "Pullover", "Dress", "Coat", 
+    "Sandal", "Shirt", "Sneaker", "Bag", "Ankle boot"
+};
+
+void predict_and_display(int n, int k) {
+    spdlog::info("loading data.yml");
+    std::pair<cv::Mat, cv::Mat> train;
+    cv::FileStorage file_read("data.yml", cv::FileStorage::READ);
+    file_read["train_features"] >> train.first;
+    file_read["train_labels"] >> train.second;
+    file_read.release();
+
+    if (n < 0 || n >= train.first.rows) {
+        spdlog::error("Index n is out of range");
         return;
     }
 
-    // 对验证集中的第n个图片进行预测
-    cv::Mat sample = val_features.row(n);
-    cv::Mat result;
-    knn->findNearest(sample, knn->getDefaultK(), result);
-    int predicted_label = static_cast<int>(result.at<float>(0, 0));
+    cv::Mat sample = train.first.row(n);
+    int predicted_label;
+    knn_predict(train.first, train.second, sample, k, predicted_label);
 
-    // 定义FashionMNIST的标签字符描述
-    std::vector<std::string> fashion_mnist_labels = {
-        "T-shirt/top", "Trouser", "Pullover", "Dress", "Coat", 
-        "Sandal", "Shirt", "Sneaker", "Bag", "Ankle boot"
-    };
+    spdlog::info("Predicted label for sample {}: {}", n, fashion_mnist_labels[predicted_label]);
 
-    // 输出预测结果对应的类型描述
-    if (predicted_label >= 0 && predicted_label < fashion_mnist_labels.size()) {
-        spdlog::info("Predicted label: {}", fashion_mnist_labels[predicted_label]);
-    } else {
-        spdlog::error("Predicted label out of range!");
-    }
+    spdlog::info("loading FashionMinist");
+    FashionMINIST fminist("../dataset/FashionMNIST");
 
-    // 显示验证集中的第n个图片
-    FashionMINIST fminist("E:\\repos\\playground\\python_playground\\ai-course-exp-knn\\data\\FashionMNIST");
-    auto& val_data = fminist.get_val();
-
-    cv::Mat image = val_data[n].first;
-    cv::imshow("Validation Image", image);
-    cv::waitKey(0);
+    cv::Mat image = fminist.get_val()[n].first;
+    cv::imshow("Sample Image", image);
+    cv::waitKey(0); // Wait for key press
 }
 
-void test_knn(int k, int validation_size, double p = 2.0) {
+void test_knn(int k, int validation_size) {
     spdlog::info("loading data.yml");
     std::pair<cv::Mat,cv::Mat> train, val;
     cv::FileStorage file_read("data.yml", cv::FileStorage::READ);
@@ -239,7 +237,7 @@ void test_knn(int k, int validation_size, double p = 2.0) {
     for (int i = 0; i < num_threads; i++) {
         int start = i * step;
         int end = (i == num_threads - 1) ? val_features.rows : (i + 1) * step;
-        threads.emplace_back(knn_validate, std::ref(train.first), std::ref(train.second), std::ref(val_features), std::ref(val_labels), k, start, end, std::ref(correct), p);
+        threads.emplace_back(knn_validate, std::ref(train.first), std::ref(train.second), std::ref(val_features), std::ref(val_labels), k, start, end, std::ref(correct));
     }
 
     for (auto& t : threads) {
@@ -253,11 +251,68 @@ void test_knn(int k, int validation_size, double p = 2.0) {
     spdlog::info("accuracy: {}%", accuracy * 100.0);
 }
 
+void find_best_k(int min_k, int max_k, int validation_size) {
+    spdlog::info("loading data.yml");
+    std::pair<cv::Mat, cv::Mat> train, val;
+    cv::FileStorage file_read("data.yml", cv::FileStorage::READ);
+    file_read["train_features"] >> train.first;
+    file_read["train_labels"] >> train.second;
+    file_read["val_features"] >> val.first;
+    file_read["val_labels"] >> val.second;
+    file_read.release();
+
+    validation_size = std::min(validation_size, val.first.rows);
+    cv::Mat val_features = val.first.rowRange(0, validation_size);
+    cv::Mat val_labels = val.second.rowRange(0, validation_size);
+
+    spdlog::info("running multi-thread validation");
+
+    int best_k = min_k;
+    float best_accuracy = 0.0;
+
+    for (int k = min_k; k <= max_k; ++k) {
+        int correct = 0;
+        int num_threads = 8;
+        std::vector<std::thread> threads;
+        int step = val_features.rows / num_threads;
+
+        for (int i = 0; i < num_threads; i++) {
+            int start = i * step;
+            int end = (i == num_threads - 1) ? val_features.rows : (i + 1) * step;
+            threads.emplace_back(knn_validate, std::ref(train.first), std::ref(train.second), std::ref(val_features), std::ref(val_labels), k, start, end, std::ref(correct));
+        }
+
+        for (auto& t : threads) {
+            t.join();
+        }
+
+        float accuracy = correct / static_cast<float>(val_features.rows);
+        
+        spdlog::info("k: {}, total: {}, correct: {}, accuracy: {}%", k, val_features.rows, correct, accuracy * 100.0);
+
+        if (accuracy > best_accuracy) {
+            best_accuracy = accuracy;
+            best_k = k;
+        }
+    }
+
+    spdlog::info("best k: {}, best accuracy: {}%", best_k, best_accuracy * 100.0);
+}
+
+void save_train_image(int n) {
+    FashionMINIST fminist("../dataset/FashionMNIST");
+    auto& train_data = fminist.get_train();
+    for(int i = 0;i < n;i++)
+        cv::imwrite(std::format("train_images/train_{}.jpg",i),train_data[i].first);
+}
+
 int main() {
 #ifdef TRAINNING
     extract_fashion_minist();
 #else
-    test_knn(150, VAL_LOAD_CNT, 3.0);  // 使用p=3的闵可夫斯基距离
+    //test_knn(150, VAL_LOAD_CNT);
+    //find_best_k(130,140,VAL_LOAD_CNT);
+    predict_and_display(1,132);
 #endif
     return 0;
 }
