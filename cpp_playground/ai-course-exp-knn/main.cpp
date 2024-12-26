@@ -98,36 +98,22 @@ std::pair<cv::Mat, cv::Mat> extract(const std::vector<std::pair<cv::Mat, int>>& 
         enlarged_images.emplace_back(enlarged);
     }
 
-    spdlog::info("collecting keypoints and descriptors");
+    spdlog::info("converting images to vectors");
 
-    // 提取特征点和描述子
-    std::vector<cv::Mat> keypoints_result(n);
-    std::vector<cv::Mat> descriptors_result(n);
-    extract_akaze_features_mt(enlarged_images, keypoints_result, descriptors_result, 8);
-
-    std::vector<cv::Mat> feature_vectors; // 存储每个item的特征向量
+    // 将每张图像转换为一个行向量，并存储到feature_vectors中
+    std::vector<cv::Mat> feature_vectors;
     int max_cols = 0;
 
-    spdlog::info("post-processing");
+    for (const auto& img : enlarged_images) {
+        cv::Mat img_float;
+        img.convertTo(img_float, CV_32F);
+        cv::Mat feature_vector = img_float.reshape(1, 1); // 将图像转换为单行矩阵
 
-    // 计算最大的列数
-    for (int i = 0; i < n; i++) {
-        if (!descriptors_result[i].empty() && !keypoints_result[i].empty()) {
-            // 水平拼接特征点和描述子
-            cv::Mat combined_features;
-            cv::hconcat(keypoints_result[i], descriptors_result[i], combined_features);
-            
-            // 将矩阵调整为一行
-            combined_features = combined_features.reshape(1, 1);
-
-            if (combined_features.cols > max_cols) {
-                max_cols = combined_features.cols; // 更新最大列数
-            }
-            feature_vectors.push_back(combined_features);
-        } else {
-            spdlog::warn("empty descriptor or keypoint, using zeros instead");
-            feature_vectors.push_back(cv::Mat::zeros(1, 7 + 61, CV_32F)); // 若无描述子或特征点，则使用零向量
+        if (feature_vector.cols > max_cols) {
+            max_cols = feature_vector.cols;
         }
+
+        feature_vectors.push_back(feature_vector);
     }
 
     spdlog::info("filling zero");
@@ -139,7 +125,7 @@ std::pair<cv::Mat, cv::Mat> extract(const std::vector<std::pair<cv::Mat, int>>& 
         }
     }
 
-    spdlog::info("concating");
+    spdlog::info("concatenating");
 
     // 将所有特征向量拼接成一个矩阵
     cv::Mat all_feature_vectors;
@@ -148,7 +134,7 @@ std::pair<cv::Mat, cv::Mat> extract(const std::vector<std::pair<cv::Mat, int>>& 
     spdlog::info("doing PCA");
 
     // 最终PCA降维，得到最终特征向量
-    cv::Mat final_features = pca(all_feature_vectors, 128, 8);
+    cv::Mat final_features = pca(all_feature_vectors, 128, 4);
 
     spdlog::info("extract done");
 
@@ -168,8 +154,9 @@ void validate(cv::Ptr<cv::ml::KNearest> knn, cv::Mat& val_first, cv::Mat& val_se
     }
 }
 
-static constexpr int TRAIN_LOAD_CNT = 0;
-static constexpr int VAL_LOAD_CNT = 0;
+//#define TRAINNING
+static constexpr int TRAIN_LOAD_CNT = 10000;
+static constexpr int VAL_LOAD_CNT = 1000;
 
 void extract_fashion_minist() {
     spdlog::info("loading FashionMinist");
@@ -277,7 +264,10 @@ void test_knn(int k, int validation_size) {
 }
 
 int main() {
-    //extract_fashion_minist();
-    test_knn(1,10000);
+#ifdef TRAINNING
+    extract_fashion_minist();
+#else
+    test_knn(1,VAL_LOAD_CNT);
+#endif
     return 0;
 }
