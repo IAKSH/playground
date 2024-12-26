@@ -98,11 +98,12 @@ std::pair<cv::Mat, cv::Mat> extract(const std::vector<std::pair<cv::Mat, int>>& 
         enlarged_images.emplace_back(enlarged);
     }
 
-    spdlog::info("collecting keypoints");
+    spdlog::info("collecting keypoints and descriptors");
 
-    // 提取特征点
-    std::vector<std::vector<cv::Mat>> descriptors_per_item(n);
-    extract_akaze_features_mt(enlarged_images, descriptors_per_item, 8);
+    // 提取特征点和描述子
+    std::vector<cv::Mat> keypoints_result(n);
+    std::vector<cv::Mat> descriptors_result(n);
+    extract_akaze_features_mt(enlarged_images, keypoints_result, descriptors_result, 8);
 
     std::vector<cv::Mat> feature_vectors; // 存储每个item的特征向量
     int max_cols = 0;
@@ -111,24 +112,21 @@ std::pair<cv::Mat, cv::Mat> extract(const std::vector<std::pair<cv::Mat, int>>& 
 
     // 计算最大的列数
     for (int i = 0; i < n; i++) {
-        bool b = true;
-        for (const auto& mat : descriptors_per_item[i]) {
-            if (mat.empty()) {
-                b = false;
-                break;
+        if (!descriptors_result[i].empty() && !keypoints_result[i].empty()) {
+            // 水平拼接特征点和描述子
+            cv::Mat combined_features;
+            cv::hconcat(keypoints_result[i], descriptors_result[i], combined_features);
+            
+            // 将矩阵调整为一行
+            combined_features = combined_features.reshape(1, 1);
+
+            if (combined_features.cols > max_cols) {
+                max_cols = combined_features.cols; // 更新最大列数
             }
-        }
-        if (b && !descriptors_per_item[i].empty()) {
-            cv::Mat descriptors;
-            cv::vconcat(descriptors_per_item[i], descriptors); // 将所有描述子拼接成一个矩阵
-            descriptors = descriptors.reshape(1, 1); // 将矩阵重新调整为一行
-            if (descriptors.cols > max_cols) {
-                max_cols = descriptors.cols; // 更新最大列数
-            }
-            feature_vectors.push_back(descriptors);
+            feature_vectors.push_back(combined_features);
         } else {
-            spdlog::warn("empty descriptor, using zeros instead");
-            feature_vectors.push_back(cv::Mat::zeros(1, 61, CV_8U)); // 若无描述子，则使用零向量
+            spdlog::warn("empty descriptor or keypoint, using zeros instead");
+            feature_vectors.push_back(cv::Mat::zeros(1, 7 + 61, CV_32F)); // 若无描述子或特征点，则使用零向量
         }
     }
 
@@ -279,7 +277,7 @@ void test_knn(int k, int validation_size) {
 }
 
 int main() {
-    extract_fashion_minist();
-    //test_knn(1,10000);
+    //extract_fashion_minist();
+    test_knn(1,10000);
     return 0;
 }
