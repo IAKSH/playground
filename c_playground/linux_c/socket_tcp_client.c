@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 
 int main(void) {
     // 创建socket
@@ -37,7 +38,7 @@ int main(void) {
     }
 
     // sned data
-    send(socket_id,"nihao",sizeof(char) * 6,0);
+    send(socket_id,"nihaoma?",sizeof(char) * 9,0);
     // receive data
     char buffer[1024] = {0};
     int read_val = read(socket_id,buffer,sizeof(buffer));
