@@ -8,7 +8,7 @@ class Solution {
 public:
     bool canPartition(vector<int>& nums) {
         int sum = accumulate(nums.begin(),nums.end(),0);
-        if(sum & 1 == 1)
+        if(sum & 1)
             return false;
         int half = sum / 2;
 

@@ -2,3 +2,5 @@ data/FashionMNIST
 *.pth
 *.db
 training_loss.png
+data/
+backup/

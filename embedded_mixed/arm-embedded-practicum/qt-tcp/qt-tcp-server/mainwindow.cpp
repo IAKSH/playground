@@ -24,14 +24,12 @@ void MainWindow::init_server() {
             close_server();
             ui->pushButtonStartup->setText("Listen");
             ui->lineEditPort->setEnabled(true);
-            ui->lineEditClientId->setEnabled(true);
         }
         else {
             const unsigned short port = ui->lineEditPort->text().toUShort();
             if(server->listen(QHostAddress::Any,port)) {
                 ui->pushButtonStartup->setText("Close");
                 ui->lineEditPort->setEnabled(false);
-                ui->lineEditClientId->setEnabled(false);
             }
         }
     });
