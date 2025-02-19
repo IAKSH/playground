@@ -1,0 +1,11 @@
+static_library("oledtest") {
+    sources = [
+        "oled_test.c",
+        "ssd1306.c",
+        "ssd1306_fonts.c"
+    ]
+    include_dirs = [
+        "//utils/native/lite/include",
+        "//base/iot_hardware/peripheral/interfaces/kits"
+    ]
+}

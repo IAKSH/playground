@@ -1,0 +1,9 @@
+static_library("irtest") {
+    sources = [
+        "ir_test.c",
+    ]
+    include_dirs = [
+        "//utils/native/lite/include",
+        "//base/iot_hardware/peripheral/interfaces/kits"
+    ]
+}

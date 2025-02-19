@@ -1,0 +1,12 @@
+static_library("wifitest") {
+    sources = [
+        "wifi_test.c",
+        "tcp_client.c",
+        "tcp_server.c"
+    ]
+    include_dirs = [
+        "//utils/native/lite/include",
+        "//kernel/liteos_m/kal",
+        "//foundation/communication/wifi_lite/interfaces/wifiservice",
+    ]
+}
