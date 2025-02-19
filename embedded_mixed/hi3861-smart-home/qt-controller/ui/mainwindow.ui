@@ -67,17 +67,12 @@
       </column>
       <column>
        <property name="text">
-        <string>Connection Status</string>
+        <string>Status</string>
        </property>
       </column>
       <column>
        <property name="text">
-        <string>Terminal</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Delete</string>
+        <string>Action</string>
        </property>
       </column>
      </widget>

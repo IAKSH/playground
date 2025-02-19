@@ -33,6 +33,8 @@ Device::~Device() {
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
+    ui->deviceTable->setColumnWidth(6,150);
+
     connect(ui->addDeviceButton, &QPushButton::clicked,
             this, &MainWindow::onAddDeviceButtonClicked);
     connect(ui->deviceDiscoveryToggle,&QCheckBox::toggled,this,onDeviceDiscoveryToggled);
@@ -59,6 +61,7 @@ void MainWindow::onAddDeviceButtonClicked() {
 void MainWindow::addDevice(const QString& name, const QString& ipAddress, int port, const QString& type) {
     int row = ui->deviceTable->rowCount();
     ui->deviceTable->insertRow(row);
+    ui->deviceTable->setRowHeight(row,50);
 
     auto imageLabel = new QLabel(this);
     imageLabel->setPixmap(QPixmap("images/default_device.png").scaled(50, 50, Qt::KeepAspectRatio));
@@ -73,30 +76,48 @@ void MainWindow::addDevice(const QString& name, const QString& ipAddress, int po
     connectionStatusLabel->setStyleSheet("QLabel { color : black; }");
     ui->deviceTable->setCellWidget(row, 5, connectionStatusLabel);
 
-    auto debugButton = new QPushButton("Debug", this);
-    ui->deviceTable->setCellWidget(row, 6, debugButton);
-    connect(debugButton, &QPushButton::clicked, this, onDebugButtonClicked);
-
-    auto deleteButton = new QPushButton("Delete", this);
-    ui->deviceTable->setCellWidget(row, 7, deleteButton);
-    connect(deleteButton, &QPushButton::clicked, this, onDeleteButtonClicked);
-
     auto socket = new QTcpSocket(this);
     
-    devices.emplace_back(std::make_unique<Device>(this,connectionStatusLabel,socket,name));
-    Device* device_ptr = devices.back().get(); // 获取原始指针
+    devices.emplace_back(std::make_unique<Device>(this, connectionStatusLabel, socket, name));
+    Device* device_ptr = devices.back().get();
 
-    connect(socket, &QTcpSocket::connected, this, [this,device_ptr](){updateConnectionStatus(device_ptr);});
-    connect(socket, &QTcpSocket::disconnected, this, [this,device_ptr](){updateConnectionStatus(device_ptr);});
-    connect(socket, &QAbstractSocket::errorOccurred, this, [this,device_ptr](){updateConnectionStatus(device_ptr);});
+    // 创建按钮
+    auto debugButton = new QPushButton("Debug", this);
+    auto deleteButton = new QPushButton("Delete", this);
+
+    // 创建水平布局
+    auto buttonLayout = new QHBoxLayout();
+    buttonLayout->addWidget(debugButton);
+    buttonLayout->addWidget(deleteButton);
+
+    // 设置按钮之间的间距
+    buttonLayout->setSpacing(5);
+
+    // 设置最小大小
+    debugButton->setMinimumWidth(60);
+    debugButton->setMinimumHeight(30);
+    deleteButton->setMinimumWidth(60);
+    deleteButton->setMinimumHeight(30);
+
+    // 创建小部件并设置布局
+    auto buttonWidget = new QWidget(this);
+    buttonWidget->setLayout(buttonLayout);
+
+    // 设置按钮小部件到第六列
+    ui->deviceTable->setCellWidget(row, 6, buttonWidget);
+
+    // 连接按钮信号槽
+    connect(debugButton, &QPushButton::clicked, this, onDebugButtonClicked);
+    connect(deleteButton, &QPushButton::clicked, this, onDeleteButtonClicked);
+
+    connect(socket, &QTcpSocket::connected, this, [this, device_ptr](){ updateConnectionStatus(device_ptr); });
+    connect(socket, &QTcpSocket::disconnected, this, [this, device_ptr](){ updateConnectionStatus(device_ptr); });
+    connect(socket, &QAbstractSocket::errorOccurred, this, [this, device_ptr](){ updateConnectionStatus(device_ptr); });
     socket->connectToHost(ipAddress, port);
 
-    // 在按钮上设置设备属性
     debugButton->setProperty("device", QVariant::fromValue(device_ptr));
     deleteButton->setProperty("device", QVariant::fromValue(device_ptr));
-
     socket->setProperty("device", QVariant::fromValue(device_ptr));
-
     connectionStatusLabel->setProperty("device", QVariant::fromValue(device_ptr));
     connectionStatusLabel->installEventFilter(this);
 }
