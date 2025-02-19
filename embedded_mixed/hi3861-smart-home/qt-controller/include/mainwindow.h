@@ -10,6 +10,7 @@
 #include <map>
 
 #include "debug_terminal.h"
+#include "temperature_chart.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -21,18 +22,18 @@ class Device {
 public:
     QTcpSocket* socket;
     QLabel* connectionStatusLabel;
-    DebugTerminal terminal;
     QString name;
+    DebugTerminal terminal;
+    TemperatureChart chart;
 
-    Device(MainWindow* main_window,QLabel* connectionStatusLabel,QTcpSocket* socket,QString name);
+    Device(MainWindow* mainWindow,QLabel* connectionStatusLabel,QTcpSocket* socket,QString name);
     ~Device();
 
 private:
-    MainWindow* main_window;
+    MainWindow* mainWindow;
 };
 
-class MainWindow : public QMainWindow
-{
+class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
@@ -54,6 +55,7 @@ private:
 
     void onDebugButtonClicked();
     void onDeleteButtonClicked();
+    void onChartButtonClicked();
     void onConnectionStatusLabelClicked(Device* device);
     void onDeviceDiscoveryToggled(bool checked);
     void addDevice(const QString& name, const QString& ipAddress, int port, const QString& type);

@@ -13,16 +13,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_SOURCE_DIR}/ui)
 
-find_package(Qt6 COMPONENTS Widgets Network REQUIRED)
+find_package(Qt6 COMPONENTS Widgets Network Charts REQUIRED)
 
 set(PROJECT_SOURCES
     include/mainwindow.h
     include/add_device_dialog.h
     include/debug_terminal.h
+    include/temperature_chart.h
     src/main.cpp
     src/mainwindow.cpp
     src/add_device_dialog.cpp
     src/debug_terminal.cpp
+    src/temperature_chart.cpp
 )
 
 qt6_wrap_ui(UIS_HDRS
@@ -39,7 +41,7 @@ qt_add_executable(${PROJECT_NAME}
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE include)
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Widgets Qt6::Network)
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Widgets Qt6::Network Qt6::Charts)
 
 # 复制资源文件到构建目录
 add_custom_target(copy_resources ALL

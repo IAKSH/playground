@@ -8,9 +8,9 @@
 
 #define DEVICE_UDP_BROADCAST_PORT 12345
 
-Device::Device(MainWindow* main_window,QLabel* connection_status_label,QTcpSocket* socket,QString name) 
-    : main_window(main_window), connectionStatusLabel(connection_status_label),
-        socket(socket), terminal(socket, name, main_window), name(name) {}
+Device::Device(MainWindow* mainWindow,QLabel* connection_status_label,QTcpSocket* socket,QString name) 
+    : mainWindow(mainWindow), connectionStatusLabel(connection_status_label),
+    socket(socket), terminal(socket, name, mainWindow), name(name), chart(socket, name, mainWindow) {}
 
 Device::~Device() {
     // 虽然socket和connectionStatusLabel在创建的时候就绑定了主窗口为父组件
@@ -25,7 +25,7 @@ Device::~Device() {
     }
     // 删除ui上的状态标签
     if (connectionStatusLabel) {
-        connectionStatusLabel->removeEventFilter(main_window);
+        connectionStatusLabel->removeEventFilter(mainWindow);
         connectionStatusLabel->deleteLater();
     }
 }
@@ -33,7 +33,7 @@ Device::~Device() {
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
-    ui->deviceTable->setColumnWidth(6,150);
+    ui->deviceTable->setColumnWidth(6,200);
 
     connect(ui->addDeviceButton, &QPushButton::clicked,
             this, &MainWindow::onAddDeviceButtonClicked);
@@ -84,11 +84,13 @@ void MainWindow::addDevice(const QString& name, const QString& ipAddress, int po
     // 创建按钮
     auto debugButton = new QPushButton("Debug", this);
     auto deleteButton = new QPushButton("Delete", this);
+    auto chartButton = new QPushButton("Chart", this);
 
     // 创建水平布局
     auto buttonLayout = new QHBoxLayout();
     buttonLayout->addWidget(debugButton);
     buttonLayout->addWidget(deleteButton);
+    buttonLayout->addWidget(chartButton);
 
     // 设置按钮之间的间距
     buttonLayout->setSpacing(5);
@@ -98,6 +100,8 @@ void MainWindow::addDevice(const QString& name, const QString& ipAddress, int po
     debugButton->setMinimumHeight(30);
     deleteButton->setMinimumWidth(60);
     deleteButton->setMinimumHeight(30);
+    chartButton->setMinimumWidth(60);
+    chartButton->setMinimumHeight(30);
 
     // 创建小部件并设置布局
     auto buttonWidget = new QWidget(this);
@@ -109,6 +113,7 @@ void MainWindow::addDevice(const QString& name, const QString& ipAddress, int po
     // 连接按钮信号槽
     connect(debugButton, &QPushButton::clicked, this, onDebugButtonClicked);
     connect(deleteButton, &QPushButton::clicked, this, onDeleteButtonClicked);
+    connect(chartButton, &QPushButton::clicked, this, onChartButtonClicked);
 
     connect(socket, &QTcpSocket::connected, this, [this, device_ptr](){ updateConnectionStatus(device_ptr); });
     connect(socket, &QTcpSocket::disconnected, this, [this, device_ptr](){ updateConnectionStatus(device_ptr); });
@@ -117,6 +122,7 @@ void MainWindow::addDevice(const QString& name, const QString& ipAddress, int po
 
     debugButton->setProperty("device", QVariant::fromValue(device_ptr));
     deleteButton->setProperty("device", QVariant::fromValue(device_ptr));
+    chartButton->setProperty("device", QVariant::fromValue(device_ptr));
     socket->setProperty("device", QVariant::fromValue(device_ptr));
     connectionStatusLabel->setProperty("device", QVariant::fromValue(device_ptr));
     connectionStatusLabel->installEventFilter(this);
@@ -274,4 +280,13 @@ void MainWindow::handleUdpSocket() {
         connect(udpSocket.get(), &QUdpSocket::readyRead,
             this, &MainWindow::processPendingDatagrams);
     }
+}
+
+void MainWindow::onChartButtonClicked() {
+    QPushButton* button = qobject_cast<QPushButton*>(sender());
+    if (!button) return;
+    Device* device = button->property("device").value<Device*>();
+    if (!device) return;
+
+    device->chart.show();
 }
