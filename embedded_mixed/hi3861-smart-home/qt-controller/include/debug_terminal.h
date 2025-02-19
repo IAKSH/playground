@@ -5,8 +5,7 @@
 
 namespace Ui {class DebugTerminal;}
 
-class DebugTerminal : public QDialog
-{
+class DebugTerminal : public QDialog {
     Q_OBJECT
 
 public:
