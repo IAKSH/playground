@@ -16,10 +16,26 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QPushButton" name="addDeviceButton">
-      <property name="text">
-       <string>Add Device</string>
-      </property>
+     <widget class="QWidget" name="controlPanel">
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QPushButton" name="addDeviceButton">
+         <property name="text">
+          <string>Add Device</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="deviceDiscoveryToggle">
+         <property name="text">
+          <string>Enable Device Discovery</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </item>
     <item>
@@ -59,7 +75,7 @@
         <string>Terminal</string>
        </property>
       </column>
-        <column>
+      <column>
        <property name="text">
         <string>Delete</string>
        </property>

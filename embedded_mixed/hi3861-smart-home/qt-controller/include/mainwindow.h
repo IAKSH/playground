@@ -51,10 +51,12 @@ private:
     Ui::MainWindow *ui;
     std::vector<std::unique_ptr<Device>> devices;
     std::unique_ptr<QUdpSocket> udpSocket;
-    bool enableAutoDiscovery = true;
 
     void onDebugButtonClicked();
     void onDeleteButtonClicked();
     void onConnectionStatusLabelClicked(Device* device);
+    void onDeviceDiscoveryToggled(bool checked);
     void addDevice(const QString& name, const QString& ipAddress, int port, const QString& type);
+
+    void handleUdpSocket();
 };

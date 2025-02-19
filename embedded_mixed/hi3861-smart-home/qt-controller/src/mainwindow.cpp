@@ -35,13 +35,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     connect(ui->addDeviceButton, &QPushButton::clicked,
             this, &MainWindow::onAddDeviceButtonClicked);
+    connect(ui->deviceDiscoveryToggle,&QCheckBox::toggled,this,onDeviceDiscoveryToggled);
 
-    if (enableAutoDiscovery) {
-        udpSocket = std::make_unique<QUdpSocket>(this);
-        udpSocket->bind(QHostAddress::Any, DEVICE_UDP_BROADCAST_PORT, QUdpSocket::ShareAddress);
-        connect(udpSocket.get(), &QUdpSocket::readyRead,
-                this, &MainWindow::processPendingDatagrams);
-    }
+    handleUdpSocket();
 }
 
 MainWindow::~MainWindow() {
@@ -240,5 +236,21 @@ void MainWindow::processPendingDatagrams() {
                 addDevice(name, address, port, type);
             }
         }
+    }
+}
+
+void MainWindow::onDeviceDiscoveryToggled(bool checked) {
+    handleUdpSocket();
+}
+
+void MainWindow::handleUdpSocket() {
+    if(udpSocket) {
+        udpSocket.reset();
+    }
+    else {
+        udpSocket = std::make_unique<QUdpSocket>(this);
+        udpSocket->bind(QHostAddress::Any, DEVICE_UDP_BROADCAST_PORT, QUdpSocket::ShareAddress);
+        connect(udpSocket.get(), &QUdpSocket::readyRead,
+            this, &MainWindow::processPendingDatagrams);
     }
 }
