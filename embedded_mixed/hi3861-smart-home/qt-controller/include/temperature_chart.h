@@ -14,7 +14,7 @@ class TemperatureChart : public QWidget
     Q_OBJECT
 
 public:
-    explicit TemperatureChart(const QString &deviceName, QWidget *parent = nullptr);
+    explicit TemperatureChart(const QString &deviceName, QWidget* parent = nullptr);
     ~TemperatureChart() = default;
 
     void setUpdateFrequency(int milliseconds);

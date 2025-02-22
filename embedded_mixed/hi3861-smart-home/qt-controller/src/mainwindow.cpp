@@ -8,9 +8,9 @@
 
 #define DEVICE_UDP_BROADCAST_PORT 12345
 
-Device::Device(MainWindow* mainWindow,QLabel* connection_status_label,QTcpSocket* socket,QString name) 
+Device::Device(QLabel* connection_status_label,QTcpSocket* socket,QString name,MainWindow* mainWindow,QWidget* chartWidget) 
     : mainWindow(mainWindow), connectionStatusLabel(connection_status_label),
-    socket(socket), terminal(socket, name, mainWindow), name(name), chart(name, mainWindow)
+    socket(socket), terminal(socket, name, mainWindow), name(name), chart(name, chartWidget)
 {
     connect(socket,QTcpSocket::readyRead,this,onSocketReadyRead);
 }
@@ -57,7 +57,8 @@ void Device::onSocketReadyRead() {
 }
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow) {
+    : QMainWindow(parent), ui(new Ui::MainWindow), showingTempChart(nullptr)
+{
     ui->setupUi(this);
     ui->deviceTable->setColumnWidth(6,200);
 
@@ -70,6 +71,17 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow() {
     delete ui;
+}
+
+void MainWindow::setShowingTempChart(TemperatureChart& chart) {
+    if(showingTempChart)
+        showingTempChart->hide();
+    if(showingTempChart != &chart) {
+        chart.show();
+        showingTempChart = &chart;
+    }
+    else
+        showingTempChart = nullptr;
 }
 
 void MainWindow::onAddDeviceButtonClicked() {
@@ -90,7 +102,7 @@ void MainWindow::addDevice(const QString& name, const QString& ipAddress, int po
     ui->deviceTable->setRowHeight(row,50);
 
     auto imageLabel = new QLabel(this);
-    imageLabel->setPixmap(QPixmap("images/default_device.png").scaled(50, 50, Qt::KeepAspectRatio));
+    imageLabel->setPixmap(QPixmap(":/images/default_device.png").scaled(50, 50, Qt::KeepAspectRatio));
     ui->deviceTable->setCellWidget(row, 0, imageLabel);
 
     ui->deviceTable->setItem(row, 1, new QTableWidgetItem(name));
@@ -104,7 +116,7 @@ void MainWindow::addDevice(const QString& name, const QString& ipAddress, int po
 
     auto socket = new QTcpSocket(this);
     
-    devices.emplace_back(std::make_unique<Device>(this, connectionStatusLabel, socket, name));
+    devices.emplace_back(std::make_unique<Device>(connectionStatusLabel, socket, name, this, this->ui->widget_2));
     Device* device_ptr = devices.back().get();
 
     // 创建按钮
@@ -314,5 +326,5 @@ void MainWindow::onChartButtonClicked() {
     Device* device = button->property("device").value<Device*>();
     if (!device) return;
 
-    device->chart.show();
+    setShowingTempChart(device->chart);
 }

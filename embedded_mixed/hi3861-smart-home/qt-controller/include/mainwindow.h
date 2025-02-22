@@ -20,7 +20,7 @@ class MainWindow;
 
 class Device : public QObject {
     Q_OBJECT
-    
+
 public:
     QTcpSocket* socket;
     QLabel* connectionStatusLabel;
@@ -28,7 +28,7 @@ public:
     DebugTerminal terminal;
     TemperatureChart chart;
 
-    Device(MainWindow* mainWindow,QLabel* connectionStatusLabel,QTcpSocket* socket,QString name);
+    Device(QLabel* connectionStatusLabel,QTcpSocket* socket,QString name,MainWindow* parent,QWidget* chartWidget);
     ~Device();
 
 private slots:
@@ -45,6 +45,8 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    void setShowingTempChart(TemperatureChart& chart);
+
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
 
@@ -55,8 +57,11 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+
     std::vector<std::unique_ptr<Device>> devices;
     std::unique_ptr<QUdpSocket> udpSocket;
+
+    TemperatureChart* showingTempChart;
 
     void onDebugButtonClicked();
     void onDeleteButtonClicked();

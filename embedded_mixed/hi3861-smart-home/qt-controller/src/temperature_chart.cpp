@@ -8,12 +8,10 @@ TemperatureChart::TemperatureChart(const QString &deviceName, QWidget *parent)
     , deviceName(deviceName)
     , timeCounter(0)
 {
-    setWindowTitle(QString("Temperature Chart on %1").arg(deviceName));
-
     // 初始化图表
     chart = new QChart();
     chart->legend()->hide();
-    chart->setTitle("Real-time Temperature Data");
+    chart->setTitle(QString("Real-time Temperature Data (%1)").arg(deviceName));
 
     // 初始化折线系列
     series = new QLineSeries();
@@ -21,12 +19,12 @@ TemperatureChart::TemperatureChart(const QString &deviceName, QWidget *parent)
 
     // 设置坐标轴
     QValueAxis *axisX = new QValueAxis();
-    axisX->setTitleText("Time (s)");
+    //axisX->setTitleText("Time (s)");
     axisX->setLabelFormat("%.1f");
     axisX->setRange(0, 60); // 显示最近60秒的数据
 
     QValueAxis *axisY = new QValueAxis();
-    axisY->setTitleText("Temperature (°C)");
+    //axisY->setTitleText("Temperature (°C)");
     axisY->setRange(0, 100);
 
     chart->addAxis(axisX, Qt::AlignBottom);
@@ -58,9 +56,7 @@ TemperatureChart::TemperatureChart(const QString &deviceName, QWidget *parent)
     connect(timer, &QTimer::timeout, this, &TemperatureChart::updateChart);
     setUpdateFrequency(1000);
 
-    // 设置窗口属性
-    setWindowFlags(Qt::Window);
-    resize(800, 600);
+    resize(325,260);
 }
 
 void TemperatureChart::setUpdateFrequency(int milliseconds)

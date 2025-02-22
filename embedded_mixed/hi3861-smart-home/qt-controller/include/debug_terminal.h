@@ -5,11 +5,11 @@
 
 namespace Ui {class DebugTerminal;}
 
-class DebugTerminal : public QDialog {
+class DebugTerminal : public QWidget {
     Q_OBJECT
 
 public:
-    explicit DebugTerminal(QTcpSocket* socket, QString& device_name, QWidget *parent = nullptr);
+    explicit DebugTerminal(QTcpSocket* socket, QString& device_name, QWidget* parent = nullptr);
     ~DebugTerminal();
 
     void addRawData(const QByteArray& byteArray);

@@ -2,12 +2,13 @@
 #include "ui_debug_terminal.h"
 #include <QDateTime>
 
-DebugTerminal::DebugTerminal(QTcpSocket* socket, QString& device_name, QWidget *parent) :
-    QDialog(parent),
+DebugTerminal::DebugTerminal(QTcpSocket* socket, QString& device_name, QWidget* parent) :
+    QWidget(parent),
     ui(new Ui::DebugTerminal),
     socket(socket)
 {
     ui->setupUi(this);
+    setWindowFlags(Qt::Window);
     setWindowTitle(QString("Debug Window (%1)").arg(device_name));
     connect(ui->sendButton, &QPushButton::clicked, this, &DebugTerminal::onSendDataButtonClicked);
 }
