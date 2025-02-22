@@ -10,7 +10,10 @@
 
 Device::Device(MainWindow* mainWindow,QLabel* connection_status_label,QTcpSocket* socket,QString name) 
     : mainWindow(mainWindow), connectionStatusLabel(connection_status_label),
-    socket(socket), terminal(socket, name, mainWindow), name(name), chart(socket, name, mainWindow) {}
+    socket(socket), terminal(socket, name, mainWindow), name(name), chart(name, mainWindow)
+{
+    connect(socket,QTcpSocket::readyRead,this,onSocketReadyRead);
+}
 
 Device::~Device() {
     // 虽然socket和connectionStatusLabel在创建的时候就绑定了主窗口为父组件
@@ -27,6 +30,29 @@ Device::~Device() {
     if (connectionStatusLabel) {
         connectionStatusLabel->removeEventFilter(mainWindow);
         connectionStatusLabel->deleteLater();
+    }
+}
+
+void Device::onSocketReadyRead() {
+    QString str = QString::fromUtf8(socket->readAll());
+    terminal.addMessage(str);
+
+    // 正则表达式匹配温度数据
+    QRegularExpression regex(R"(temp: (\d+)\.(\d+))");
+    QRegularExpressionMatch match = regex.match(str);
+
+    if (match.hasMatch()) {
+        QString tempWholePart = match.captured(1);
+        QString tempFractionalPart = match.captured(2);
+
+        // 解析温度值
+        double temperature = tempWholePart.toDouble() + tempFractionalPart.toDouble() / 10.0;
+
+        // 添加温度数据
+        chart.addTemperatureData(temperature);
+    } else {
+        // 解析失败处理逻辑
+        qWarning() << "Failed to parse temperature data.";
     }
 }
 

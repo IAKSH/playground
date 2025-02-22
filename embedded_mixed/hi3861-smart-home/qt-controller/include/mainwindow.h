@@ -18,7 +18,9 @@ QT_END_NAMESPACE
 
 class MainWindow;
 
-class Device {
+class Device : public QObject {
+    Q_OBJECT
+    
 public:
     QTcpSocket* socket;
     QLabel* connectionStatusLabel;
@@ -28,6 +30,9 @@ public:
 
     Device(MainWindow* mainWindow,QLabel* connectionStatusLabel,QTcpSocket* socket,QString name);
     ~Device();
+
+private slots:
+    void onSocketReadyRead();
 
 private:
     MainWindow* mainWindow;

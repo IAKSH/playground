@@ -14,7 +14,7 @@ class TemperatureChart : public QWidget
     Q_OBJECT
 
 public:
-    explicit TemperatureChart(QTcpSocket *socket, const QString &deviceName, QWidget *parent = nullptr);
+    explicit TemperatureChart(const QString &deviceName, QWidget *parent = nullptr);
     ~TemperatureChart() = default;
 
     void setUpdateFrequency(int milliseconds);
@@ -28,8 +28,7 @@ private:
     QChart *chart;
     QLineSeries *series;
     QTimer *timer;
-    QTimer *dataTimer; // 确保dataTimer是成员变量
+    QTimer *dataTimer;
     QString deviceName;
-    qreal timeCounter; // 用于模拟时间轴
-    QTcpSocket *socket;
+    qreal timeCounter;
 };

@@ -9,17 +9,19 @@ class DebugTerminal : public QDialog {
     Q_OBJECT
 
 public:
-    explicit DebugTerminal(QTcpSocket *socket, const QString& device_name, QWidget *parent = nullptr);
+    explicit DebugTerminal(QTcpSocket* socket, QString& device_name, QWidget *parent = nullptr);
     ~DebugTerminal();
+
+    void addRawData(const QByteArray& byteArray);
+    void addMessage(const QString& str);
 
 protected:
     void closeEvent(QCloseEvent *event) override;
 
 private slots:
-    void on_sendButton_clicked();
-    void on_readyRead();
+    void onSendDataButtonClicked();
 
 private:
     Ui::DebugTerminal *ui;
-    QTcpSocket *socket;
+    QTcpSocket* socket;
 };

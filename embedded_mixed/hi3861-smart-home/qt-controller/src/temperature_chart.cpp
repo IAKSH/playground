@@ -3,11 +3,10 @@
 #include <QValueAxis>
 #include <QRegularExpression>
 
-TemperatureChart::TemperatureChart(QTcpSocket *socket, const QString &deviceName, QWidget *parent)
+TemperatureChart::TemperatureChart(const QString &deviceName, QWidget *parent)
     : QWidget(parent)
     , deviceName(deviceName)
     , timeCounter(0)
-    , socket(socket)
 {
     setWindowTitle(QString("Temperature Chart on %1").arg(deviceName));
 
@@ -62,43 +61,6 @@ TemperatureChart::TemperatureChart(QTcpSocket *socket, const QString &deviceName
     // 设置窗口属性
     setWindowFlags(Qt::Window);
     resize(800, 600);
-
-    //// 模拟温度数据
-    //dataTimer = new QTimer(this);
-    //connect(dataTimer, &QTimer::timeout, this, [this]() {
-    //    qreal temperature = rand() % 100; // 生成0~99的随机温度值
-    //    addTemperatureData(temperature);
-    //});
-    //dataTimer->start(1000); // 每隔1秒添加一次数据
-
-#if false
-    // socket被多个响应函数同时读取，会出现冲突
-    // 但是简单加锁又会导致一个信息只能被一个响应函数读取
-    // 可能需要自建一个分发机制
-    // 明天再写了
-    connect(socket, &QTcpSocket::readyRead, this, [&socket, this](){
-        QByteArray data = socket->readAll();
-        QString dataStr = QString::fromUtf8(data);
-
-        // 正则表达式匹配温度数据
-        QRegularExpression regex(R"(temp: (\d+)\.(\d+))");
-        QRegularExpressionMatch match = regex.match(dataStr);
-
-        if (match.hasMatch()) {
-            QString tempWholePart = match.captured(1);
-            QString tempFractionalPart = match.captured(2);
-
-            // 解析温度值
-            double temperature = tempWholePart.toDouble() + tempFractionalPart.toDouble() / 10.0;
-
-            // 添加温度数据
-            addTemperatureData(temperature);
-        } else {
-            // 解析失败处理逻辑
-            qWarning() << "Failed to parse temperature data.";
-        }
-    });
-#endif
 }
 
 void TemperatureChart::setUpdateFrequency(int milliseconds)
