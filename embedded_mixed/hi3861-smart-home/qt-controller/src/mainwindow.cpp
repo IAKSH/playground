@@ -33,6 +33,8 @@ Device::~Device() {
         connectionStatusLabel->removeEventFilter(mainWindow);
         connectionStatusLabel->deleteLater();
     }
+    // 删除map marker
+    marker->deleteLater();
 }
 
 void Device::onUpdatePos(const QPointF& newPos) {
