@@ -3,6 +3,7 @@
 #include <QGraphicsEllipseItem>
 #include <QWheelEvent>
 #include <QGraphicsSceneMouseEvent>
+#include <QMenu>
 
 Map::Map(QWidget* parent) {
     scene = new QGraphicsScene(parent);
@@ -92,6 +93,20 @@ void MapMarker::mouseReleaseEvent(QGraphicsSceneMouseEvent* event) {
     }
     else
         event->ignore();
+}
+
+void MapMarker::contextMenuEvent(QGraphicsSceneContextMenuEvent* event) {
+    QMenu menu;
+    QAction* deleteAction = menu.addAction("Delete");
+    QAction* renameAction = menu.addAction("Rename");
+    QAction* shiftAction = menu.addAction("Shift");
+    QAction* selectedAction = menu.exec(event->screenPos());
+
+    if(selectedAction == deleteAction) {
+        emit markerDelete();
+        event->accept();
+    }
+    event->ignore();
 }
 
 void MapMarker::init() {

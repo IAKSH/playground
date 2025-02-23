@@ -34,13 +34,15 @@ public:
     Device(QLabel* connectionStatusLabel,QTcpSocket* socket,QString name,MainWindow* parent,QWidget* chartWidget);
     ~Device();
 
+signals:
+    void deviceDelete(Device*);
+
 private slots:
     void onSocketReadyRead();
+    void onUpdatePos(const QPointF& newPos);
 
 private:
     MainWindow* mainWindow;
-
-    void onUpdatePos(const QPointF& newPos);
 };
 
 class MainWindow : public QMainWindow {
@@ -60,23 +62,20 @@ private slots:
     void onAddDeviceButtonClicked();
     void updateConnectionStatus(Device* device);
     void processPendingDatagrams();
-
-private:
-    Ui::MainWindow *ui;
-
-    std::vector<std::unique_ptr<Device>> devices;
-    std::unique_ptr<QUdpSocket> udpSocket;
-
-    TemperatureChart* showingTempChart;
-
     void onDebugButtonClicked();
     void onDeleteButtonClicked();
     void onChartButtonClicked();
     void onConnectionStatusLabelClicked(Device* device);
     void onDeviceDiscoveryToggled(bool checked);
+
+private:
+    Ui::MainWindow *ui;
+    TemperatureChart* showingTempChart;
+    std::vector<std::unique_ptr<Device>> devices;
+    std::unique_ptr<QUdpSocket> udpSocket;
+    
     void addDevice(const QString& name, const QString& ipAddress, int port, const QString& type);
-
     void handleUdpSocket();
-
     void setupMap();
+    void deleteDevice(Device* device);
 };

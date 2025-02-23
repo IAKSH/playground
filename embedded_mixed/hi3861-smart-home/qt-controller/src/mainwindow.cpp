@@ -15,6 +15,8 @@ Device::Device(QLabel* connection_status_label,QTcpSocket* socket,QString name,M
     connect(socket,QTcpSocket::readyRead,this,onSocketReadyRead);
     marker = new MapMarker(name,this);
     connect(marker,MapMarker::markerMoved,this,onUpdatePos);
+    //connect(marker,MapMarker::markerDelete,this,deviceDelete);// 自Qt5开始可以直接连接信号到信号
+    connect(marker,MapMarker::markerDelete,this,[this](){emit deviceDelete(this);});
 }
 
 Device::~Device() {
@@ -130,6 +132,7 @@ void MainWindow::addDevice(const QString& name, const QString& ipAddress, int po
     
     devices.emplace_back(std::make_unique<Device>(connectionStatusLabel, socket, name, this, this->ui->widget_2));
     Device* device_ptr = devices.back().get();
+    connect(device_ptr,Device::deviceDelete,this,deleteDevice);
 
     map->addMarker(device_ptr->marker);
 
@@ -266,15 +269,7 @@ void MainWindow::onDeleteButtonClicked() {
     Device* device = button->property("device").value<Device*>();
     if (!device) return;
 
-    // 在devices向量中找到设备并移除
-    auto it = std::find_if(devices.begin(), devices.end(),[device](std::unique_ptr<Device>& dev){return dev.get() == device;});
-    if (it != devices.end()) {
-        // 从表格中移除对应的行
-        int row = ui->deviceTable->indexAt(button->pos()).row();
-        ui->deviceTable->removeRow(row);
-        // 从devices向量中移除设备
-        devices.erase(it);
-    }
+    deleteDevice(device);
 }
 
 void MainWindow::processPendingDatagrams() {
@@ -353,4 +348,16 @@ void MainWindow::onChartButtonClicked() {
     if (!device) return;
 
     setShowingTempChart(device->chart);
+}
+
+void MainWindow::deleteDevice(Device* device) {
+    // 在devices向量中找到设备并移除
+    auto it = std::find_if(devices.begin(), devices.end(),[device](std::unique_ptr<Device>& dev){return dev.get() == device;});
+    if (it != devices.end()) {
+        // 从表格中移除对应的行
+        int row = ui->deviceTable->indexAt(device->connectionStatusLabel->pos()).row();
+        ui->deviceTable->removeRow(row);
+        // 从devices向量中移除设备
+        devices.erase(it);
+    }
 }
