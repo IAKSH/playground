@@ -70,37 +70,15 @@
         </property>
        </widget>
       </widget>
-      <widget class="QGroupBox" name="groupBoxMap">
+      <widget class="QWidget" name="widget_3" native="true">
        <property name="geometry">
         <rect>
          <x>360</x>
-         <y>10</y>
+         <y>0</y>
          <width>471</width>
          <height>291</height>
         </rect>
        </property>
-       <property name="title">
-        <string>Map</string>
-       </property>
-       <widget class="QLabel" name="label">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>20</y>
-          <width>451</width>
-          <height>261</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="pixmap">
-         <pixmap>:/images/map.jpg</pixmap>
-        </property>
-        <property name="scaledContents">
-         <bool>true</bool>
-        </property>
-       </widget>
       </widget>
      </widget>
     </item>

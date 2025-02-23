@@ -11,6 +11,7 @@
 
 #include "debug_terminal.h"
 #include "temperature_chart.h"
+#include "map.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -27,6 +28,8 @@ public:
     QString name;
     DebugTerminal terminal;
     TemperatureChart chart;
+    MapMarker* marker;
+    QPointF pos;
 
     Device(QLabel* connectionStatusLabel,QTcpSocket* socket,QString name,MainWindow* parent,QWidget* chartWidget);
     ~Device();
@@ -36,15 +39,18 @@ private slots:
 
 private:
     MainWindow* mainWindow;
+
+    void onUpdatePos(const QPointF& newPos);
 };
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
+    Map* map;
+
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-
     void setShowingTempChart(TemperatureChart& chart);
 
 protected:

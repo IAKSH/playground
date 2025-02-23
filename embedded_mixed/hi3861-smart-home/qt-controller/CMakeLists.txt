@@ -20,11 +20,13 @@ set(PROJECT_SOURCES
     include/add_device_dialog.h
     include/debug_terminal.h
     include/temperature_chart.h
+    include/map.h
     src/main.cpp
     src/mainwindow.cpp
     src/add_device_dialog.cpp
     src/debug_terminal.cpp
     src/temperature_chart.cpp
+    src/map.cpp
 )
 
 qt6_wrap_ui(UIS_HDRS

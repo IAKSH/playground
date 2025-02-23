@@ -1,7 +1,6 @@
 #include "mainwindow.h"
 #include "ui_MainWindow.h"
 #include "add_device_dialog.h"
-#include "map.h"
 #include <QTcpSocket>
 #include <QMessageBox>
 #include <algorithm>
@@ -14,6 +13,8 @@ Device::Device(QLabel* connection_status_label,QTcpSocket* socket,QString name,M
     socket(socket), terminal(socket, name, mainWindow), name(name), chart(name, chartWidget)
 {
     connect(socket,QTcpSocket::readyRead,this,onSocketReadyRead);
+    marker = new MapMarker(name,this);
+    connect(marker,MapMarker::markerMoved,this,onUpdatePos);
 }
 
 Device::~Device() {
@@ -32,6 +33,13 @@ Device::~Device() {
         connectionStatusLabel->removeEventFilter(mainWindow);
         connectionStatusLabel->deleteLater();
     }
+}
+
+void Device::onUpdatePos(const QPointF& newPos) {
+    pos = newPos;
+
+    // for debug
+    qDebug() << QString("Device %1 moved to ").arg(name) << pos << '\n';
 }
 
 void Device::onSocketReadyRead() {
@@ -120,6 +128,8 @@ void MainWindow::addDevice(const QString& name, const QString& ipAddress, int po
     
     devices.emplace_back(std::make_unique<Device>(connectionStatusLabel, socket, name, this, this->ui->widget_2));
     Device* device_ptr = devices.back().get();
+
+    map->addMarker(device_ptr->marker);
 
     // 创建按钮
     auto debugButton = new QPushButton("Debug", this);
@@ -323,7 +333,7 @@ void MainWindow::handleUdpSocket() {
 }
 
 void MainWindow::setupMap() {
-    Map* map = new Map(this);
+    map = new Map(this);
 
     // 获取占位 Widget 的布局，如果没有则创建一个
     if (!ui->widget_3->layout()) {
