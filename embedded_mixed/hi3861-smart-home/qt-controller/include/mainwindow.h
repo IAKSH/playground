@@ -71,4 +71,6 @@ private:
     void addDevice(const QString& name, const QString& ipAddress, int port, const QString& type);
 
     void handleUdpSocket();
+
+    void setupMap();
 };

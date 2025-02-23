@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_MainWindow.h"
 #include "add_device_dialog.h"
+#include "map.h"
 #include <QTcpSocket>
 #include <QMessageBox>
 #include <algorithm>
@@ -67,6 +68,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->deviceDiscoveryToggle,&QCheckBox::toggled,this,onDeviceDiscoveryToggled);
 
     handleUdpSocket();
+    setupMap();
 }
 
 MainWindow::~MainWindow() {
@@ -318,6 +320,18 @@ void MainWindow::handleUdpSocket() {
         connect(udpSocket.get(), &QUdpSocket::readyRead,
             this, &MainWindow::processPendingDatagrams);
     }
+}
+
+void MainWindow::setupMap() {
+    Map* map = new Map(this);
+
+    // 获取占位 Widget 的布局，如果没有则创建一个
+    if (!ui->widget_3->layout()) {
+        QVBoxLayout *layout = new QVBoxLayout(ui->widget_3);
+        layout->setContentsMargins(0, 0, 0, 0);
+    }
+
+    ui->widget_3->layout()->addWidget(map);
 }
 
 void MainWindow::onChartButtonClicked() {
