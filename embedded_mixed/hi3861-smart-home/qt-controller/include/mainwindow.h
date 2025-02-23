@@ -6,6 +6,7 @@
 #include <QPushButton>
 #include <QEvent>
 #include <QUdpSocket>
+#include <QTableWidgetItem>
 #include <vector>
 #include <map>
 
@@ -25,17 +26,21 @@ class Device : public QObject {
 public:
     QTcpSocket* socket;
     QLabel* connectionStatusLabel;
+    QTableWidgetItem* nameTable;
     QString name;
     DebugTerminal terminal;
     TemperatureChart chart;
     MapMarker* marker;
     QPointF pos;
 
-    Device(QLabel* connectionStatusLabel,QTcpSocket* socket,QString name,MainWindow* parent,QWidget* chartWidget);
+    Device(QTableWidgetItem* nameTable,QLabel* connectionStatusLabel,QTcpSocket* socket,QString name,MainWindow* parent,QWidget* chartWidget);
     ~Device();
+
+    void rename(const QString& newName);
 
 signals:
     void deviceDelete(Device*);
+    void deviceRename(Device*);
 
 private slots:
     void onSocketReadyRead();
@@ -65,6 +70,7 @@ private slots:
     void onDebugButtonClicked();
     void onDeleteButtonClicked();
     void onChartButtonClicked();
+    void onRenameButtonClicked();
     void onConnectionStatusLabelClicked(Device* device);
     void onDeviceDiscoveryToggled(bool checked);
 
@@ -78,4 +84,5 @@ private:
     void handleUdpSocket();
     void setupMap();
     void deleteDevice(Device* device);
+    void renameDevice(Device* device);
 };

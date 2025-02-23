@@ -3,20 +3,21 @@
 #include "add_device_dialog.h"
 #include <QTcpSocket>
 #include <QMessageBox>
-#include <algorithm>
 #include <QStringList>
+#include <QInputDialog>
+#include <algorithm>
 
 #define DEVICE_UDP_BROADCAST_PORT 12345
 
-Device::Device(QLabel* connection_status_label,QTcpSocket* socket,QString name,MainWindow* mainWindow,QWidget* chartWidget) 
-    : mainWindow(mainWindow), connectionStatusLabel(connection_status_label),
+Device::Device(QTableWidgetItem* nameTable,QLabel* connection_status_label,QTcpSocket* socket,QString name,MainWindow* mainWindow,QWidget* chartWidget) 
+    : nameTable(nameTable), mainWindow(mainWindow), connectionStatusLabel(connection_status_label),
     socket(socket), terminal(socket, name, mainWindow), name(name), chart(name, chartWidget)
 {
     connect(socket,QTcpSocket::readyRead,this,onSocketReadyRead);
     marker = new MapMarker(name,this);
     connect(marker,MapMarker::markerMoved,this,onUpdatePos);
-    //connect(marker,MapMarker::markerDelete,this,deviceDelete);// 自Qt5开始可以直接连接信号到信号
     connect(marker,MapMarker::markerDelete,this,[this](){emit deviceDelete(this);});
+    connect(marker,MapMarker::markerRename,this,[this](){emit deviceRename(this);});
 }
 
 Device::~Device() {
@@ -37,6 +38,12 @@ Device::~Device() {
     }
     // 删除map marker
     marker->deleteLater();
+}
+
+void Device::rename(const QString& name) {
+    this->name = name;
+    marker->setName(name);
+    nameTable->setText(name);
 }
 
 void Device::onUpdatePos(const QPointF& newPos) {
@@ -119,7 +126,9 @@ void MainWindow::addDevice(const QString& name, const QString& ipAddress, int po
     imageLabel->setPixmap(QPixmap(":/images/default_device.png").scaled(50, 50, Qt::KeepAspectRatio));
     ui->deviceTable->setCellWidget(row, 0, imageLabel);
 
-    ui->deviceTable->setItem(row, 1, new QTableWidgetItem(name));
+    auto nameTable = new QTableWidgetItem(name);
+
+    ui->deviceTable->setItem(row, 1, nameTable);
     ui->deviceTable->setItem(row, 2, new QTableWidgetItem(ipAddress));
     ui->deviceTable->setItem(row, 3, new QTableWidgetItem(QString::number(port)));
     ui->deviceTable->setItem(row, 4, new QTableWidgetItem(type));
@@ -130,9 +139,10 @@ void MainWindow::addDevice(const QString& name, const QString& ipAddress, int po
 
     auto socket = new QTcpSocket(this);
     
-    devices.emplace_back(std::make_unique<Device>(connectionStatusLabel, socket, name, this, this->ui->widget_2));
+    devices.emplace_back(std::make_unique<Device>(nameTable,connectionStatusLabel, socket, name, this, this->ui->widget_2));
     Device* device_ptr = devices.back().get();
     connect(device_ptr,Device::deviceDelete,this,deleteDevice);
+    connect(device_ptr,Device::deviceRename,this,renameDevice);
 
     map->addMarker(device_ptr->marker);
 
@@ -140,23 +150,27 @@ void MainWindow::addDevice(const QString& name, const QString& ipAddress, int po
     auto debugButton = new QPushButton("Debug", this);
     auto deleteButton = new QPushButton("Delete", this);
     auto chartButton = new QPushButton("Chart", this);
+    auto renameButton = new QPushButton("Rename",this);
 
     // 创建水平布局
     auto buttonLayout = new QHBoxLayout();
     buttonLayout->addWidget(debugButton);
     buttonLayout->addWidget(deleteButton);
     buttonLayout->addWidget(chartButton);
+    buttonLayout->addWidget(renameButton);
 
     // 设置按钮之间的间距
     buttonLayout->setSpacing(5);
 
     // 设置最小大小
-    debugButton->setMinimumWidth(60);
+    debugButton->setMinimumWidth(50);
     debugButton->setMinimumHeight(30);
-    deleteButton->setMinimumWidth(60);
+    deleteButton->setMinimumWidth(50);
     deleteButton->setMinimumHeight(30);
-    chartButton->setMinimumWidth(60);
+    chartButton->setMinimumWidth(50);
     chartButton->setMinimumHeight(30);
+    renameButton->setMinimumWidth(50);
+    renameButton->setMinimumHeight(30);
 
     // 创建小部件并设置布局
     auto buttonWidget = new QWidget(this);
@@ -166,9 +180,10 @@ void MainWindow::addDevice(const QString& name, const QString& ipAddress, int po
     ui->deviceTable->setCellWidget(row, 6, buttonWidget);
 
     // 连接按钮信号槽
-    connect(debugButton, &QPushButton::clicked, this, onDebugButtonClicked);
-    connect(deleteButton, &QPushButton::clicked, this, onDeleteButtonClicked);
-    connect(chartButton, &QPushButton::clicked, this, onChartButtonClicked);
+    connect(debugButton, QPushButton::clicked, this, onDebugButtonClicked);
+    connect(deleteButton, QPushButton::clicked, this, onDeleteButtonClicked);
+    connect(chartButton, QPushButton::clicked, this, onChartButtonClicked);
+    connect(renameButton, QPushButton::clicked, this, onRenameButtonClicked);
 
     connect(socket, &QTcpSocket::connected, this, [this, device_ptr](){ updateConnectionStatus(device_ptr); });
     connect(socket, &QTcpSocket::disconnected, this, [this, device_ptr](){ updateConnectionStatus(device_ptr); });
@@ -178,6 +193,7 @@ void MainWindow::addDevice(const QString& name, const QString& ipAddress, int po
     debugButton->setProperty("device", QVariant::fromValue(device_ptr));
     deleteButton->setProperty("device", QVariant::fromValue(device_ptr));
     chartButton->setProperty("device", QVariant::fromValue(device_ptr));
+    renameButton->setProperty("device", QVariant::fromValue(device_ptr));
     socket->setProperty("device", QVariant::fromValue(device_ptr));
     connectionStatusLabel->setProperty("device", QVariant::fromValue(device_ptr));
     connectionStatusLabel->installEventFilter(this);
@@ -295,12 +311,10 @@ void MainWindow::processPendingDatagrams() {
             // 检查设备是否已经存在
             bool deviceExists = false;
             for (int i = 0; i < ui->deviceTable->rowCount(); ++i) {
-                QString existingName = ui->deviceTable->item(i, 1)->text();
-                QString existingType = ui->deviceTable->item(i, 4)->text();
                 QString existingAddress = ui->deviceTable->item(i, 2)->text();
                 int existingPort = ui->deviceTable->item(i, 3)->text().toInt();
 
-                if (name == existingName && type == existingType && address == existingAddress && port == existingPort) {
+                if (address == existingAddress && port == existingPort) {
                     deviceExists = true;
                     break;
                 }
@@ -350,6 +364,15 @@ void MainWindow::onChartButtonClicked() {
     setShowingTempChart(device->chart);
 }
 
+void MainWindow::onRenameButtonClicked() {
+    QPushButton* button = qobject_cast<QPushButton*>(sender());
+    if (!button) return;
+    Device* device = button->property("device").value<Device*>();
+    if (!device) return;
+
+    renameDevice(device);
+}
+
 void MainWindow::deleteDevice(Device* device) {
     // 在devices向量中找到设备并移除
     auto it = std::find_if(devices.begin(), devices.end(),[device](std::unique_ptr<Device>& dev){return dev.get() == device;});
@@ -359,5 +382,13 @@ void MainWindow::deleteDevice(Device* device) {
         ui->deviceTable->removeRow(row);
         // 从devices向量中移除设备
         devices.erase(it);
+    }
+}
+
+void MainWindow::renameDevice(Device* device) {
+    bool ok;
+    QString newName = QInputDialog::getText(this,"input a new name","name: ",QLineEdit::Normal,"",&ok);
+    if(ok && !newName.isEmpty()) {
+        device->rename(newName);
     }
 }

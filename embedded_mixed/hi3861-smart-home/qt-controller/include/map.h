@@ -20,6 +20,7 @@ public:
 signals:
     void markerMoved(const QPointF& newPos);
     void markerDelete();
+    void markerRename();
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent* event) override;

@@ -106,6 +106,10 @@ void MapMarker::contextMenuEvent(QGraphicsSceneContextMenuEvent* event) {
         emit markerDelete();
         event->accept();
     }
+    else if(selectedAction == renameAction) {
+        emit markerRename();
+        event->accept();
+    }
     event->ignore();
 }
 
