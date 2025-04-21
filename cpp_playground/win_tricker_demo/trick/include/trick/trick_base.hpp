@@ -34,19 +34,40 @@ struct Bitmap {
     }
 };
 
-template <typename T, typename BitmapT>
+template <typename T, typename BitmapImpl>
 concept ScreenRecorderImplConcept = requires(T recorder) {
-    { recorder.capture_impl() } -> std::convertible_to<std::shared_ptr<Bitmap<BitmapT>>>;
+    { recorder.capture_impl() } -> std::convertible_to<std::shared_ptr<Bitmap<BitmapImpl>>>;
 } && 
     std::default_initializable<T> &&
     std::constructible_from<T,T&> &&
     std::constructible_from<T,int,int> && 
-    BitmapImplConcept<BitmapT>;
+    BitmapImplConcept<BitmapImpl>;
 
 template <typename Derived,typename BitmapDerived>
 struct ScreenRecorder {
     std::shared_ptr<Bitmap<BitmapDerived>> capture() {
         return static_cast<Derived*>(this)->capture_impl();
+    }
+};
+
+template <typename T, typename BitmapImpl>
+concept ScreenBlockerImpl = requires(const T blocker) {
+    { blocker.show_impl() } -> std::same_as<void>;
+    { blocker.hide_impl() } -> std::same_as<void>;
+} &&
+    !std::default_initializable<T> &&
+    !std::constructible_from<T,T&> &&
+    std::constructible_from<T,const Bitmap<BitmapImpl>&> &&
+    BitmapImplConcept<BitmapImpl>;
+
+template <typename Derived>
+struct ScreenBlocker {
+    void show() {
+        static_cast<const Derived*>(this)->show_impl();
+    }
+
+    void hide() {
+        static_cast<const Derived*>(this)->hide_impl();
     }
 };
 }
