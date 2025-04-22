@@ -9,6 +9,9 @@ set_target_properties(tricker_demo PROPERTIES
     CXX_EXTENSIONS NO
 )
 
+# 强制静态链接
+set(CMAKE_EXE_LINKER_FLAGS "-static")
+
 target_include_directories(tricker_demo PUBLIC
     include
 )
