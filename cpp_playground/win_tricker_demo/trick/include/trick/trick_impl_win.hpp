@@ -7,6 +7,7 @@
 #include <vector>
 #include <iostream>
 #include <thread>
+#include <random>
 
 namespace trick::win {
 class Bitmap : public base::Bitmap<Bitmap> {
@@ -293,4 +294,78 @@ private:
 };
 
 static_assert(base::ScreenBlockerImpl<ScreenBlocker,Bitmap>);
+
+class Beeper : public base::Beeper<Beeper> {
+public:
+    Beeper() = default;
+    Beeper(Beeper&) = delete;
+    Beeper(int freq) : freq(freq) {}
+
+    ~Beeper() {
+        random_beeping = false;
+    }
+
+    void beep_impl(int ms) const {
+        Beep(freq,ms);
+    }
+
+    void start_random_beep_impl(int min_ms,int max_ms) {
+        if(!beep_thread.joinable()) {
+            random_beeping = true;
+            beep_thread = std::thread(beep_task,this,min_ms,max_ms);
+        }
+    }
+
+    void stop_random_beep_impl() {
+        random_beeping = false;
+    }
+
+    void set_freq_impl(int freq) {
+        if(freq < 0)
+            throw std::invalid_argument("freq can't be negative");
+        this->freq = freq;
+    }
+
+private:
+    int freq{450};
+    std::thread beep_thread;
+    std::atomic<bool> random_beeping{false};
+
+    void beep_task(int min_ms, int max_ms) {
+        constexpr int MIN_BURST_COUNT = 2;              // 每次突发内至少3次蜂鸣
+        constexpr int MAX_BURST_COUNT = 14;             // 每次突发最多7次蜂鸣
+        constexpr int INTRA_BURST_PAUSE_MIN_MS = 50;    // 蜂鸣内部之间最小暂停 50 ms
+        constexpr int INTRA_BURST_PAUSE_MAX_MS = 150;   // 蜂鸣内部之间最大暂停 150 ms
+        constexpr int BURST_PAUSE_MIN_MS = 1000;        // 突发之间最小间隔 1000 ms
+        constexpr int BURST_PAUSE_MAX_MS = 3000;        // 突发之间最大间隔 3000 ms
+    
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<> beep_dist(min_ms, max_ms);
+        std::uniform_int_distribution<> burst_count_dist(MIN_BURST_COUNT, MAX_BURST_COUNT);
+        std::uniform_int_distribution<> intra_burst_dist(INTRA_BURST_PAUSE_MIN_MS, INTRA_BURST_PAUSE_MAX_MS);
+        std::uniform_int_distribution<> burst_pause_dist(BURST_PAUSE_MIN_MS, BURST_PAUSE_MAX_MS);
+    
+        int beep_duration, intra_pause, burst_pause, burst_count;
+        while (random_beeping) {
+            // 决定本次突发内的蜂鸣次数
+            burst_count = burst_count_dist(gen);
+            for (int i = 0; i < burst_count && random_beeping; ++i) {
+                beep_duration = beep_dist(gen);
+                // 调用蜂鸣函数
+                beep_impl(beep_duration);
+                // 如果不是最后一次蜂鸣，则短暂停顿
+                if (i < burst_count - 1) {
+                    intra_pause = intra_burst_dist(gen);
+                    std::this_thread::sleep_for(std::chrono::milliseconds(intra_pause));
+                }
+            }
+            // 突发后长时间等待，再开始下一组蜂鸣
+            burst_pause = burst_pause_dist(gen);
+            std::this_thread::sleep_for(std::chrono::milliseconds(burst_pause));
+        }
+    }    
+};
+
+static_assert(base::BeeperImpl<Beeper>);
 }

@@ -14,9 +14,11 @@ namespace trick {
     using BitmapImpl = win::Bitmap;
     using ScreenRecorderImpl = win::ScreenRecorder;
     using ScreenBlockerImpl = win::ScreenBlocker;
+    using BeeperImpl = win::Beeper;
 #endif
 
 using Bitmap = base::Bitmap<BitmapImpl>;
 using ScreenRecorder = base::ScreenRecorder<ScreenRecorderImpl,BitmapImpl>;
 using ScreenBlocker = base::ScreenBlocker<ScreenBlockerImpl>;
+using Beeper = base::Beeper<BeeperImpl>;
 }

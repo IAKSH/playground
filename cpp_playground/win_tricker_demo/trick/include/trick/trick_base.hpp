@@ -70,4 +70,34 @@ struct ScreenBlocker {
         static_cast<const Derived*>(this)->hide_impl();
     }
 };
+
+template <typename T>
+concept BeeperImpl = requires(T beeper,int ms,int min_ms,int max_ms,int freq) {
+    { beeper.beep_impl(ms) } -> std::same_as<void>;
+    { beeper.start_random_beep_impl(min_ms,max_ms) } -> std::same_as<void>;
+    { beeper.stop_random_beep_impl() } -> std::same_as<void>;
+    { beeper.set_freq_impl(freq) } -> std::same_as<void>;
+} && 
+    std::default_initializable<T> &&
+    !std::constructible_from<T,T&> &&
+    std::constructible_from<T,int>;
+
+template <typename Derived>
+struct Beeper {
+    void beep(int ms) const {
+        static_cast<const Derived*>(this)->beep_impl(ms);
+    }
+
+    void start_random_beep(int min_ms,int max_ms) {
+        static_cast<Derived*>(this)->start_random_beep_impl(min_ms,max_ms);
+    }
+
+    void stop_random_beep() {
+        static_cast<Derived*>(this)->stop_random_beep_impl();
+    }
+
+    void set_freq(int freq) {
+        static_cast<Derived*>(this)->set_freq_impl();   
+    }
+};
 }
