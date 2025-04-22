@@ -369,4 +369,49 @@ private:
 };
 
 static_assert(base::BeeperImpl<Beeper>);
+
+class Burner : public base::Burner<Burner> {
+public:
+    Burner() = default;
+    Burner(Burner&) = delete;
+    Burner(int n) : max_worker_num(n) {
+
+    }
+
+    ~Burner() {
+        running = false;
+        for(auto& thread : allocated_workers) {
+            if(thread.joinable())
+                thread.join();
+        }
+    }
+
+    void run_impl() {
+        running = true;
+        allocated_workers.clear();
+        for(int i = 0;i < max_worker_num;i++)
+            allocated_workers.emplace_back(work,this);
+    }
+
+    void stop_impl() {
+        running = false;
+    }
+
+    void set_worker_num_impl(int n) {
+        if(n <= 0)
+            throw std::invalid_argument("worker num must be greater than 0");
+        max_worker_num = n;
+    }
+
+private:
+    std::atomic<bool> running{false};
+    std::vector<std::thread> allocated_workers;
+    int max_worker_num{1};
+
+    void work() {
+        while(running);
+    }
+};
+
+static_assert(base::BurnerImpl<Burner>);
 }

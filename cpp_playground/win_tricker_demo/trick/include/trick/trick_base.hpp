@@ -100,4 +100,29 @@ struct Beeper {
         static_cast<Derived*>(this)->set_freq_impl();   
     }
 };
+
+template <typename T>
+concept BurnerImpl = requires(T burner,int n) {
+    { burner.run_impl() } -> std::same_as<void>;
+    { burner.stop_impl() } -> std::same_as<void>;
+    { burner.set_worker_num_impl(n) } -> std::same_as<void>;
+} &&
+    std::default_initializable<T> &&
+    !std::constructible_from<T,T&> &&
+    std::constructible_from<T,int>;
+
+template <typename Derived>
+struct Burner {
+    void run() {
+        static_cast<Derived*>(this)->run_impl();
+    }
+
+    void stop() {
+        static_cast<Derived*>(this)->stop_impl();
+    }
+
+    void set_worker_num(int n) {
+        static_cast<Derived*>(this)->set_worker_num_impl();
+    }
+};
 }
