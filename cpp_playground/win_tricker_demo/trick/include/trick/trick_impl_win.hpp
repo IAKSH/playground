@@ -177,6 +177,7 @@ public:
         if (hWndOverlay) {
             PostMessage(hWndOverlay,WM_CLOSE,0,0);
         }
+        running = false;
         if(msg_loop_thread.joinable()) {
             msg_loop_thread.join();
         }
@@ -233,7 +234,6 @@ private:
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
-        running = false;
         hWndOverlay = nullptr;
     }
 
@@ -279,9 +279,11 @@ private:
             DeleteDC(hdcMem);
             EndPaint(hwnd, &ps);
         }
-        return 0;            
+        return 0;
+        case WM_CLOSE:
+            if(pThis->running)
+                return 0;// block Alt + F4 and any other exit request from user input
         case WM_DESTROY:
-            // 收到WM_DESTROY时退出消息循环
             PostQuitMessage(0);
             return 0;
         default:
