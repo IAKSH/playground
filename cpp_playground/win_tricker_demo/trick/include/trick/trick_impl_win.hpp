@@ -94,14 +94,15 @@ private:
 
 class ScreenRecorder : public base::ScreenRecorder<ScreenRecorder,Bitmap> {
 public:
-    ScreenRecorder() 
-        : ScreenRecorder(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN)) {}
+    ScreenRecorder() {
+        auto reso = getScreenResolution(getPrimaryMonitor());
+        width = reso.first;
+        height = reso.second;
+        init();
+    }
 
     ScreenRecorder(int w,int h) : width(w), height(h) {
-        screenDC = GetDC(nullptr);
-        memoryDC = CreateCompatibleDC(screenDC);
-        bitmap = CreateCompatibleBitmap(screenDC,width,height);
-        SelectObject(memoryDC,bitmap);
+        init();
     }
 
     ScreenRecorder(ScreenRecorder&) = default;
@@ -128,6 +129,29 @@ private:
     HBITMAP bitmap;
     HDC screenDC;
     HDC memoryDC;
+
+    void init() {
+        screenDC = GetDC(nullptr);
+        memoryDC = CreateCompatibleDC(screenDC);
+        bitmap = CreateCompatibleBitmap(screenDC,width,height);
+        SelectObject(memoryDC,bitmap);
+    }
+
+    static HMONITOR getPrimaryMonitor() {
+        POINT ptZero = {0,0};
+        return MonitorFromPoint(ptZero,MONITOR_DEFAULTTOPRIMARY);
+    }
+
+    static std::pair<float,float> getScreenResolution(HMONITOR monitor) {
+        MONITORINFOEX info = {};
+        info.cbSize = sizeof(info);
+        GetMonitorInfo(monitor,&info);
+        DEVMODE devmode = {};
+        devmode.dmSize = sizeof(DEVMODE);
+        EnumDisplaySettings(info.szDevice,ENUM_CURRENT_SETTINGS,&devmode);
+        //return static_cast<float>(devmode.dmFields) / (info.rcMonitor.right - info.rcMonitor.left);
+        return {devmode.dmPelsWidth,devmode.dmPelsHeight};
+    }
 };
 
 static_assert(base::BitmapImplConcept<Bitmap>);
