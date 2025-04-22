@@ -169,12 +169,12 @@ public:
         }
     };
 
-    void show_impl() const {
+    void show_impl() {
         if(!msg_loop_thread.joinable())
             msg_loop_thread = std::thread(&ScreenBlocker::message_loop, this);
     }
 
-    void hide_impl() const {
+    void hide_impl() {
         if (hWndOverlay) {
             PostMessage(hWndOverlay,WM_CLOSE,0,0);
         }
@@ -187,12 +187,11 @@ public:
 private:
     std::thread* msg_thread;
     HBITMAP hbitmap;
-    // mutable, 因为show_impl和hide_impl都是const
-    mutable HWND hWndOverlay = nullptr;
-    mutable std::thread msg_loop_thread;
-    mutable std::atomic<bool> running{ false };
+    HWND hWndOverlay = nullptr;
+    std::thread msg_loop_thread;
+    std::atomic<bool> running{ false };
 
-    void message_loop() const {
+    void message_loop() {
         HINSTANCE hInstance = GetModuleHandle(nullptr);
         static const wchar_t className[] = L"ScreenBlockerOverlayClass";
 

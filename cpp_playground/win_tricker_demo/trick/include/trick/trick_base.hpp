@@ -51,7 +51,7 @@ struct ScreenRecorder {
 };
 
 template <typename T, typename BitmapImplT>
-concept ScreenBlockerImpl = requires(const T blocker) {
+concept ScreenBlockerImpl = requires(T blocker) {
     { blocker.show_impl() } -> std::same_as<void>;
     { blocker.hide_impl() } -> std::same_as<void>;
 } &&
@@ -63,11 +63,11 @@ concept ScreenBlockerImpl = requires(const T blocker) {
 template <typename Derived>
 struct ScreenBlocker {
     void show() {
-        static_cast<const Derived*>(this)->show_impl();
+        static_cast<Derived*>(this)->show_impl();
     }
 
     void hide() {
-        static_cast<const Derived*>(this)->hide_impl();
+        static_cast<Derived*>(this)->hide_impl();
     }
 };
 
