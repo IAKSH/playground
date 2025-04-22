@@ -303,6 +303,8 @@ public:
 
     ~Beeper() {
         random_beeping = false;
+        if(beep_thread.joinable())
+            beep_thread.join();
     }
 
     void beep_impl(int ms) const {
@@ -332,12 +334,12 @@ private:
     std::atomic<bool> random_beeping{false};
 
     void beep_task(int min_ms, int max_ms) {
-        constexpr int MIN_BURST_COUNT = 2;              // 每次突发内至少3次蜂鸣
-        constexpr int MAX_BURST_COUNT = 14;             // 每次突发最多7次蜂鸣
-        constexpr int INTRA_BURST_PAUSE_MIN_MS = 50;    // 蜂鸣内部之间最小暂停 50 ms
-        constexpr int INTRA_BURST_PAUSE_MAX_MS = 150;   // 蜂鸣内部之间最大暂停 150 ms
-        constexpr int BURST_PAUSE_MIN_MS = 1000;        // 突发之间最小间隔 1000 ms
-        constexpr int BURST_PAUSE_MAX_MS = 3000;        // 突发之间最大间隔 3000 ms
+        constexpr int MIN_BURST_COUNT = 1;              // 每次突发最少蜂鸣次数
+        constexpr int MAX_BURST_COUNT = 8;              // 每次突发最多蜂鸣次数
+        constexpr int INTRA_BURST_PAUSE_MIN_MS = 50;    // 蜂鸣之间最小暂停
+        constexpr int INTRA_BURST_PAUSE_MAX_MS = 150;   // 蜂鸣之间最大暂停
+        constexpr int BURST_PAUSE_MIN_MS = 500;         // 突发之间最小间隔
+        constexpr int BURST_PAUSE_MAX_MS = 1000;        // 突发之间最大间隔
     
         std::random_device rd;
         std::mt19937 gen(rd());
