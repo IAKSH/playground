@@ -5,7 +5,7 @@
 
 namespace trick::base {
 template <typename T>
-concept BitmapImplConcept = requires(const T bmp, std::string_view path) {
+concept BitmapImpl = requires(const T bmp, std::string_view path) {
     { bmp.width_impl() } -> std::convertible_to<int>;
     { bmp.height_impl() } -> std::convertible_to<int>;
     { bmp.data_impl() } -> std::convertible_to<const char*>;
@@ -34,14 +34,14 @@ struct Bitmap {
     }
 };
 
-template <typename T, typename BitmapImpl>
-concept ScreenRecorderImplConcept = requires(T recorder) {
-    { recorder.capture_impl() } -> std::convertible_to<std::shared_ptr<Bitmap<BitmapImpl>>>;
+template <typename T, typename BitmapImplT>
+concept ScreenRecorderImpl = requires(T recorder) {
+    { recorder.capture_impl() } -> std::convertible_to<std::shared_ptr<Bitmap<BitmapImplT>>>;
 } && 
     std::default_initializable<T> &&
     std::constructible_from<T,T&> &&
     std::constructible_from<T,int,int> && 
-    BitmapImplConcept<BitmapImpl>;
+    BitmapImpl<BitmapImplT>;
 
 template <typename Derived,typename BitmapDerived>
 struct ScreenRecorder {
@@ -50,15 +50,15 @@ struct ScreenRecorder {
     }
 };
 
-template <typename T, typename BitmapImpl>
+template <typename T, typename BitmapImplT>
 concept ScreenBlockerImpl = requires(const T blocker) {
     { blocker.show_impl() } -> std::same_as<void>;
     { blocker.hide_impl() } -> std::same_as<void>;
 } &&
     !std::default_initializable<T> &&
     !std::constructible_from<T,T&> &&
-    std::constructible_from<T,const Bitmap<BitmapImpl>&> &&
-    BitmapImplConcept<BitmapImpl>;
+    std::constructible_from<T,const Bitmap<BitmapImplT>&> &&
+    BitmapImpl<BitmapImplT>;
 
 template <typename Derived>
 struct ScreenBlocker {

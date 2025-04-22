@@ -155,8 +155,8 @@ private:
     }
 };
 
-static_assert(base::BitmapImplConcept<Bitmap>);
-static_assert(base::ScreenRecorderImplConcept<ScreenRecorder,Bitmap>);
+static_assert(base::BitmapImpl<Bitmap>);
+static_assert(base::ScreenRecorderImpl<ScreenRecorder,Bitmap>);
 
 class ScreenBlocker : public base::ScreenBlocker<ScreenBlocker> {
 public:
