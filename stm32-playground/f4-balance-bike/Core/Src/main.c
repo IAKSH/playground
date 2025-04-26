@@ -18,11 +18,10 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "Application/init.h"
+#include "tasks.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -63,7 +62,30 @@ const osThreadAttr_t defaultTask_attributes = {
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* USER CODE BEGIN PV */
+osThreadId_t test_led_task_handle;
+const osThreadAttr_t test_led_task_attributes = {
+  .name = "test_led",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t)osPriorityBelowNormal
+};
 
+osThreadId_t oled_task_handle;
+const osThreadAttr_t oled_task_attributes = {
+  .name = "oled",
+  .stack_size = 128 * 8,
+  .priority = (osPriority_t)osPriorityBelowNormal1
+};
+
+osThreadId_t balance_task_handle;
+const osThreadAttr_t balance_task_attributes = {
+  .name = "balance",
+  .stack_size = 128 * 8,
+  .priority = (osPriority_t)osPriorityNormal
+};
+
+osSemaphoreId_t gyro_ready_sem;
+osMutexId_t i2c_bus_mutex;
+osEventFlagsId_t event;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -134,10 +156,12 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
+  i2c_bus_mutex = osMutexNew(NULL);
   /* USER CODE END RTOS_MUTEX */
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
+  gyro_ready_sem = osSemaphoreNew(1,0,NULL);
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
@@ -154,11 +178,14 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
-  initTaskLaunch();
+  test_led_task_handle = osThreadNew(test_led_task,NULL,&test_led_task_attributes);
+  oled_task_handle = osThreadNew(oled_task,NULL,&oled_task_attributes);
+  balance_task_handle = osThreadNew(balance_task,NULL,&balance_task_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
+  event = osEventFlagsNew(NULL);
   /* USER CODE END RTOS_EVENTS */
 
   /* Start scheduler */

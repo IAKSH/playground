@@ -31,7 +31,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "cmsis_os2.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -41,7 +41,17 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-
+extern osThreadId_t defaultTaskHandle;
+extern const osThreadAttr_t defaultTask_attributes;
+extern osThreadId_t test_led_task_handle;
+extern const osThreadAttr_t test_led_task_attributes;
+extern osThreadId_t oled_task_handle;
+extern const osThreadAttr_t oled_task_attributes;
+extern osThreadId_t balance_task_handle;
+extern const osThreadAttr_t balance_task_attributes;
+extern osSemaphoreId_t gyro_ready_sem;
+extern osMutexId_t i2c_bus_mutex;
+extern osEventFlagsId_t event;
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
@@ -80,7 +90,7 @@ void Error_Handler(void);
 #define TEST_LED_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
-
+#define EVENT_FLAG_GYRO_INITIALIZED 0x01
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

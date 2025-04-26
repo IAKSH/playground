@@ -1,10 +1,5 @@
-Drivers/
-EWARM/
-Middlewares/
-.mxproject
-.stm32env
-Makefile
-openocd.cfg
+Drivers
+Middlewares
 startup_stm32f407xx.s
 STM32F407XX_FLASH.ld
-STM32Make.make
+!.vscode
