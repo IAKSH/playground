@@ -5,7 +5,6 @@
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim4;
-extern TIM_HandleTypeDef htim5;
 
 #define MOTOR_PWM_TIMER htim3
 #define MOTOR_CONTROL_A1_PORT MOTOR_IO1_GPIO_Port

@@ -52,6 +52,9 @@ extern const osThreadAttr_t balance_task_attributes;
 extern osSemaphoreId_t gyro_ready_sem;
 extern osMutexId_t i2c_bus_mutex;
 extern osEventFlagsId_t event;
+
+extern I2C_HandleTypeDef hi2c1;
+extern SPI_HandleTypeDef hspi2;
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
@@ -82,6 +85,7 @@ void Error_Handler(void);
 #define EXTI2_MPU_EXTI_IRQn EXTI2_IRQn
 #define EXIT7_WIRELESS_IRQ_Pin GPIO_PIN_7
 #define EXIT7_WIRELESS_IRQ_GPIO_Port GPIOE
+#define EXIT7_WIRELESS_IRQ_EXTI_IRQn EXTI9_5_IRQn
 #define WIRELESS_CE_Pin GPIO_PIN_8
 #define WIRELESS_CE_GPIO_Port GPIOE
 #define WIRELESS_CSN_Pin GPIO_PIN_9

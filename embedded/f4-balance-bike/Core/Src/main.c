@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -80,7 +81,14 @@ osThreadId_t balance_task_handle;
 const osThreadAttr_t balance_task_attributes = {
   .name = "balance",
   .stack_size = 128 * 8,
-  .priority = (osPriority_t)osPriorityNormal
+  .priority = (osPriority_t)osPriorityNormal1
+};
+
+osThreadId_t control_task_handle;
+const osThreadAttr_t control_task_attributes = {
+    .name = "control",
+    .stack_size = 128 * 8,
+    .priority = (osPriority_t)osPriorityNormal
 };
 
 osSemaphoreId_t gyro_ready_sem;
@@ -181,6 +189,7 @@ int main(void)
   test_led_task_handle = osThreadNew(test_led_task,NULL,&test_led_task_attributes);
   oled_task_handle = osThreadNew(oled_task,NULL,&oled_task_attributes);
   balance_task_handle = osThreadNew(balance_task,NULL,&balance_task_attributes);
+  control_task_handle = osThreadNew(control_task,NULL,&control_task_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -391,7 +400,7 @@ static void MX_SPI2_Init(void)
   hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi2.Init.NSS = SPI_NSS_SOFT;
-  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -643,13 +652,13 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : EXTI2_MPU_Pin */
   GPIO_InitStruct.Pin = EXTI2_MPU_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(EXTI2_MPU_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : EXIT7_WIRELESS_IRQ_Pin */
   GPIO_InitStruct.Pin = EXIT7_WIRELESS_IRQ_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(EXIT7_WIRELESS_IRQ_GPIO_Port, &GPIO_InitStruct);
 
@@ -663,6 +672,9 @@ static void MX_GPIO_Init(void)
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI2_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI2_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 

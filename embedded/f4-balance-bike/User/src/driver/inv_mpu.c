@@ -38,7 +38,6 @@
  */
 #if defined STM32_MPU6050
 #include "main.h"
-extern I2C_HandleTypeDef hi2c1;
 
 static HAL_StatusTypeDef i2c_write_impl(uint16_t dev_addr,uint16_t reg_addr,uint16_t data_size,uint8_t *p_data) {
     osMutexAcquire(i2c_bus_mutex,osWaitForever);
