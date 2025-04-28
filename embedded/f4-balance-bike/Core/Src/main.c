@@ -628,16 +628,19 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, MOTOR_IO1_Pin|MOTOR_IO2_Pin|WIRELESS_CE_Pin|WIRELESS_CSN_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOE, MOTOR_IO1_Pin|MOTOR_IO2_Pin|WIRELESS_CE_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, MOTOR_IO3_Pin|MOTOR_IO4_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(WIRELESS_CSN_GPIO_Port, WIRELESS_CSN_Pin, GPIO_PIN_SET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(TEST_LED_GPIO_Port, TEST_LED_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : MOTOR_IO1_Pin MOTOR_IO2_Pin WIRELESS_CE_Pin WIRELESS_CSN_Pin */
-  GPIO_InitStruct.Pin = MOTOR_IO1_Pin|MOTOR_IO2_Pin|WIRELESS_CE_Pin|WIRELESS_CSN_Pin;
+  /*Configure GPIO pins : MOTOR_IO1_Pin MOTOR_IO2_Pin */
+  GPIO_InitStruct.Pin = MOTOR_IO1_Pin|MOTOR_IO2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -661,6 +664,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(EXIT7_WIRELESS_IRQ_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : WIRELESS_CE_Pin WIRELESS_CSN_Pin */
+  GPIO_InitStruct.Pin = WIRELESS_CE_Pin|WIRELESS_CSN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
   /*Configure GPIO pin : TEST_LED_Pin */
   GPIO_InitStruct.Pin = TEST_LED_Pin;
