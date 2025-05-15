@@ -1,0 +1,28 @@
+{
+    "files.associations": {
+        "cstdint": "c",
+        "ch32v00x_it.h": "c",
+        "debug.h": "c",
+        "ch32v00x.h": "c",
+        "aht20_config.h": "c",
+        "i2c.h": "c",
+        "stdbool.h": "c",
+        "i2c_interface.h": "c",
+        "ssd1306_conf.h": "c",
+        "ssd1306_tests.h": "c",
+        "cstddef": "c",
+        "ssd1306.h": "c",
+        "ssd1306_fonts.h": "c",
+        "array": "c",
+        "string": "c",
+        "string_view": "c",
+        "ranges": "c",
+        "span": "c",
+        "format": "c",
+        "initializer_list": "c",
+        "stddef.h": "c",
+        "math.h": "c",
+        "compare": "c",
+        "aht20_basic.h": "c"
+    },
+}

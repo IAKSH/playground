@@ -1,0 +1,23 @@
+{
+	// Use IntelliSense to learn about possible attributes.
+	// Hover to view descriptions of existing attributes.
+	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"variables": {
+				"toolchainPrefix": "/home/lain/MRS_Toolchain/RISC-V Embedded GCC12"
+			},
+			"name": "OpenOCD",
+			"type": "cppdbg",
+			"request": "launch",
+			"cwd": ".",
+			"program": "${workspaceFolder}/Build/app.elf",
+			"MIMode": "gdb",
+			"miDebuggerPath": "${toolchainPrefix}/bin/riscv-wch-elf-gdb",
+			"useExtendedRemote": true,
+			"miDebuggerServerAddress": "localhost:3333",
+			"setupCommands": []
+		}
+	]
+}
