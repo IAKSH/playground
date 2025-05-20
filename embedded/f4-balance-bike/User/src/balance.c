@@ -28,12 +28,12 @@ static float PID_Compute(PID_Controller *pid, float measurement, float dt) {
     return pid->output;
 }
 
-#define ANGLE_KP 250.0f
+#define ANGLE_KP 275.0f
 #define ANGLE_KI 0.0f
-#define ANGLE_KD 7.0f 
+#define ANGLE_KD 10.0f 
 
-#define SPEED_KP 0.99f
-#define SPEED_KI 0.1f
+#define SPEED_KP 1.8f
+#define SPEED_KI 0.0f
 #define SPEED_KD 0.0f
 
 /* 初始化 PID 参数，此处参数需要根据系统实际情况做具体调试 */ 
