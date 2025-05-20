@@ -22,18 +22,23 @@ typedef struct {
 static float PID_Compute(PID_Controller *pid, float measurement, float dt) {
     float error = pid->setpoint - measurement;
     pid->integral += error * dt;
+
+    // 积分限幅，防止积分风up
+    if(pid->integral > 1000.0f) pid->integral = 1000.0f;
+    if(pid->integral < -1000.0f) pid->integral = -1000.0f;
+
     float derivative = (error - pid->lastError) / dt;
     pid->output = pid->Kp * error + pid->Ki * pid->integral + pid->Kd * derivative;
     pid->lastError = error;
     return pid->output;
 }
 
-#define ANGLE_KP 275.0f
+#define ANGLE_KP 300.0f
 #define ANGLE_KI 0.0f
-#define ANGLE_KD 10.0f 
+#define ANGLE_KD 6.0f 
 
-#define SPEED_KP 1.8f
-#define SPEED_KI 0.0f
+#define SPEED_KP 1.5f
+#define SPEED_KI 5.0f// 用这个刹车
 #define SPEED_KD 0.0f
 
 /* 初始化 PID 参数，此处参数需要根据系统实际情况做具体调试 */ 
@@ -101,6 +106,9 @@ void balance_task(void* arg) {
         /* 外环 PID 控制：目标倾角设为 0°（竖直状态），计算倾角修正量 */
         pid_angle.setpoint = 0.0f;
         float angleCorrection = PID_Compute(&pid_angle, currentAngle, dt);
+        // 外环输出限幅
+        //if(angleCorrection > 400.0f) angleCorrection = 400.0f;
+        //if(angleCorrection < -400.0f) angleCorrection = -400.0f;
 
         /* 内环 PID 控制：以外环输出作为左右轮目标速度
            注：如果系统是对称设计，两个轮子的 PID 参数可以一样 */
