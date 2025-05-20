@@ -33,7 +33,7 @@ static float PID_Compute(PID_Controller *pid, float measurement, float dt) {
     return pid->output;
 }
 
-#define ANGLE_KP 275.0f
+#define ANGLE_KP 350.0f
 #define ANGLE_KI 0.25f
 #define ANGLE_KD 6.0f 
 
@@ -107,7 +107,7 @@ void balance_task(void* arg) {
         float avgSpeed = (motorSpeedA + motorSpeedB) / 2.0f;
         pid_speed.setpoint = angleCorrection;
         float speedCommand = PID_Compute(&pid_speed, avgSpeed, dt);
-            
+
         // 两轮用同样的输出
         float speedCommandA = speedCommand;
         float speedCommandB = speedCommand;
