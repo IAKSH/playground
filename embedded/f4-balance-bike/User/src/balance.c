@@ -50,15 +50,7 @@ static PID_Controller pid_angle  = {
     .output = 0.0f
 };
 
-static PID_Controller pid_speed_A = {
-    .Kp = SPEED_KP, .Ki = SPEED_KI, .Kd = SPEED_KD,        // 内环：左轮速度控制
-    .setpoint = 0.0f,
-    .lastError = 0.0f,
-    .integral = 0.0f,
-    .output = 0.0f
-};
-
-static PID_Controller pid_speed_B = {
+static PID_Controller pid_speed = {
     .Kp = SPEED_KP, .Ki = SPEED_KI, .Kd =SPEED_KD,        // 内环：右轮速度控制
     .setpoint = 0.0f,
     .lastError = 0.0f,
@@ -112,10 +104,13 @@ void balance_task(void* arg) {
 
         /* 内环 PID 控制：以外环输出作为左右轮目标速度
            注：如果系统是对称设计，两个轮子的 PID 参数可以一样 */
-        pid_speed_A.setpoint = angleCorrection;
-        pid_speed_B.setpoint = angleCorrection;
-        float speedCommandA = PID_Compute(&pid_speed_A, motorSpeedA, dt);
-        float speedCommandB = PID_Compute(&pid_speed_B, motorSpeedB, dt);
+        float avgSpeed = (motorSpeedA + motorSpeedB) / 2.0f;
+        pid_speed.setpoint = angleCorrection;
+        float speedCommand = PID_Compute(&pid_speed, avgSpeed, dt);
+            
+        // 两轮用同样的输出
+        float speedCommandA = speedCommand;
+        float speedCommandB = speedCommand;
 
         /* 根据 PID 输出决定电机旋转方向及 PWM 控制值 */
         if (speedCommandA >= 0) {
