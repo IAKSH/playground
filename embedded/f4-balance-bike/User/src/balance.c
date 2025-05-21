@@ -1,37 +1,12 @@
 #include "cmsis_os2.h"
 #include "driver/motor.h"
 #include "driver/gyro.h"
+#include "utils/pid.h"
 #include <math.h>
 #include <stdio.h>
 
 float mpu6050_pitch,mpu_6050_roll,mpu_6050_yaw;
 float motorSpeedA,motorSpeedB;
-
-/* PID 控制器结构体定义 */
-typedef struct {
-    float Kp;        // 比例系数
-    float Ki;        // 积分系数
-    float Kd;        // 微分系数
-    float setpoint;  // 目标值
-    float lastError; // 上一次误差值
-    float integral;  // 积分累积项
-    float output;    // 当前输出值
-} PID_Controller;
-
-/* PID 计算函数：传入当前测量值和采样周期 dt */
-static float PID_Compute(PID_Controller *pid, float measurement, float dt) {
-    float error = pid->setpoint - measurement;
-    pid->integral += error * dt;
-
-    // 积分限幅，防止积分风up
-    if(pid->integral > 1000.0f) pid->integral = 1000.0f;
-    if(pid->integral < -1000.0f) pid->integral = -1000.0f;
-
-    float derivative = (error - pid->lastError) / dt;
-    pid->output = pid->Kp * error + pid->Ki * pid->integral + pid->Kd * derivative;
-    pid->lastError = error;
-    return pid->output;
-}
 
 #define ANGLE_KP 350.0f
 #define ANGLE_KI 0.25f
@@ -42,7 +17,7 @@ static float PID_Compute(PID_Controller *pid, float measurement, float dt) {
 #define SPEED_KD 0.0f
 
 /* 初始化 PID 参数，此处参数需要根据系统实际情况做具体调试 */ 
-static PID_Controller pid_angle  = {
+static PID pid_angle  = {
     .Kp = ANGLE_KP, .Ki = ANGLE_KI, .Kd =ANGLE_KD,      // 外环：车体倾角控制
     .setpoint = 0.0f,
     .lastError = 0.0f,
@@ -50,7 +25,7 @@ static PID_Controller pid_angle  = {
     .output = 0.0f
 };
 
-static PID_Controller pid_speed = {
+static PID pid_speed = {
     .Kp = SPEED_KP, .Ki = SPEED_KI, .Kd =SPEED_KD,        // 内环：右轮速度控制
     .setpoint = 0.0f,
     .lastError = 0.0f,
@@ -97,7 +72,7 @@ void balance_task(void* arg) {
 
         /* 外环 PID 控制：目标倾角设为 0°（竖直状态），计算倾角修正量 */
         pid_angle.setpoint = 0.0f;
-        float angleCorrection = PID_Compute(&pid_angle, currentAngle, dt);
+        float angleCorrection = pid_compute(&pid_angle, currentAngle, dt);
         // 外环输出限幅
         //if(angleCorrection > 400.0f) angleCorrection = 400.0f;
         //if(angleCorrection < -400.0f) angleCorrection = -400.0f;
@@ -106,7 +81,7 @@ void balance_task(void* arg) {
            注：如果系统是对称设计，两个轮子的 PID 参数可以一样 */
         float avgSpeed = (motorSpeedA + motorSpeedB) / 2.0f;
         pid_speed.setpoint = angleCorrection;
-        float speedCommand = PID_Compute(&pid_speed, avgSpeed, dt);
+        float speedCommand = pid_compute(&pid_speed, avgSpeed, dt);
 
         // 两轮用同样的输出
         float speedCommandA = speedCommand;

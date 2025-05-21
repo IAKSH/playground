@@ -1,6 +1,7 @@
 #pragma once
 
 #include "main.h"
+#include "command.h"
 #include <stdbool.h>
 
 /* User Configurations */
@@ -15,7 +16,7 @@
 #define NRF24L01P_IRQ_PIN_PORT            EXIT7_WIRELESS_IRQ_GPIO_Port
 #define NRF24L01P_IRQ_PIN_NUMBER          EXIT7_WIRELESS_IRQ_Pin
 
-#define NRF24L01P_PAYLOAD_LENGTH          8     // 1 - 32bytes
+#define NRF24L01P_PAYLOAD_LENGTH          sizeof(CommandPacket)     // 1 - 32bytes
 
 
 /* nRF24L01+ typedefs */

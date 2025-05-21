@@ -1,58 +1,31 @@
 #include "driver/nrf24l01p.h"
+#include "command.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 
-#define NRF24L01_TX_DEMO
-
-#if defined NRF24L01_TX_DEMO
-static uint8_t tx_data[NRF24L01P_PAYLOAD_LENGTH];
-static uint8_t tx_address[5] = {0x0,0x0,0x0,0x0,0x01};
-
-typedef struct {
-    uint32_t a,b;
-} Data;
-
-Data data = {
-    .a = 0,
-    .b = 0
-};
-
-void control_task(void* arg) {
-    nrf24l01p_tx_init(2500,_1Mbps);
-
-    if(!nrf24l01p_check()) {
-        printf("nrf24l01+ no response\n");
-        Error_Handler();
-    }
-
-    // 由于需要检查回传的ACK，所以发送端也需要设置rx地址
-    nrf24l01p_set_tx_addr(tx_address,5);
-    nrf24l01p_set_rx_addr(0,tx_address,5);
-
-    while(1) {
-        memcpy(tx_data,&data,NRF24L01P_PAYLOAD_LENGTH);
-        data.a++;
-        data.b += 2;
-
-        nrf24l01p_tx_transmit(tx_data);
-
-        osDelay(50);
-    }
-}
-#elif defined NRF24L01_RX_DEMO
-
-static uint8_t rx_data[NRF24L01P_PAYLOAD_LENGTH];
 static uint8_t rx_address[5] = {0x0,0x0,0x0,0x0,0x01};
 
-typedef struct {
-    uint32_t a,b;
-} Data;
+static const char* command_type_to_str(CommandType type) {
+    switch(type) {
+    case COMMAND_MOVE:
+        return "move";
+    case COMMAND_VOLT:
+        return "volt";
+    case COMMAND_CAM_ROTATE:
+        return "cam_rotate";
+    case COMMAND_CAM_SHOT:
+        return "cam_shot";
+    case COMMAND_PID:
+        return "pid";
+    default:
+        return "unkonwn";
+    }
+}
 
-Data data = {
-    .a = 0,
-    .b = 0
-};
+static void command_move_handler(CommandPacket command) {
+    printf("speed: {%d,%d}\n",command.payload.move.speed[0],command.payload.move.speed[1]);
+}
 
 void control_task(void* arg) {
     nrf24l01p_rx_init(2500,_1Mbps);
@@ -64,16 +37,16 @@ void control_task(void* arg) {
 
     nrf24l01p_set_rx_addr(0,rx_address,5);
 
+    CommandPacket command;
     while(1) {
-        printf("rec: {%d,%d}\n",((Data*)rx_data)->a,((Data*)rx_data)->b);
+        osMessageQueueGet(command_queue,&command,NULL,osWaitForever);
+        printf("command recieved: type = %s\n",command_type_to_str(command.type));
+        switch(command.type) {
+        case COMMAND_MOVE:
+            command_move_handler(command);
+            break;
+        default:
+            break;
+        }
     }
 }
-#else
-
-void control_task(void* arg) {
-    while(1) {
-
-    }
-}
-
-#endif

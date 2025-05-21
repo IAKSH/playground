@@ -52,6 +52,7 @@ extern const osThreadAttr_t balance_task_attributes;
 extern osSemaphoreId_t gyro_ready_sem;
 extern osMutexId_t i2c_bus_mutex;
 extern osEventFlagsId_t event;
+extern osMessageQueueId_t command_queue;
 
 extern I2C_HandleTypeDef hi2c1;
 extern SPI_HandleTypeDef hspi2;

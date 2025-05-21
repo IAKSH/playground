@@ -23,6 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "tasks.h"
+#include "command.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -94,6 +95,7 @@ const osThreadAttr_t control_task_attributes = {
 osSemaphoreId_t gyro_ready_sem;
 osMutexId_t i2c_bus_mutex;
 osEventFlagsId_t event;
+osMessageQueueId_t command_queue;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -178,6 +180,7 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
+  command_queue = osMessageQueueNew(16,sizeof(CommandPacket),NULL);
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
