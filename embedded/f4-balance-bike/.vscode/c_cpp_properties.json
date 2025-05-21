@@ -4,24 +4,24 @@
       "name": "STM32",
       "includePath": [
         "Core/Inc",
-        "User/include",
-        "User/include/driver",
-        "User/include/lib",
-        "User/include/util",
         "Drivers/CMSIS/Device/ST/STM32F4xx/Include",
         "Drivers/CMSIS/Include",
         "Drivers/STM32F4xx_HAL_Driver/Inc",
         "Drivers/STM32F4xx_HAL_Driver/Inc/Legacy",
         "Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2",
         "Middlewares/Third_Party/FreeRTOS/Source/include",
-        "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F"
+        "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F",
+        "User/include",
+        "User/include/driver",
+        "User/include/driver/inv_mpu",
+        "User/include/utils"
       ],
       "defines": [
         "ENABLE_STDOUT_REDIRECT",
         "STM32F407xx",
         "USE_HAL_DRIVER"
       ],
-      "compilerPath": "/usr/bin/arm-none-eabi-gcc"
+      "compilerPath": "C:\\Users\\12486\\Env\\msys64\\ucrt64\\bin\\arm-none-eabi-gcc.EXE"
     }
   ],
   "version": 4

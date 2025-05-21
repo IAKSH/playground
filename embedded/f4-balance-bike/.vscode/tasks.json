@@ -4,7 +4,7 @@
 		{
 			"label": "Build STM",
 			"type": "process",
-			"command": "make",
+			"command": "${command:stm32-for-vscode.build}",
 			"options": {
 				"cwd": "${workspaceRoot}"
 			},
@@ -19,7 +19,7 @@
 		{
 			"label": "Build Clean STM",
 			"type": "process",
-			"command": "make clean",
+			"command": "${command:stm32-for-vscode.cleanBuild}",
 			"options": {
 				"cwd": "${workspaceRoot}"
 			},
@@ -34,7 +34,7 @@
 		{
 			"label": "Flash STM",
 			"type": "process",
-			"command": "./flash.sh",
+			"command": "${command:stm32-for-vscode.flash}",
 			"options": {
 				"cwd": "${workspaceRoot}"
 			},

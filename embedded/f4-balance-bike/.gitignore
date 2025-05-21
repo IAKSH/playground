@@ -1,5 +1,10 @@
+.vscode
 Drivers
 Middlewares
 startup_stm32f407xx.s
 STM32F407XX_FLASH.ld
 !.vscode
+.mxproject
+.stm32env
+openocd.cfg
+STM32Make.make

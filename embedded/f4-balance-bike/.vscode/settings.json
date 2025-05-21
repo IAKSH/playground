@@ -1,4 +1,4 @@
 {
-    "cortex-debug.armToolchainPath": "/usr/bin",
-    "cortex-debug.openocdPath": "/usr/bin/openocd"
+    "cortex-debug.armToolchainPath": "C:\\Users\\12486\\Env\\msys64\\ucrt64\\bin",
+    "cortex-debug.openocdPath": "C:\\Users\\12486\\Env\\msys64\\ucrt64\\bin\\openocd.EXE"
 }
