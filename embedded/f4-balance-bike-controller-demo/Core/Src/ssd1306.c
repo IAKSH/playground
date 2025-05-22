@@ -1,594 +1,406 @@
-#include "main.h"
 #include "ssd1306.h"
+#include "ssd1306_interface.h"
+#include <string.h>
 #include <math.h>
 #include <stdlib.h>
-#include <string.h>  // For memcpy
+#include <stdio.h>
 
-#if defined(SSD1306_USE_I2C)
-
-void ssd1306_Reset(void) {
-    /* for I2C - do nothing */
-}
-
-// Send a byte to the command register
-void ssd1306_WriteCommand(uint8_t byte) {
-    HAL_I2C_Mem_Write(&SSD1306_I2C_PORT, SSD1306_I2C_ADDR, 0x00, 1, &byte, 1, HAL_MAX_DELAY);
-}
-
-// Send data
-void ssd1306_WriteData(uint8_t* buffer, size_t buff_size) {
-    HAL_I2C_Mem_Write(&SSD1306_I2C_PORT, SSD1306_I2C_ADDR, 0x40, 1, buffer, buff_size, HAL_MAX_DELAY);
-}
-
-#elif defined(SSD1306_USE_SPI)
-
-void ssd1306_Reset(void) {
-    // CS = High (not selected)
-    HAL_GPIO_WritePin(SSD1306_CS_Port, SSD1306_CS_Pin, GPIO_PIN_SET);
-
-    // Reset the OLED
-    HAL_GPIO_WritePin(SSD1306_Reset_Port, SSD1306_Reset_Pin, GPIO_PIN_RESET);
-    HAL_Delay(10);
-    HAL_GPIO_WritePin(SSD1306_Reset_Port, SSD1306_Reset_Pin, GPIO_PIN_SET);
-    HAL_Delay(10);
-}
-
-// Send a byte to the command register
-void ssd1306_WriteCommand(uint8_t byte) {
-    HAL_GPIO_WritePin(SSD1306_CS_Port, SSD1306_CS_Pin, GPIO_PIN_RESET); // select OLED
-    HAL_GPIO_WritePin(SSD1306_DC_Port, SSD1306_DC_Pin, GPIO_PIN_RESET); // command
-    HAL_SPI_Transmit(&SSD1306_SPI_PORT, (uint8_t *) &byte, 1, HAL_MAX_DELAY);
-    HAL_GPIO_WritePin(SSD1306_CS_Port, SSD1306_CS_Pin, GPIO_PIN_SET); // un-select OLED
-}
-
-// Send data
-void ssd1306_WriteData(uint8_t* buffer, size_t buff_size) {
-    HAL_GPIO_WritePin(SSD1306_CS_Port, SSD1306_CS_Pin, GPIO_PIN_RESET); // select OLED
-    HAL_GPIO_WritePin(SSD1306_DC_Port, SSD1306_DC_Pin, GPIO_PIN_SET); // data
-    HAL_SPI_Transmit(&SSD1306_SPI_PORT, buffer, buff_size, HAL_MAX_DELAY);
-    HAL_GPIO_WritePin(SSD1306_CS_Port, SSD1306_CS_Pin, GPIO_PIN_SET); // un-select OLED
-}
-
-#else
-#error "You should define SSD1306_USE_SPI or SSD1306_USE_I2C macro"
+#ifndef SSD1306_USE_FRAMEBUFFER
+#define SSD1306_USE_FRAMEBUFFER 1
 #endif
 
+#if SSD1306_USE_FRAMEBUFFER
+#define SSD1306_FRAMEBUFFER_SIZE (SSD1306_SCREEN_WIDTH * (SSD1306_SCREEN_HEIGHT / 8))
+static uint8_t framebuffer[SSD1306_FRAMEBUFFER_SIZE];
+#else
+// 非framebuffer模式下只缓存一页（1页=SSD1306_SCREEN_WIDTH字节）
+static uint8_t page_buffer[SSD1306_SCREEN_WIDTH];
+static uint8_t page_buffer_index = 0xFF; // 当前缓存的页号，0xFF表示无效
+#endif
 
-// Screenbuffer
-static uint8_t SSD1306_Buffer[SSD1306_BUFFER_SIZE];
-
-// Screen object
-static SSD1306_t SSD1306;
-
-/* Fills the Screenbuffer with values from a given buffer of a fixed length */
-SSD1306_Error_t ssd1306_FillBuffer(uint8_t* buf, uint32_t len) {
-    SSD1306_Error_t ret = SSD1306_ERR;
-    if (len <= SSD1306_BUFFER_SIZE) {
-        memcpy(SSD1306_Buffer,buf,len);
-        ret = SSD1306_OK;
+static void ftoa(float f, char* buf, unsigned char precision) {
+    char *p = buf;
+    
+    if (f < 0) {
+        *p++ = '-';
+        f = -f;
     }
-    return ret;
+    
+    int ipart = (int)f;
+    float fpart = f - (float)ipart;
+    itoa(ipart, p, 10);
+    while (*p)
+        p++;
+    
+    *p++ = '.';
+
+    int pow10 = 1;
+    for (unsigned char i = 0; i < precision; i++) {
+        pow10 *= 10;
+    }
+
+    int f_int = (int)(fpart * pow10 + 0.5f);
+    
+    char frac[10] = {0};
+    itoa(f_int, frac, 10);
+    
+    int frac_len = 0;
+    while (frac[frac_len]) {
+        frac_len++;
+    }
+    for (unsigned char i = 0; i < precision - frac_len; i++) {
+        *p++ = '0';
+    }
+    strcpy(p, frac);
 }
 
-/* Initialize the oled screen */
-void ssd1306_Init(void) {
-    // Reset OLED
-    ssd1306_Reset();
-
-    // Wait for the screen to boot
-    HAL_Delay(100);
-
-    // Init OLED
-    ssd1306_SetDisplayOn(0); //display off
-
-    ssd1306_WriteCommand(0x20); //Set Memory Addressing Mode
-    ssd1306_WriteCommand(0x00); // 00b,Horizontal Addressing Mode; 01b,Vertical Addressing Mode;
-                                // 10b,Page Addressing Mode (RESET); 11b,Invalid
-
-    ssd1306_WriteCommand(0xB0); //Set Page Start Address for Page Addressing Mode,0-7
-
-#ifdef SSD1306_MIRROR_VERT
-    ssd1306_WriteCommand(0xC0); // Mirror vertically
-#else
-    ssd1306_WriteCommand(0xC8); //Set COM Output Scan Direction
-#endif
-
-    ssd1306_WriteCommand(0x00); //---set low column address
-    ssd1306_WriteCommand(0x10); //---set high column address
-
-    ssd1306_WriteCommand(0x40); //--set start line address - CHECK
-
-    ssd1306_SetContrast(0xFF);
-
-#ifdef SSD1306_MIRROR_HORIZ
-    ssd1306_WriteCommand(0xA0); // Mirror horizontally
-#else
-    ssd1306_WriteCommand(0xA1); //--set segment re-map 0 to 127 - CHECK
-#endif
-
-#ifdef SSD1306_INVERSE_COLOR
-    ssd1306_WriteCommand(0xA7); //--set inverse color
-#else
-    ssd1306_WriteCommand(0xA6); //--set normal color
-#endif
-
-// Set multiplex ratio.
-#if (SSD1306_HEIGHT == 128)
-    // Found in the Luma Python lib for SH1106.
-    ssd1306_WriteCommand(0xFF);
-#else
-    ssd1306_WriteCommand(0xA8); //--set multiplex ratio(1 to 64) - CHECK
-#endif
-
-#if (SSD1306_HEIGHT == 32)
-    ssd1306_WriteCommand(0x1F); //
-#elif (SSD1306_HEIGHT == 64)
-    ssd1306_WriteCommand(0x3F); //
-#elif (SSD1306_HEIGHT == 128)
-    ssd1306_WriteCommand(0x3F); // Seems to work for 128px high displays too.
-#else
-#error "Only 32, 64, or 128 lines of height are supported!"
-#endif
-
-    ssd1306_WriteCommand(0xA4); //0xa4,Output follows RAM content;0xa5,Output ignores RAM content
-
-    ssd1306_WriteCommand(0xD3); //-set display offset - CHECK
-    ssd1306_WriteCommand(0x00); //-not offset
-
-    ssd1306_WriteCommand(0xD5); //--set display clock divide ratio/oscillator frequency
-    ssd1306_WriteCommand(0xF0); //--set divide ratio
-
-    ssd1306_WriteCommand(0xD9); //--set pre-charge period
-    ssd1306_WriteCommand(0x22); //
-
-    ssd1306_WriteCommand(0xDA); //--set com pins hardware configuration - CHECK
-#if (SSD1306_HEIGHT == 32)
-    ssd1306_WriteCommand(0x02);
-#elif (SSD1306_HEIGHT == 64)
-    ssd1306_WriteCommand(0x12);
-#elif (SSD1306_HEIGHT == 128)
-    ssd1306_WriteCommand(0x12);
-#else
-#error "Only 32, 64, or 128 lines of height are supported!"
-#endif
-
-    ssd1306_WriteCommand(0xDB); //--set vcomh
-    ssd1306_WriteCommand(0x20); //0x20,0.77xVcc
-
-    ssd1306_WriteCommand(0x8D); //--set DC-DC enable
-    ssd1306_WriteCommand(0x14); //
-    ssd1306_SetDisplayOn(1); //--turn on SSD1306 panel
-
-    // Clear screen
-    ssd1306_Fill(Black);
-    
-    // Flush buffer to screen
-    ssd1306_UpdateScreen();
-    
-    // Set default values for screen object
-    SSD1306.CurrentX = 0;
-    SSD1306.CurrentY = 0;
-    
-    SSD1306.Initialized = 1;
+static inline float deg2rad(float deg) {
+    return deg * (M_PI / 180.0f);
 }
 
-/* Fill the whole screen with the given color */
-void ssd1306_Fill(SSD1306_COLOR color) {
-    memset(SSD1306_Buffer, (color == Black) ? 0x00 : 0xFF, sizeof(SSD1306_Buffer));
+static inline uint16_t normalize_angle(uint16_t angle) {
+    return angle % 360;
 }
 
-/* Write the screenbuffer with changed to the screen */
-void ssd1306_UpdateScreen(void) {
-    // Write data to each page of RAM. Number of pages
-    // depends on the screen height:
-    //
-    //  * 32px   ==  4 pages
-    //  * 64px   ==  8 pages
-    //  * 128px  ==  16 pages
-    for(uint8_t i = 0; i < SSD1306_HEIGHT/8; i++) {
-        ssd1306_WriteCommand(0xB0 + i); // Set the current RAM page address.
-        ssd1306_WriteCommand(0x00 + SSD1306_X_OFFSET_LOWER);
-        ssd1306_WriteCommand(0x10 + SSD1306_X_OFFSET_UPPER);
-        ssd1306_WriteData(&SSD1306_Buffer[SSD1306_WIDTH*i],SSD1306_WIDTH);
+#if SSD1306_USE_FRAMEBUFFER
+// 统一像素绘制，仅支持framebuffer
+static inline void draw_pixel(int x, int y, SSD1306Color color) {
+    if ((unsigned)x >= SSD1306_SCREEN_WIDTH || (unsigned)y >= SSD1306_SCREEN_HEIGHT) return;
+    uint16_t idx = x + (y / 8) * SSD1306_SCREEN_WIDTH;
+    uint8_t bit = 1 << (y % 8);
+    if (color == SSD1306_COLOR_WHITE) framebuffer[idx] |= bit;
+    else framebuffer[idx] &= ~bit;
+}
+
+// 通用线段绘制
+static void draw_line_raw(int x0, int y0, int x1, int y1, SSD1306Color color) {
+    int dx = abs(x1 - x0), dy = abs(y1 - y0);
+    int sx = (x0 < x1) ? 1 : -1, sy = (y0 < y1) ? 1 : -1, err = dx - dy;
+    while (1) {
+        draw_pixel(x0, y0, color);
+        if (x0 == x1 && y0 == y1) break;
+        int e2 = 2 * err;
+        if (e2 > -dy) { err -= dy; x0 += sx; }
+        if (e2 < dx) { err += dx; y0 += sy; }
     }
 }
+#else
+// 非framebuffer模式下的像素绘制，带页缓存（仅缓存一页）
+static inline void draw_pixel(int x, int y, SSD1306Color color) {
+    if ((unsigned)x >= SSD1306_SCREEN_WIDTH || (unsigned)y >= SSD1306_SCREEN_HEIGHT) return;
+    uint8_t page = y / 8;
+    uint8_t bit = 1 << (y % 8);
 
-/*
- * Draw one pixel in the screenbuffer
- * X => X Coordinate
- * Y => Y Coordinate
- * color => Pixel color
- */
-void ssd1306_DrawPixel(uint8_t x, uint8_t y, SSD1306_COLOR color) {
-    if(x >= SSD1306_WIDTH || y >= SSD1306_HEIGHT) {
-        // Don't write outside the buffer
+    // 如果缓存页不是当前页，先刷新缓存
+    if (page_buffer_index != page) {
+        // 可选：如有读功能可从屏幕读，否则只能假设全0
+        memset(page_buffer, 0, SSD1306_SCREEN_WIDTH);
+        page_buffer_index = page;
+    }
+
+    // 修改缓存
+    if (color == SSD1306_COLOR_WHITE)
+        page_buffer[x] |= bit;
+    else
+        page_buffer[x] &= ~bit;
+
+    // 写回SSD1306对应页的单字节
+    ssd1306_write_cmd(0xB0 | page); // 页地址
+    ssd1306_write_cmd(0x00 | (x & 0x0F)); // 低列地址
+    ssd1306_write_cmd(0x10 | (x >> 4));   // 高列地址
+    uint8_t data = page_buffer[x];
+    ssd1306_write_data(&data, 1);
+}
+
+// 通用线段绘制
+static void draw_line_raw(int x0, int y0, int x1, int y1, SSD1306Color color) {
+    int dx = abs(x1 - x0), dy = abs(y1 - y0);
+    int sx = (x0 < x1) ? 1 : -1, sy = (y0 < y1) ? 1 : -1, err = dx - dy;
+    while (1) {
+        draw_pixel(x0, y0, color);
+        if (x0 == x1 && y0 == y1) break;
+        int e2 = 2 * err;
+        if (e2 > -dy) { err -= dy; x0 += sx; }
+        if (e2 < dx) { err += dx; y0 += sy; }
+    }
+}
+#endif
+
+void ssd1306_reset(void) {
+}
+
+// framebuffer中的1bit表示一个像素
+void ssd1306_create_framebuffer(void) {
+#if SSD1306_USE_FRAMEBUFFER
+    memset(framebuffer, 0, SSD1306_FRAMEBUFFER_SIZE);
+#else
+    // 非framebuffer模式清空页缓存
+    memset(page_buffer, 0, SSD1306_SCREEN_WIDTH);
+    page_buffer_index = 0xFF;
+#endif
+}
+
+void ssd1306_create_state(SSD1306State* state) {
+    state->__cursor.x = 0;
+    state->__cursor.y = 0;
+    state->color = SSD1306_COLOR_WHITE;
+    state->font = NULL;
+}
+
+void ssd1306_turn_display(bool on) {
+    ssd1306_write_cmd(on ? 0xAF : 0xAE);
+}
+
+void ssd1306_init(void) {
+    ssd1306_reset();
+    ssd1306_delay_ms(100);
+
+    ssd1306_turn_display(false);
+
+    ssd1306_write_cmd(0x20); // Set Memory Addressing Mode
+    ssd1306_write_cmd(0x00); // Horizontal Addressing Mode
+
+    // 可选：设置页起始地址
+    ssd1306_write_cmd(0xB0);
+
+    if (SSD1306_MIRROR_VERT)
+        ssd1306_write_cmd(0xC0);
+    else
+        ssd1306_write_cmd(0xC8);
+
+    ssd1306_write_cmd(0x00); // set low column address
+    ssd1306_write_cmd(0x10); // set high column address
+
+    // 设置start line address
+    ssd1306_write_cmd(0x40 | 0x00); // 通常为0
+
+    ssd1306_write_cmd(0x81); // set contrast
+    ssd1306_write_cmd(0xFF);
+
+    if (SSD1306_MIRROR_HORIZ)
+        ssd1306_write_cmd(0xA0);
+    else
+        ssd1306_write_cmd(0xA1);
+
+    ssd1306_write_cmd(0xA6); // normal display
+
+    // 自动设置multiplex ratio
+    ssd1306_write_cmd(0xA8);
+    ssd1306_write_cmd(SSD1306_SCREEN_HEIGHT - 1);
+
+    ssd1306_write_cmd(0xA4); // Output follows RAM content
+
+    ssd1306_write_cmd(0xD3); // display offset
+    ssd1306_write_cmd(0x00);
+
+    ssd1306_write_cmd(0xD5); // display clock divide ratio/oscillator frequency
+    ssd1306_write_cmd(0xF0);
+
+    ssd1306_write_cmd(0xD9); // pre-charge period
+    ssd1306_write_cmd(0x22);
+
+    // 自动设置com pins hardware configuration
+    ssd1306_write_cmd(0xDA);
+    if (SSD1306_SCREEN_HEIGHT == 32)
+        ssd1306_write_cmd(0x02);
+    else
+        ssd1306_write_cmd(0x12);
+
+    ssd1306_write_cmd(0xDB); // vcomh
+    ssd1306_write_cmd(0x20);
+
+    ssd1306_write_cmd(0x8D); // DC-DC enable
+    ssd1306_write_cmd(0x14);
+
+    ssd1306_turn_display(true);
+}
+
+void ssd1306_flush(SSD1306State* state) {
+#if SSD1306_USE_FRAMEBUFFER
+    if (!state)
         return;
+    for (uint8_t page = 0; page < (SSD1306_SCREEN_HEIGHT / 8); page++) {
+        ssd1306_write_cmd(0xB0 | page); // 设置页地址
+        ssd1306_write_cmd(0x00);        // 设置低列地址
+        ssd1306_write_cmd(0x10);        // 设置高列地址
+        uint16_t offset = page * SSD1306_SCREEN_WIDTH;
+        ssd1306_write_data(&framebuffer[offset], SSD1306_SCREEN_WIDTH);
     }
-   
-    // Draw in the right color
-    if(color == White) {
-        SSD1306_Buffer[x + (y / 8) * SSD1306_WIDTH] |= 1 << (y % 8);
-    } else { 
-        SSD1306_Buffer[x + (y / 8) * SSD1306_WIDTH] &= ~(1 << (y % 8));
-    }
+#else
+    // 非framebuffer模式flush无实际意义，仅清空页缓存
+    page_buffer_index = 0xFF;
+#endif
 }
 
-/*
- * Draw 1 char to the screen buffer
- * ch       => char om weg te schrijven
- * Font     => Font waarmee we gaan schrijven
- * color    => Black or White
- */
-char ssd1306_WriteChar(char ch, SSD1306_Font_t Font, SSD1306_COLOR color) {
-    uint32_t i, b, j;
-    
-    // Check if character is valid
-    if (ch < 32 || ch > 126)
-        return 0;
-    
-    // Char width is not equal to font width for proportional font
-    const uint8_t char_width = Font.char_width ? Font.char_width[ch-32] : Font.width;
-    // Check remaining space on current line
-    if (SSD1306_WIDTH < (SSD1306.CurrentX + char_width) ||
-        SSD1306_HEIGHT < (SSD1306.CurrentY + Font.height))
-    {
-        // Not enough space on current line
-        return 0;
-    }
-    
-    // Use the font to write
-    for(i = 0; i < Font.height; i++) {
-        b = Font.data[(ch - 32) * Font.height + i];
-        for(j = 0; j < char_width; j++) {
-            if((b << j) & 0x8000)  {
-                ssd1306_DrawPixel(SSD1306.CurrentX + j, (SSD1306.CurrentY + i), (SSD1306_COLOR) color);
-            } else {
-                ssd1306_DrawPixel(SSD1306.CurrentX + j, (SSD1306.CurrentY + i), (SSD1306_COLOR)!color);
+void ssd1306_write_char(SSD1306State* state, char c) {
+    if (c < 32 || c > 126)
+        return;
+#ifdef SSD1306_ENABLE_FONT_6x8
+    const SSD1306Font* defaultFont = &SSD1306Font_6x8;
+#else
+    const SSD1306Font* defaultFont = NULL;
+#endif
+    const SSD1306Font* font = state->font ? state->font : defaultFont;
+    if (!font)
+        return;
+    uint8_t char_width = font->char_width ? font->char_width[c - 32] : font->w;
+    for (uint8_t row = 0; row < font->h; row++) {
+        uint16_t row_data = font->data[(c - 32) * font->h + row];
+        for (uint8_t col = 0; col < char_width; col++) {
+            if ((row_data << col) & 0x8000)
+                draw_pixel(state->__cursor.x + col, state->__cursor.y + row, state->color);
+            else {
+                SSD1306Color bg = (state->color == SSD1306_COLOR_WHITE) ? SSD1306_COLOR_BLACK : SSD1306_COLOR_WHITE;
+                draw_pixel(state->__cursor.x + col, state->__cursor.y + row, bg);
             }
         }
     }
-    
-    // The current space is now taken
-    SSD1306.CurrentX += char_width;
-    
-    // Return written char for validation
-    return ch;
+    state->__cursor.x += char_width;
 }
 
-/* Write full string to screenbuffer */
-char ssd1306_WriteString(char* str, SSD1306_Font_t Font, SSD1306_COLOR color) {
-    while (*str) {
-        if (ssd1306_WriteChar(*str, Font, color) != *str) {
-            // Char could not be written
-            return *str;
-        }
-        str++;
+void ssd1306_write_string(SSD1306State* state, const char* s) {
+    while (*s) {
+        ssd1306_write_char(state, *s);
+        s++;
     }
-    
-    // Everything ok
-    return *str;
 }
 
-/* Position the cursor */
-void ssd1306_SetCursor(uint8_t x, uint8_t y) {
-    SSD1306.CurrentX = x;
-    SSD1306.CurrentY = y;
+void ssd1306_write_int(SSD1306State* state, int i) {
+    char buf[12];
+    itoa(i, buf, 10);
+    ssd1306_write_string(state, buf);
 }
 
-/* Draw line by Bresenhem's algorithm */
-void ssd1306_Line(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, SSD1306_COLOR color) {
-    int32_t deltaX = abs(x2 - x1);
-    int32_t deltaY = abs(y2 - y1);
-    int32_t signX = ((x1 < x2) ? 1 : -1);
-    int32_t signY = ((y1 < y2) ? 1 : -1);
-    int32_t error = deltaX - deltaY;
-    int32_t error2;
-    
-    ssd1306_DrawPixel(x2, y2, color);
+void ssd1306_write_float(SSD1306State* state, float f) {
+    char buf[20];
+    ftoa(f, buf, 2);
+    ssd1306_write_string(state, buf);
+}
 
-    while((x1 != x2) || (y1 != y2)) {
-        ssd1306_DrawPixel(x1, y1, color);
-        error2 = error * 2;
-        if(error2 > -deltaY) {
-            error -= deltaY;
-            x1 += signX;
-        }
-        
-        if(error2 < deltaX) {
-            error += deltaX;
-            y1 += signY;
-        }
+void ssd1306_write_float_with_precision(SSD1306State* state, float f,uint8_t precision) {
+    char buf[20];
+    ftoa(f, buf, precision);
+    ssd1306_write_string(state, buf);
+}
+
+void ssd1306_draw_pixel(SSD1306State* state) {
+    draw_pixel(state->__cursor.x, state->__cursor.y, state->color);
+}
+
+void ssd1306_draw_line(SSD1306State* state, uint8_t x, uint8_t y) {
+    draw_line_raw(state->__cursor.x, state->__cursor.y, x, y, state->color);
+    state->__cursor.x = x; state->__cursor.y = y;
+}
+
+void ssd1306_draw_arc(SSD1306State* state, uint8_t radius, uint16_t start_angle, uint16_t sweep) {
+    int cx = state->__cursor.x, cy = state->__cursor.y;
+    uint16_t norm_start = normalize_angle(start_angle);
+    uint16_t norm_sweep = normalize_angle(sweep);
+    uint8_t segments = (norm_sweep * 36) / 360;
+    if (segments < 1) segments = 1;
+    float angle_step = (float)norm_sweep / segments;
+    float angle = norm_start;
+    int prev_x = cx + (int)(sin(deg2rad(angle)) * radius);
+    int prev_y = cy + (int)(cos(deg2rad(angle)) * radius);
+    for (uint8_t i = 1; i <= segments; i++) {
+        angle = norm_start + i * angle_step;
+        int curr_x = cx + (int)(sin(deg2rad(angle)) * radius);
+        int curr_y = cy + (int)(cos(deg2rad(angle)) * radius);
+        draw_line_raw(prev_x, prev_y, curr_x, curr_y, state->color);
+        prev_x = curr_x;
+        prev_y = curr_y;
     }
-    return;
 }
 
-/* Draw polyline */
-void ssd1306_Polyline(const SSD1306_VERTEX *par_vertex, uint16_t par_size, SSD1306_COLOR color) {
-    uint16_t i;
-    if(par_vertex == NULL) {
-        return;
-    }
-
-    for(i = 1; i < par_size; i++) {
-        ssd1306_Line(par_vertex[i - 1].x, par_vertex[i - 1].y, par_vertex[i].x, par_vertex[i].y, color);
-    }
-
-    return;
+void ssd1306_draw_arc_with_radius_line(SSD1306State* state, uint8_t radius, uint16_t start_angle, uint16_t sweep) {
+    ssd1306_draw_arc(state, radius, start_angle, sweep);
+    int cx = state->__cursor.x, cy = state->__cursor.y;
+    uint16_t norm_start = normalize_angle(start_angle);
+    uint16_t norm_end = normalize_angle(start_angle + sweep);
+    int start_x = cx + (int)(sin(deg2rad(norm_start)) * radius);
+    int start_y = cy + (int)(cos(deg2rad(norm_start)) * radius);
+    int end_x   = cx + (int)(sin(deg2rad(norm_end)) * radius);
+    int end_y   = cy + (int)(cos(deg2rad(norm_end)) * radius);
+    draw_line_raw(cx, cy, start_x, start_y, state->color);
+    draw_line_raw(cx, cy, end_x, end_y, state->color);
 }
 
-/* Convert Degrees to Radians */
-static float ssd1306_DegToRad(float par_deg) {
-    return par_deg * (3.14f / 180.0f);
-}
-
-/* Normalize degree to [0;360] */
-static uint16_t ssd1306_NormalizeTo0_360(uint16_t par_deg) {
-    uint16_t loc_angle;
-    if(par_deg <= 360) {
-        loc_angle = par_deg;
-    } else {
-        loc_angle = par_deg % 360;
-        loc_angle = (loc_angle ? loc_angle : 360);
-    }
-    return loc_angle;
-}
-
-/*
- * DrawArc. Draw angle is beginning from 4 quart of trigonometric circle (3pi/2)
- * start_angle in degree
- * sweep in degree
- */
-void ssd1306_DrawArc(uint8_t x, uint8_t y, uint8_t radius, uint16_t start_angle, uint16_t sweep, SSD1306_COLOR color) {
-    static const uint8_t CIRCLE_APPROXIMATION_SEGMENTS = 36;
-    float approx_degree;
-    uint32_t approx_segments;
-    uint8_t xp1,xp2;
-    uint8_t yp1,yp2;
-    uint32_t count;
-    uint32_t loc_sweep;
-    float rad;
-    
-    loc_sweep = ssd1306_NormalizeTo0_360(sweep);
-    
-    count = (ssd1306_NormalizeTo0_360(start_angle) * CIRCLE_APPROXIMATION_SEGMENTS) / 360;
-    approx_segments = (loc_sweep * CIRCLE_APPROXIMATION_SEGMENTS) / 360;
-    approx_degree = loc_sweep / (float)approx_segments;
-    while(count < approx_segments)
-    {
-        rad = ssd1306_DegToRad(count*approx_degree);
-        xp1 = x + (int8_t)(sinf(rad)*radius);
-        yp1 = y + (int8_t)(cosf(rad)*radius);    
-        count++;
-        if(count != approx_segments) {
-            rad = ssd1306_DegToRad(count*approx_degree);
-        } else {
-            rad = ssd1306_DegToRad(loc_sweep);
-        }
-        xp2 = x + (int8_t)(sinf(rad)*radius);
-        yp2 = y + (int8_t)(cosf(rad)*radius);    
-        ssd1306_Line(xp1,yp1,xp2,yp2,color);
-    }
-    
-    return;
-}
-
-/*
- * Draw arc with radius line
- * Angle is beginning from 4 quart of trigonometric circle (3pi/2)
- * start_angle: start angle in degree
- * sweep: finish angle in degree
- */
-void ssd1306_DrawArcWithRadiusLine(uint8_t x, uint8_t y, uint8_t radius, uint16_t start_angle, uint16_t sweep, SSD1306_COLOR color) {
-    const uint32_t CIRCLE_APPROXIMATION_SEGMENTS = 36;
-    float approx_degree;
-    uint32_t approx_segments;
-    uint8_t xp1;
-    uint8_t xp2 = 0;
-    uint8_t yp1;
-    uint8_t yp2 = 0;
-    uint32_t count;
-    uint32_t loc_sweep;
-    float rad;
-    
-    loc_sweep = ssd1306_NormalizeTo0_360(sweep);
-    
-    count = (ssd1306_NormalizeTo0_360(start_angle) * CIRCLE_APPROXIMATION_SEGMENTS) / 360;
-    approx_segments = (loc_sweep * CIRCLE_APPROXIMATION_SEGMENTS) / 360;
-    approx_degree = loc_sweep / (float)approx_segments;
-
-    rad = ssd1306_DegToRad(count*approx_degree);
-    uint8_t first_point_x = x + (int8_t)(sinf(rad)*radius);
-    uint8_t first_point_y = y + (int8_t)(cosf(rad)*radius);   
-    while (count < approx_segments) {
-        rad = ssd1306_DegToRad(count*approx_degree);
-        xp1 = x + (int8_t)(sinf(rad)*radius);
-        yp1 = y + (int8_t)(cosf(rad)*radius);    
-        count++;
-        if (count != approx_segments) {
-            rad = ssd1306_DegToRad(count*approx_degree);
-        } else {
-            rad = ssd1306_DegToRad(loc_sweep);
-        }
-        xp2 = x + (int8_t)(sinf(rad)*radius);
-        yp2 = y + (int8_t)(cosf(rad)*radius);    
-        ssd1306_Line(xp1,yp1,xp2,yp2,color);
-    }
-    
-    // Radius line
-    ssd1306_Line(x,y,first_point_x,first_point_y,color);
-    ssd1306_Line(x,y,xp2,yp2,color);
-    return;
-}
-
-/* Draw circle by Bresenhem's algorithm */
-void ssd1306_DrawCircle(uint8_t par_x,uint8_t par_y,uint8_t par_r,SSD1306_COLOR par_color) {
-    int32_t x = -par_r;
-    int32_t y = 0;
-    int32_t err = 2 - 2 * par_r;
-    int32_t e2;
-
-    if (par_x >= SSD1306_WIDTH || par_y >= SSD1306_HEIGHT) {
-        return;
-    }
-
+void ssd1306_draw_circle(SSD1306State* state, uint8_t r) {
+    int cx = state->__cursor.x, cy = state->__cursor.y, x = -r, y = 0, err = 2 - 2 * r;
     do {
-        ssd1306_DrawPixel(par_x - x, par_y + y, par_color);
-        ssd1306_DrawPixel(par_x + x, par_y + y, par_color);
-        ssd1306_DrawPixel(par_x + x, par_y - y, par_color);
-        ssd1306_DrawPixel(par_x - x, par_y - y, par_color);
-        e2 = err;
-
-        if (e2 <= y) {
-            y++;
-            err = err + (y * 2 + 1);
-            if(-x == y && e2 <= x) {
-                e2 = 0;
-            }
-        }
-
-        if (e2 > x) {
-            x++;
-            err = err + (x * 2 + 1);
-        }
+        draw_pixel(cx - x, cy + y, state->color);
+        draw_pixel(cx + x, cy + y, state->color);
+        draw_pixel(cx + x, cy - y, state->color);
+        draw_pixel(cx - x, cy - y, state->color);
+        int e2 = err;
+        if (e2 <= y) { y++; err += y * 2 + 1; }
+        if (e2 > x) { x++; err += x * 2 + 1; }
     } while (x <= 0);
-
-    return;
 }
 
-/* Draw filled circle. Pixel positions calculated using Bresenham's algorithm */
-void ssd1306_FillCircle(uint8_t par_x,uint8_t par_y,uint8_t par_r,SSD1306_COLOR par_color) {
-    int32_t x = -par_r;
-    int32_t y = 0;
-    int32_t err = 2 - 2 * par_r;
-    int32_t e2;
-
-    if (par_x >= SSD1306_WIDTH || par_y >= SSD1306_HEIGHT) {
-        return;
+void ssd1306_fill_circle(SSD1306State* state, uint8_t r) {
+    int cx = state->__cursor.x, cy = state->__cursor.y;
+    for (int dy = -r; dy <= r; dy++) {
+        int dx = (int)sqrt(r * r - dy * dy);
+        for (int x = cx - dx; x <= cx + dx; x++)
+            draw_pixel(x, cy + dy, state->color);
     }
-
-    do {
-        for (uint8_t _y = (par_y + y); _y >= (par_y - y); _y--) {
-            for (uint8_t _x = (par_x - x); _x >= (par_x + x); _x--) {
-                ssd1306_DrawPixel(_x, _y, par_color);
-            }
-        }
-
-        e2 = err;
-        if (e2 <= y) {
-            y++;
-            err = err + (y * 2 + 1);
-            if (-x == y && e2 <= x) {
-                e2 = 0;
-            }
-        }
-
-        if (e2 > x) {
-            x++;
-            err = err + (x * 2 + 1);
-        }
-    } while (x <= 0);
-
-    return;
 }
 
-/* Draw a rectangle */
-void ssd1306_DrawRectangle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, SSD1306_COLOR color) {
-    ssd1306_Line(x1,y1,x2,y1,color);
-    ssd1306_Line(x2,y1,x2,y2,color);
-    ssd1306_Line(x2,y2,x1,y2,color);
-    ssd1306_Line(x1,y2,x1,y1,color);
-
-    return;
+void ssd1306_draw_rect(SSD1306State* state, uint8_t w, uint8_t h) {
+    int x0 = state->__cursor.x, y0 = state->__cursor.y, x1 = x0 + w - 1, y1 = y0 + h - 1;
+    for (int i = x0; i <= x1; i++) draw_pixel(i, y0, state->color);
+    for (int i = x0; i <= x1; i++) draw_pixel(i, y1, state->color);
+    for (int j = y0; j <= y1; j++) draw_pixel(x0, j, state->color);
+    for (int j = y0; j <= y1; j++) draw_pixel(x1, j, state->color);
 }
 
-/* Draw a filled rectangle */
-void ssd1306_FillRectangle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, SSD1306_COLOR color) {
-    uint8_t x_start = ((x1<=x2) ? x1 : x2);
-    uint8_t x_end   = ((x1<=x2) ? x2 : x1);
-    uint8_t y_start = ((y1<=y2) ? y1 : y2);
-    uint8_t y_end   = ((y1<=y2) ? y2 : y1);
+void ssd1306_fill_rect(SSD1306State* state, uint8_t w, uint8_t h) {
+    int x0 = state->__cursor.x, y0 = state->__cursor.y;
+    for (int j = 0; j < h; j++)
+        for (int i = 0; i < w; i++)
+            draw_pixel(x0 + i, y0 + j, state->color);
+}
 
-    for (uint8_t y= y_start; (y<= y_end)&&(y<SSD1306_HEIGHT); y++) {
-        for (uint8_t x= x_start; (x<= x_end)&&(x<SSD1306_WIDTH); x++) {
-            ssd1306_DrawPixel(x, y, color);
-        }
+void ssd1306_draw_2d_polyline(SSD1306State* state, const SSD1306Vertex2D* v, uint16_t n) {
+    if (!v || n < 2) return;
+    for (uint16_t i = 1; i < n; i++)
+        draw_line_raw(v[i - 1].x, v[i - 1].y, v[i].x, v[i].y, state->color);
+}
+
+void ssd1306_draw_bitmap(SSD1306State* state, uint8_t w, uint8_t h, const uint8_t* bmp) {
+    int byteWidth = (w + 7) / 8, x0 = state->__cursor.x, y0 = state->__cursor.y;
+    for (uint8_t j = 0; j < h; j++)
+        for (uint8_t i = 0; i < w; i++)
+            if (bmp[j * byteWidth + i / 8] & (0x80 >> (i % 8)))
+                draw_pixel(x0 + i, y0 + j, state->color);
+}
+
+void ssd1306_fill(SSD1306State* state, SSD1306Color color) {
+#if SSD1306_USE_FRAMEBUFFER
+    memset(framebuffer, color == SSD1306_COLOR_WHITE ? 0xFF : 0x00, SSD1306_FRAMEBUFFER_SIZE);
+#else
+    // 填充每一页并写入屏幕
+    uint8_t fill = (color == SSD1306_COLOR_WHITE) ? 0xFF : 0x00;
+    for (uint8_t page = 0; page < (SSD1306_SCREEN_HEIGHT / 8); page++) {
+        memset(page_buffer, fill, SSD1306_SCREEN_WIDTH);
+        page_buffer_index = page;
+        ssd1306_write_cmd(0xB0 | page);
+        ssd1306_write_cmd(0x00);
+        ssd1306_write_cmd(0x10);
+        ssd1306_write_data(page_buffer, SSD1306_SCREEN_WIDTH);
     }
-    return;
+    page_buffer_index = 0xFF;
+#endif
 }
 
-SSD1306_Error_t ssd1306_InvertRectangle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2) {
-  if ((x2 >= SSD1306_WIDTH) || (y2 >= SSD1306_HEIGHT)) {
-    return SSD1306_ERR;
-  }
-  if ((x1 > x2) || (y1 > y2)) {
-    return SSD1306_ERR;
-  }
-  uint32_t i;
-  if ((y1 / 8) != (y2 / 8)) {
-    /* if rectangle doesn't lie on one 8px row */
-    for (uint32_t x = x1; x <= x2; x++) {
-      i = x + (y1 / 8) * SSD1306_WIDTH;
-      SSD1306_Buffer[i] ^= 0xFF << (y1 % 8);
-      i += SSD1306_WIDTH;
-      for (; i < x + (y2 / 8) * SSD1306_WIDTH; i += SSD1306_WIDTH) {
-        SSD1306_Buffer[i] ^= 0xFF;
-      }
-      SSD1306_Buffer[i] ^= 0xFF >> (7 - (y2 % 8));
-    }
-  } else {
-    /* if rectangle lies on one 8px row */
-    const uint8_t mask = (0xFF << (y1 % 8)) & (0xFF >> (7 - (y2 % 8)));
-    for (i = x1 + (y1 / 8) * SSD1306_WIDTH;
-         i <= (uint32_t)x2 + (y2 / 8) * SSD1306_WIDTH; i++) {
-      SSD1306_Buffer[i] ^= mask;
-    }
-  }
-  return SSD1306_OK;
-}
-
-/* Draw a bitmap */
-void ssd1306_DrawBitmap(uint8_t x, uint8_t y, const unsigned char* bitmap, uint8_t w, uint8_t h, SSD1306_COLOR color) {
-    int16_t byteWidth = (w + 7) / 8; // Bitmap scanline pad = whole byte
-    uint8_t byte = 0;
-
-    if (x >= SSD1306_WIDTH || y >= SSD1306_HEIGHT) {
-        return;
-    }
-
-    for (uint8_t j = 0; j < h; j++, y++) {
-        for (uint8_t i = 0; i < w; i++) {
-            if (i & 7) {
-                byte <<= 1;
-            } else {
-                byte = (*(const unsigned char *)(&bitmap[j * byteWidth + i / 8]));
-            }
-
-            if (byte & 0x80) {
-                ssd1306_DrawPixel(x + i, y, color);
-            }
-        }
-    }
-    return;
-}
-
-void ssd1306_SetContrast(const uint8_t value) {
-    const uint8_t kSetContrastControlRegister = 0x81;
-    ssd1306_WriteCommand(kSetContrastControlRegister);
-    ssd1306_WriteCommand(value);
-}
-
-void ssd1306_SetDisplayOn(const uint8_t on) {
-    uint8_t value;
-    if (on) {
-        value = 0xAF;   // Display on
-        SSD1306.DisplayOn = 1;
-    } else {
-        value = 0xAE;   // Display off
-        SSD1306.DisplayOn = 0;
-    }
-    ssd1306_WriteCommand(value);
-}
-
-uint8_t ssd1306_GetDisplayOn() {
-    return SSD1306.DisplayOn;
+void ssd1306_set_cursor(SSD1306State* state,uint8_t x,uint8_t y) {
+    state->__cursor.x = x;
+    state->__cursor.y = y;
+#if !SSD1306_USE_FRAMEBUFFER
+    // 非framebuffer模式下设置硬件光标
+    ssd1306_write_cmd(0xB0 | (y / 8));
+    ssd1306_write_cmd(0x00 | (x & 0x0F));
+    ssd1306_write_cmd(0x10 | (x >> 4));
+#endif
 }
