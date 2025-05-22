@@ -1,8 +1,8 @@
 #pragma once
 
-#include "main.h"
-#include "command.h"
+#include <stdint.h>
 #include <stdbool.h>
+#include <assert.h>
 
 /* User Configurations */
 #define NRF24L01P_SPI                     (&hspi2)
@@ -16,83 +16,54 @@
 #define NRF24L01P_IRQ_PIN_PORT            EXIT7_WIRELESS_IRQ_GPIO_Port
 #define NRF24L01P_IRQ_PIN_NUMBER          EXIT7_WIRELESS_IRQ_Pin
 
-#define NRF24L01P_PAYLOAD_LENGTH          sizeof(CommandFrag)     // 1 - 32bytes
+#define NRF24L01P_FRAGMENT_MAX_LEN 128
+
+// 实际上可以改为先发送表示总长度的包，然后发送对应长度的数据
+// 至于传一半挂掉的情况，可以在接收端加入超时检测
+// 信道利用率似乎更高，但是比目前这个麻烦
+typedef struct {
+    bool end;
+    uint8_t payload[8];
+} NRF24L01P_Fragment;
+
+// 1 - 32bytes
+#define NRF24L01P_PAYLOAD_LENGTH sizeof(NRF24L01P_Fragment)
+
+typedef enum {
+    NRF24L01P_AIR_DATA_RATE_250Kbps = 2,
+    NRF24L01P_AIR_DATA_RATE_1Mbps = 0,
+    NRF24L01P_AIR_DATA_RATE_2Mbps = 1
+} NRF24L01P_AirDataRate;
+
+typedef enum {
+    NRF24L01P_OUTPUT_POWER_0dBm = 3,
+    NRF24L01P_OUTPUT_POWER_6dBm = 2,
+    NRF24L01P_OUTPUT_POWER_12dBm = 1,
+    NRF24L01P_OUTPUT_POWER_18dBm = 0,
+} NRF24L01P_OutputPower;
 
 
-/* nRF24L01+ typedefs */
-typedef uint8_t count;
-typedef uint8_t widths;
-typedef uint8_t length;
-typedef uint16_t delay;
-typedef uint16_t channel;
+void nrf24l01p_set_mode_rx(uint16_t mhz, NRF24L01P_AirDataRate bps);
+void nrf24l01p_set_mode_tx(uint16_t mhz, NRF24L01P_AirDataRate bps);
 
-typedef enum
-{
-    _250kbps = 2,
-    _1Mbps   = 0,
-    _2Mbps   = 1
-} air_data_rate;
+bool nrf24l01p_send_fragment(uint8_t* data);
 
-typedef enum
-{
-    _0dBm  = 3,
-    _6dBm  = 2,
-    _12dBm = 1,
-    _18dBm = 0
-} output_power;
+uint8_t nrf24l01p_write_tx_fifo(uint8_t* tx_payload);
+uint8_t nrf24l01p_read_rx_fifo(uint8_t* rx_payload);
+void nrf24l01p_clear_rx_dr();
 
-
-/* Main Functions */
-void nrf24l01p_rx_init(channel MHz, air_data_rate bps);
-void nrf24l01p_tx_init(channel MHz, air_data_rate bps);
-
-void nrf24l01p_rx_receive(uint8_t* rx_payload);
-void nrf24l01p_tx_transmit(uint8_t* tx_payload);
-
-// Check tx_ds or max_rt
-void nrf24l01p_tx_irq();  
-
-
-/* Sub Functions */
 void nrf24l01p_reset();
-
-void nrf24l01p_prx_mode();
-void nrf24l01p_ptx_mode();
-
 void nrf24l01p_power_up();
 void nrf24l01p_power_down();
 
-uint8_t nrf24l01p_get_status();
-uint8_t nrf24l01p_get_fifo_status();
-
-// Static payload lengths
-void nrf24l01p_rx_set_payload_widths(widths bytes);
-
-uint8_t nrf24l01p_read_rx_fifo(uint8_t* rx_payload);
-uint8_t nrf24l01p_write_tx_fifo(uint8_t* tx_payload);
-
-void nrf24l01p_flush_rx_fifo();
-void nrf24l01p_flush_tx_fifo();
-
-// Clear IRQ pin. Change LOW to HIGH
-void nrf24l01p_clear_rx_dr();
-void nrf24l01p_clear_tx_ds();
-void nrf24l01p_clear_max_rt();
-
-void nrf24l01p_set_rf_channel(channel MHz);
-void nrf24l01p_set_rf_tx_output_power(output_power dBm);
-void nrf24l01p_set_rf_air_data_rate(air_data_rate bps);
-
-void nrf24l01p_set_crc_length(length bytes);
-void nrf24l01p_set_address_widths(widths bytes);
-void nrf24l01p_auto_retransmit_count(count cnt);
-void nrf24l01p_auto_retransmit_delay(delay us);
 uint8_t nrf24l01p_check(void);
 void nrf24l01p_set_tx_addr(uint8_t *addr, uint8_t len);
 void nrf24l01p_set_rx_addr(uint8_t pipe, uint8_t *addr, uint8_t len);
 
-void nrf24l01p_clear_tx_result(void);
-uint8_t nrf24l01p_get_tx_result(void);
+bool nrf24l01p_check_tx_mode(void);
+void nrf24l01p_check_ack(void);
+
+uint8_t nrf24l01p_get_fifo_status(void);
 
 /* nRF24L01+ Commands */
 #define NRF24L01P_CMD_R_REGISTER                  0b00000000

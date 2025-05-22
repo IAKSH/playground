@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define WIRELESS_TIMEOUT_MS 100
+
 typedef enum {
     COMMAND_MOVE,COMMAND_VOLT,COMMAND_CAM_ROTATE,COMMAND_CAM_SHOT,COMMAND_PID
 } __CommandType;
@@ -37,10 +39,6 @@ typedef struct {
     } payload;
 } CommandPacket;
 
-// 实际上可以改为先发送表示总长度的包，然后发送对应长度的数据
-// 至于传一半挂掉的情况，可以在接收端加入超时检测
-// 信道利用率似乎更高，但是比目前这个麻烦
-typedef struct {
-    bool end;
-    uint8_t payload[8];
-} CommandFrag;
+void wireless_irq(void);
+void wireless_send(void* data,uint16_t len);
+void wireless_receive(void* data,uint16_t len);

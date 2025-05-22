@@ -23,7 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "tasks.h"
-#include "command.h"
+#include "nrf24l01p.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -180,7 +180,7 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
-  command_queue = osMessageQueueNew(16,sizeof(CommandFrag),NULL);
+  command_queue = osMessageQueueNew(16,sizeof(NRF24L01P_Fragment),NULL);
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
