@@ -5,10 +5,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#ifndef SSD1306_USE_FRAMEBUFFER
-#define SSD1306_USE_FRAMEBUFFER 1
-#endif
-
 #if SSD1306_USE_FRAMEBUFFER
 #define SSD1306_FRAMEBUFFER_SIZE (SSD1306_SCREEN_WIDTH * (SSD1306_SCREEN_HEIGHT / 8))
 static uint8_t framebuffer[SSD1306_FRAMEBUFFER_SIZE];

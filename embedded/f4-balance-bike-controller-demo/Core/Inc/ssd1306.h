@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define SSD1306_USE_FRAMEBUFFER 1
+
 #define SSD1306_SCREEN_WIDTH 128
 #define SSD1306_SCREEN_HEIGHT 32
 #define SSD1306_MIRROR_VERT false

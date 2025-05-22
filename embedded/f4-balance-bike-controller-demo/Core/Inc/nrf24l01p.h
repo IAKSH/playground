@@ -16,7 +16,7 @@
 #define NRF24L01P_IRQ_PIN_PORT            EXIT7_WIRELESS_IRQ_GPIO_Port
 #define NRF24L01P_IRQ_PIN_NUMBER          EXIT7_WIRELESS_IRQ_Pin
 
-#define NRF24L01P_PAYLOAD_LENGTH          sizeof(CommandPacket)     // 1 - 32bytes
+#define NRF24L01P_PAYLOAD_LENGTH          sizeof(CommandFrag)     // 1 - 32bytes
 
 
 /* nRF24L01+ typedefs */
@@ -90,6 +90,9 @@ void nrf24l01p_auto_retransmit_delay(delay us);
 uint8_t nrf24l01p_check(void);
 void nrf24l01p_set_tx_addr(uint8_t *addr, uint8_t len);
 void nrf24l01p_set_rx_addr(uint8_t pipe, uint8_t *addr, uint8_t len);
+
+void nrf24l01p_clear_tx_result(void);
+uint8_t nrf24l01p_get_tx_result(void);
 
 /* nRF24L01+ Commands */
 #define NRF24L01P_CMD_R_REGISTER                  0b00000000

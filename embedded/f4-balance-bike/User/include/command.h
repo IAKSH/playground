@@ -15,11 +15,7 @@ typedef uint8_t ColorFormat;
 
 typedef struct {
     uint8_t version;
-    uint8_t length;
-    uint8_t seq;
     CommandType type;
-    // NRF24L01+自带CRC校验
-    //uint16_t crc;
     union {
         struct {
             uint16_t speed[2];
@@ -40,3 +36,11 @@ typedef struct {
         } pid;
     } payload;
 } CommandPacket;
+
+// 实际上可以改为先发送表示总长度的包，然后发送对应长度的数据
+// 至于传一半挂掉的情况，可以在接收端加入超时检测
+// 信道利用率似乎更高，但是比目前这个麻烦
+typedef struct {
+    bool end;
+    uint8_t payload[8];
+} CommandFrag;

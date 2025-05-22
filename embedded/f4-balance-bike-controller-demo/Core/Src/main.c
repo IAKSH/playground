@@ -22,9 +22,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "ssd1306.h"
-#include "ssd1306_fonts.h"
 #include "nrf24l01p.h"
 #include <stdio.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -39,7 +39,7 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+#define COMMAND_FRAG_NUM_MAX 128
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -49,6 +49,7 @@ SPI_HandleTypeDef hspi1;
 
 /* USER CODE BEGIN PV */
 static uint8_t tx_address[5] = {0x0,0x0,0x0,0x0,0x01};
+static CommandFrag command_frags[COMMAND_FRAG_NUM_MAX];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -98,45 +99,81 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
   // init ssd1306
-  ssd1306_Init();
-  ssd1306_Fill(Black);
+  SSD1306State state;
+  ssd1306_init();
+  ssd1306_create_state(&state);
+  state.font = &SSD1306Font_16x24;
 
   // init nrf24l01p
   nrf24l01p_tx_init(2500,_1Mbps);
   if(!nrf24l01p_check()) {
-    ssd1306_WriteString("c n m !",Font_16x26,White);
-    ssd1306_UpdateScreen();
+    ssd1306_write_string(&state,"nrf24l01p died!");
+    ssd1306_flush(&state);
     Error_Handler();
   }
-  // 由于需要检查回传的ACK，所以发送端也需要设置rx地址
+
   nrf24l01p_set_tx_addr(tx_address,5);
-  nrf24l01p_set_rx_addr(0,tx_address,5);
+  //nrf24l01p_set_rx_addr(0,tx_address,5);
+  
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   CommandPacket command = {
     .version = 0x00,
-    .length = sizeof(CommandPacket),
-    .seq = 0,
     .type = COMMAND_MOVE,
-    .payload.move.speed = {UINT16_MAX,UINT16_MAX}
+    .payload.move.speed = {UINT16_MAX, UINT16_MAX}
   };
+
+  // 整个命令的总字节数和每个分包中可载数据的大小
+  const size_t total_size = sizeof(CommandPacket);
+  const size_t payload_size = sizeof(command_frags[0].payload);
+  // 计算需要分成几个包（不足部分另外算一个包）
+  int frag_count = total_size / payload_size + ((total_size % payload_size) ? 1 : 0);
 
   int i = 0;
   char buf[16];
   while (1)
   {
-    snprintf(buf,sizeof(buf),"i = %d",i++);
-    ssd1306_SetCursor(0,0);
-    ssd1306_WriteString(buf,Font_16x26,White);
-    ssd1306_UpdateScreen();
+    snprintf(buf, sizeof(buf), "i = %d", i);
+    ssd1306_set_cursor(&state, 0, 0);
+    ssd1306_write_string(&state, buf);
+    ssd1306_flush(&state);
 
-    command.payload.move.speed[0] = i + i / 2;
-    command.payload.move.speed[1] = i - i / 2;
+    // 更新 command 中的数据
+    command.payload.move.speed[0] = i;
+    command.payload.move.speed[1] = UINT16_MAX - i;
+    i++;
 
-    nrf24l01p_tx_transmit((uint8_t*)&command);
-    HAL_Delay(100);
+    // 根据最新的 command 内容重新分包
+    uint8_t *p = (uint8_t *)&command;
+    for (int j = 0; j < frag_count; j++) {
+        // 最后一个分包置为 true，其余为 false
+        command_frags[j].end = (j == frag_count - 1);
+        size_t copy_len = payload_size;
+        // 如果最后一个分包可能不满，则拷贝剩余字节数
+        if (j == frag_count - 1 && (total_size % payload_size))
+            copy_len = total_size % payload_size;
+        memcpy(command_frags[j].payload, p, copy_len);
+        p += copy_len;
+    }
+        
+    // 发送每个分包
+  for (int j = 0; j < frag_count; j++) {
+    nrf24l01p_clear_tx_result();
+    nrf24l01p_tx_transmit((uint8_t *)&command_frags[j]);
+    // 等待IRQ回调设置结果
+    uint32_t timeout = HAL_GetTick() + 10; // 最多等10ms
+    while (nrf24l01p_get_tx_result() == 0 && HAL_GetTick() < timeout) {
+        // 可以适当加__WFI()省电
+    }
+    if (nrf24l01p_get_tx_result() == 0) {
+        // 超时或失败，重发
+        j--;
+        continue;
+    }
+    // 发送成功，继续下一个分包
+  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -287,7 +324,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : WIRELESS_IRQ_Pin */
   GPIO_InitStruct.Pin = WIRELESS_IRQ_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(WIRELESS_IRQ_GPIO_Port, &GPIO_InitStruct);
 

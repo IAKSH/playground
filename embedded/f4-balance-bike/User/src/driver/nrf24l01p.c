@@ -1,4 +1,14 @@
-#include "driver/nrf24l01p.h"
+#include "nrf24l01p.h"
+
+static uint8_t nrf24l01p_tx_result = 0;
+
+void nrf24l01p_clear_tx_result(void) {
+    nrf24l01p_tx_result = 0;
+}
+
+uint8_t nrf24l01p_get_tx_result(void) {
+    return nrf24l01p_tx_result;
+}
 
 static void cs_high()
 {
@@ -205,24 +215,23 @@ void nrf24l01p_rx_receive(uint8_t* rx_payload)
 void nrf24l01p_tx_transmit(uint8_t* tx_payload)
 {
     nrf24l01p_write_tx_fifo(tx_payload);
+    //ce_high();
+    //HAL_Delay(1); // 或适当延时>10us
+    //ce_low();
 }
 
 void nrf24l01p_tx_irq()
 {
-    uint8_t tx_ds = nrf24l01p_get_status();
-    tx_ds &= 0x20;
+    uint8_t status = nrf24l01p_get_status();
 
-    if(tx_ds)
+    if(status & 0x20) // TX_DS
     {   
-        // TX_DS
-        //HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+        nrf24l01p_tx_result = 1;
         nrf24l01p_clear_tx_ds();
     }
-
-    else
+    else if(status & 0x10) // MAX_RT
     {
-        // MAX_RT
-        //HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, SET);
+        nrf24l01p_tx_result = 0;
         nrf24l01p_clear_max_rt();
     }
 }

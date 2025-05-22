@@ -88,7 +88,7 @@ const osThreadAttr_t balance_task_attributes = {
 osThreadId_t control_task_handle;
 const osThreadAttr_t control_task_attributes = {
     .name = "control",
-    .stack_size = 128 * 8,
+    .stack_size = 128 * 16,
     .priority = (osPriority_t)osPriorityNormal
 };
 
@@ -180,7 +180,7 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
-  command_queue = osMessageQueueNew(16,sizeof(CommandPacket),NULL);
+  command_queue = osMessageQueueNew(16,sizeof(CommandFrag),NULL);
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
