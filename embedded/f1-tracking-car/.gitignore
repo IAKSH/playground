@@ -1,0 +1,9 @@
+STM32Make.make
+Makefile
+openocd.cfg
+startup_stm32f103xe.s
+STM32F103XX_FLASH.ld
+.stm32env
+.mxproject
+Middlewares
+Drivers
