@@ -1,0 +1,94 @@
+#include <iostream>
+#include <concepts>
+
+template <typename T>
+concept WithReadablePos2D = requires {
+    {std::declval<T>().get_pos_x()}->std::convertible_to<float>;
+    {std::declval<T>().get_pos_y()}->std::convertible_to<float>;
+};
+
+template <typename T>
+concept WithReadablePos3D = WithReadablePos2D<T> &&
+requires {
+    {std::declval<T>().get_pos_z() }->std::convertible_to<float>;
+};
+
+template <typename T>
+concept WithWriteablePos2D = requires {
+    {std::declval<T>().set_pos_x(std::declval<float>())}->std::convertible_to<void>;
+    {std::declval<T>().set_pos_x(std::declval<float>())}->std::convertible_to<void>;
+};
+
+template <typename T>
+concept WithWriteablePos3D = WithWriteablePos2D<T> &&
+requires {
+    {std::declval<T>().set_pos_z(std::declval<float>())}->std::convertible_to<void>;
+};
+
+template <typename T>
+concept WithReadableDirection = requires {
+    {std::declval<T>().get_yaw()}->std::convertible_to<float>;
+    {std::declval<T>().get_pitch()}->std::convertible_to<float>;
+    {std::declval<T>().get_roll()}->std::convertible_to<float>;
+};
+
+template <typename T>
+concept WithWriteableDirection = requires {
+    {std::declval<T>().set_yaw(std::declval<float>())}->std::convertible_to<void>;
+    {std::declval<T>().set_pitch(std::declval<float>())}->std::convertible_to<void>;
+    {std::declval<T>().set_roll(std::declval<float>())}->std::convertible_to<void>;
+};
+
+template <typename Derived>
+requires WithReadablePos3D<Derived> && WithReadableDirection<Derived>
+struct Movable3D {
+    void move_forward(float dt,float step) {
+        auto* self = static_cast<Derived>(this);
+        // TODO
+    };
+
+    void move_forward(float dt,float step,float angle) {
+        auto* self = static_cast<Derived>(this);
+        // TODO
+    }
+};
+
+template <typename Derived>
+struct NonCopyable {
+protected:
+    NonCopyable() = default;
+    ~NonCopyable() = default;
+    NonCopyable(const NonCopyable&) = delete;
+    NonCopyable& operator=(const NonCopyable&) = delete;
+};
+
+template <typename T>
+concept WithHealthPoint = requires {
+    {std::declval<T>().health_point}->std::convertible_to<float>;
+};
+
+class GameObject : Movable3D<GameObject> {
+private:
+    float pos_x = 0;
+    float pos_y = 0;
+
+public:
+    float get_pos_x() {
+        return pos_x;
+    }
+
+    float get_pos_y() {
+        return pos_y;
+    }
+};
+
+class Stone : public GameObject {
+
+};
+
+class Wolf : public GameObject {
+    static_assert(WithHealthPoint<Wolf>);
+public:
+    float health_point = 100.0f;
+};
+

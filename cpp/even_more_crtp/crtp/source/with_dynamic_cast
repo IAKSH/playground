@@ -1,0 +1,214 @@
+// CRTP用于在编译期静态实现的一种功能（或语义）注入
+//    通过将通用逻辑编写在CRTP基类中，子类可以只关注自身的基础数据
+//    而基于这些数据的操作都通过继承CRTP基类，在CRTP基类中统一实现
+//    从而具有很高的标准性（接口一致性）和复用率
+// 而多态（虚表）用于实现对某一系列类型的动态的统一管理
+//    多态主要在乎的是这些类会不会被在逻辑上视为一种东西进行统一管理，
+//    而对于一些逻辑上并没有统一管理必要，但是依然需要高度标准化和代码复用的场景
+//    就应该使用CRTP
+// 二者不是替代关系，该用什么用什么
+
+/*
+以Game开发为例，下面的这套骨架可以比较方便地扩充出ECS（通过CRTP和虚表）
+和脚本系统（比如修改update和receive方法，调用对应的脚本解释器并传入相应的回调函数和他们在脚本中的映射）。
+*/
+
+#include <iostream>
+#include <vector>
+#include <memory>
+#include <concepts>
+#include <cmath>
+#include <queue>
+#include <string>
+
+// ------------------- Concepts -------------------
+
+template<typename T>
+concept WithReadableWritableX = requires(T t, float f) {
+    { t.get_x() } -> std::convertible_to<float>;
+    { t.set_x(f) } -> std::same_as<void>;
+};
+
+template<typename T>
+concept WithReadableWritableY = requires(T t, float f) {
+    { t.get_y() } -> std::convertible_to<float>;
+    { t.set_y(f) } -> std::same_as<void>;
+};
+
+template<typename T>
+concept WithReadable2DPos = WithReadableWritableX<T> && WithReadableWritableY<T>;
+
+// ------------------- CRTP Positionable -------------------
+
+template<typename Derived>
+class Positionable {
+public:
+    // 如果CRTP基类中依然使用requires对整个类进行检查，会导致requires检查早于子类的类型定义，从而导致检查失败
+    // 在CRTP基类中使用static_assert也不行
+    // 只能在CRTP基类的每个函数声明中进行requires，比如下面这样
+    void move_by(float dx, float dy)
+        requires WithReadable2DPos<Derived> {
+        derived().set_x(derived().get_x() + dx);
+        derived().set_y(derived().get_y() + dy);
+    }
+
+    float distance_to(float x, float y) const
+        requires WithReadable2DPos<Derived> {
+        float dx = derived().get_x() - x;
+        float dy = derived().get_y() - y;
+        return std::sqrt(dx * dx + dy * dy);
+    }
+
+protected:
+    Derived& derived() { return static_cast<Derived&>(*this); }
+    const Derived& derived() const { return static_cast<const Derived&>(*this); }
+};
+
+// ------------------- Message System -------------------
+
+struct Message {
+    virtual ~Message() = default;
+};
+
+struct AttackMessage : public Message {
+    float target_x;
+    float target_y;
+    float radius;
+    int damage;
+
+    AttackMessage(float x, float y, float r, int d)
+        : target_x(x), target_y(y), radius(r), damage(d) {}
+};
+
+class MessageQueue {
+    std::queue<std::unique_ptr<Message>> messages;
+
+public:
+    void push(std::unique_ptr<Message> msg) {
+        messages.push(std::move(msg));
+    }
+
+    bool empty() const { return messages.empty(); }
+
+    std::unique_ptr<Message> pop() {
+        if (messages.empty()) return nullptr;
+        auto msg = std::move(messages.front());
+        messages.pop();
+        return msg;
+    }
+};
+
+// ------------------- IEntity Interface -------------------
+
+class IEntity {
+public:
+    virtual void update(MessageQueue& queue) = 0;
+    virtual void receive(const Message& msg) = 0;
+    virtual ~IEntity() = default;
+};
+
+// ------------------- Player -------------------
+
+class Player : public Positionable<Player> {
+    float x = 0.0f;
+    float y = 0.0f;
+
+public:
+    float get_x() const { return x; }
+    float get_y() const { return y; }
+    void set_x(float val) { x = val; }
+    void set_y(float val) { y = val; }
+
+    void attack(MessageQueue& queue, float tx, float ty) {
+        queue.push(std::make_unique<AttackMessage>(tx, ty, 5.0f, 10));
+    }
+};
+
+class PlayerEntity : public Player, public IEntity {
+public:
+    void update(MessageQueue& queue) override {
+        move_by(1.0f, 0.0f); // Move right
+        attack(queue, get_x() + 2.0f, get_y()); // Attack ahead
+    }
+
+    void receive(const Message&) override {
+        // Player doesn't react to messages in this demo
+    }
+};
+
+// ------------------- Enemy -------------------
+
+class Enemy : public Positionable<Enemy> {
+    float x = 0.0f;
+    float y = 0.0f;
+    int hp = 100;
+
+public:
+    float get_x() const { return x; }
+    float get_y() const { return y; }
+    void set_x(float val) { x = val; }
+    void set_y(float val) { y = val; }
+
+    void take_damage(int dmg) {
+        hp -= dmg;
+        std::cout << "Enemy at (" << x << ", " << y << ") took " << dmg << " damage. HP = " << hp << "\n";
+    }
+};
+
+class EnemyEntity : public Enemy, public IEntity {
+public:
+    EnemyEntity(float x = 0.0f,float y = 0.0f) {
+        set_x(x);
+        set_y(y);
+    }
+
+    void update(MessageQueue&) override {
+        // Enemy doesn't act in this demo
+    }
+
+    void receive(const Message& msg) override {
+        // dynamic_cast是一种糟糕的设计，他的查询方式是在由虚表构成树（甚至是链表树）里上蹿下跳
+        //     在虚继承层级不深时还好，但是越深性能越糟糕
+        // 一种方案是用一个enum class，运行时获取他的enum class然后比较，缺点是如果要加入新的类型就得去改enum class
+        //     而且这种方案太C风格了，一点都不C++
+        // 另一种方案是利用模板类来实现一种奇妙的自动分配的静态type_id
+        //     简单地说，在基类定义一个静态变量，然后取其地址作为type_id
+        //     对于不同的模板类实例，当然有不同的静态变量，所以取出的type_id也自然不同
+        //     然后就能用这个type_id进行非常简单的运行时类型识别了
+        //     而且因为C++有多继承，所以这完全不妨碍你保留之前的虚继承，从而极大程度地替代dynamic_cast
+        if (const auto* attack = dynamic_cast<const AttackMessage*>(&msg)) {
+            if (distance_to(attack->target_x, attack->target_y) <= attack->radius) {
+                take_damage(attack->damage);
+            }
+        }
+    }
+};
+
+// ------------------- Main Simulation -------------------
+
+int main() {
+    MessageQueue queue;
+
+    std::vector<std::unique_ptr<IEntity>> entities;
+    entities.emplace_back(std::make_unique<PlayerEntity>());
+    entities.emplace_back(std::make_unique<EnemyEntity>(3.0f,0.5f));
+    entities.emplace_back(std::make_unique<EnemyEntity>(8.0f,2.0f));
+
+    std::cout << "=== Simulation Start ===\n";
+
+    // Step 1: Update all entities (player moves and attacks)
+    for (auto& e : entities) {
+        e->update(queue);
+    }
+
+    // Step 2: Dispatch messages
+    while (!queue.empty()) {
+        auto msg = queue.pop();
+        for (auto& e : entities) {
+            e->receive(*msg);
+        }
+    }
+
+    std::cout << "=== Simulation End ===\n";
+    return 0;
+}
