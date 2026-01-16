@@ -1,0 +1,9 @@
+{
+  "name": "stampit",
+  "version-string": "0.1.0",
+  "builtin-baseline": "64e1fbee7d9f40eab5d112aaff648c4dcffe9e47",
+  "dependencies": [
+    "qtbase",
+    "opencv"
+  ]
+}
