@@ -48,6 +48,7 @@ int main() noexcept {
 
     auto comp = [](const Data& m,const Data& n){return m.y > n.y;};
     // lambda在模板参数里需要decltype。并且最后作为参数塞给std::priority_queue的构造（正常函数也要）
+    // comp的类型并不能自动分发
     std::priority_queue<Data,std::deque<Data>,decltype(comp)> struct_p_queue(comp);
     
     test_p_queue(less_p_queue);

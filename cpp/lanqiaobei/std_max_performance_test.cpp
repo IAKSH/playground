@@ -4,6 +4,7 @@
 #include <random>
 #include <array>
 #include <algorithm>
+#include <climits>
 
 template <void(*FUNC)()>
 double countTime() noexcept {

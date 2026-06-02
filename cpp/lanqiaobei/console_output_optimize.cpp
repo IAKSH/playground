@@ -67,16 +67,40 @@ void test_cout() noexcept {
     }
 }
 
+void reset_cout() {
+    // 使用一个临时的 ostringstream（默认状态）重置 cout 的格式
+    std::cout.copyfmt(std::ostringstream());
+    // 可选：清除可能存在的错误状态（如 failbit、badbit）
+    std::cout.clear();
+}
+
 int main() noexcept {
-    double putchar_time = countTime<test_putchar>();
-    double cout_time = countTime<test_cout>();
-    double cout_opt_time = countTime<test_cout_with_opt>();
-    double cout_full_opt_time = countTime<test_cout_with_full_opt>();
+    double t0,t1,t2,t3;
+    t0 = t1 = t2 = t3 = 0;
+
+    constexpr int N = 10;
+
+    for(int i = 0;i < N;i++) {
+        reset_cout();
+        t0 += countTime<test_putchar>();
+        reset_cout();
+        t1 += countTime<test_cout>();
+        reset_cout();
+        t2 += countTime<test_cout_with_opt>();
+        reset_cout();
+        t3 += countTime<test_cout_with_full_opt>();
+    }
+
+    t0 /= N; 
+    t1 /= N;
+    t2 /= N;
+    t3 /= N;
     
-    system("cls");
-    cout << putchar_time << "ms\n";         // 最慢
-    cout << cout_time << "ms\n";
-    cout << cout_opt_time << "ms\n";        // 最快
-    cout << cout_full_opt_time << "ms\n";   // 和cout_opt_time只有误差级区别
+    //system("cls");
+    system("clear");
+    cout << "putchar:\t" << t0 << "ms\n";         // 最慢
+    cout << "cout:   \t" << t1 << "ms\n";
+    cout << "cout_opt:\t" << t2 << "ms\n";        // 最快
+    cout << "cout_full_opt:\t" << t3 << "ms\n";   // 和cout_opt_time只有误差级区别
     return 0;
 }
