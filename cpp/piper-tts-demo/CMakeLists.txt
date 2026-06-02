@@ -1,0 +1,11 @@
+cmake_minimum_required(VERSION 3.10.0)
+project(piper_demo VERSION 0.0.1 LANGUAGES C CXX)
+
+add_subdirectory(vendor/piper1-gpl/libpiper)
+add_subdirectory(vendor/cpp-httplib)
+add_subdirectory(vendor/json)
+add_subdirectory(vendor/whisper.cpp)
+add_subdirectory(libtone)
+add_subdirectory(tts-demo)
+add_subdirectory(llm-tts-demo)
+add_subdirectory(asr-demo)

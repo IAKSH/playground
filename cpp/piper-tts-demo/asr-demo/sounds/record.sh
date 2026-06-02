@@ -1,0 +1,1 @@
+ffmpeg -f pulse -i default -ar 16000 -ac 1 -c:a pcm_s16le record_output.wav

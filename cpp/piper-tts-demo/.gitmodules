@@ -1,0 +1,15 @@
+[submodule "vendor/piper1-gpl"]
+	path = vendor/piper1-gpl
+	url = https://github.com/OHF-Voice/piper1-gpl.git
+[submodule "vendor/espeak-ng"]
+	path = vendor/espeak-ng
+	url = https://github.com/espeak-ng/espeak-ng.git
+[submodule "vendor/cpp-httplib"]
+	path = vendor/cpp-httplib
+	url = https://github.com/yhirose/cpp-httplib.git
+[submodule "vendor/json"]
+	path = vendor/json
+	url = https://github.com/nlohmann/json.git
+[submodule "vendor/whisper.cpp"]
+	path = vendor/whisper.cpp
+	url = https://github.com/ggml-org/whisper.cpp.git
